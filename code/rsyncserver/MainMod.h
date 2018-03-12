@@ -24,7 +24,7 @@ static struct command
 } commands[] =
 {
 	{ "-h", "show all command and descriptions.\n", command_h},
-	{ "-d", "debug mode, every log will print to console.\n", nullptr},
+	{ "-d", "debug mode, every log will print to console.\n", command_d},
 };
 
 #define NR_COMMANDS (sizeof(commands) / sizeof(commands[0]) )

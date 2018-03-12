@@ -72,7 +72,7 @@ namespace RingLog
 
 	void ring_log::init_path(const char* log_dir, const char* prog_name, int level, bool need_print)
 	{
-		//_writeconsole = need_print;
+		_writeconsole = need_print;
 
 		pthread_mutex_lock(&_mutex);
 
@@ -170,7 +170,7 @@ namespace RingLog
 		_lst_lts = 0;
 		bool tell_back = false;
 
-		//if (_writeconsole)
+		if (_writeconsole)
 		{
 			printf(log_line);
 		}

@@ -1,7 +1,8 @@
-#include "MainMod.h"
 #include <stdio.h>
 #include <string.h>
-
+#include "MainMod.h"
+#include "rlog.h"
+using namespace RingLog;
 int MainMod::Init(int argc, char ** argv)
 {
 	this->m_argc = argc;
@@ -28,6 +29,12 @@ void command_h()
 {
 	for (int i = 0; i < NR_COMMANDS; i++)
 	{
-		printf("%s %s", commands[i].arg, commands[i].description);
+		printf("%s\t\t%s", commands[i].arg, commands[i].description);
 	}
+}
+
+void command_d()
+{
+	LOG_INIT("log", "RsyncTool", LOG_LEVEL::MAX, true);
+	LOG_DEBUG("debug model!");
 }
