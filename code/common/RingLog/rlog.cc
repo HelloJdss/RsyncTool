@@ -172,7 +172,7 @@ namespace RingLog
 
 		if (_writeconsole)
 		{
-			printf(log_line);
+			printf("%s\n", log_line);
 		}
 
 		pthread_mutex_lock(&_mutex);
