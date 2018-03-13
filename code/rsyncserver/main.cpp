@@ -4,7 +4,6 @@ using namespace RingLog;
 
 int main(int argc, char** argv)
 {
-	MainMod a;
-	a.Init(argc, argv);
+	MainMod::Init(argc, argv);
 	return 0;
 }
