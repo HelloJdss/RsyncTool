@@ -1,29 +1,28 @@
 #pragma once
+
 #include "cm_define.h"
 #include <functional>
 #include <string>
+
 using std::string;
 
-struct ST_command
-{
-	string arg;
-	string description;
-	std::function<void(void)> pFunc;
+struct ST_command {
+    char arg;
+    string description;
+    std::function<void(void)> pFunc;
 };
 
-class MainMod
-{
-    DECLARE_SINGLETON(MainMod)
+class MainMod {
 public:
-    static int Init(int argc, char** argv);
-private:
-	static void _Start_Explain(int order);
-	static void _command_h();
-	static void _command_d();
+    static void Init(int argc, char *argv[], std::string appName);
+
+    static int Run();
 
 private:
-	static int m_argc;
-	static char** m_argv;
-	static const ST_command m_commands[];
-	#define NR_COMMANDS (sizeof(MainMod::m_commands) / sizeof(MainMod::m_commands[0]))
+    static ST_command m_cmds[];
+
+    static void cmd_h();
+    static void cmd_d();
+
+#define NR_CMDS (sizeof(m_cmds) / sizeof(m_cmds[0]))
 };

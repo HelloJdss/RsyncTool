@@ -9,8 +9,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <sys/time.h>
-//#include <sys/types.h>//getpid, gettid
-#include <unistd.h>
+#include <sys/types.h>//getpid, gettid
 
 namespace RingLog
 {

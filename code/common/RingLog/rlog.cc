@@ -25,16 +25,16 @@ namespace RingLog
 	pthread_mutex_t ring_log::_mutex = PTHREAD_MUTEX_INITIALIZER;
 	pthread_cond_t ring_log::_cond = PTHREAD_COND_INITIALIZER;
 
-	ring_log* ring_log::_ins = NULL;
+	ring_log* ring_log::_ins = nullptr;
 	pthread_once_t ring_log::_once = PTHREAD_ONCE_INIT;
 	uint32_t ring_log::_one_buff_len = 30 * 1024 * 1024;//30MB
 	bool  ring_log::_show_in_console = false;
 
 	ring_log::ring_log() :
 		_buff_cnt(3),
-		_curr_buf(NULL),
-		_prst_buf(NULL),
-		_fp(NULL),
+		_curr_buf(nullptr),
+		_prst_buf(nullptr),
+		_fp(nullptr),
 		_log_cnt(0),
 		_env_ok(false),
 		_level(INFO),
@@ -106,11 +106,11 @@ namespace RingLog
 		{
 			//check if _prst_buf need to be persist
 			pthread_mutex_lock(&_mutex);
-			if (_prst_buf->status == cell_buffer::FREE)
+			if (cell_buffer::FREE == _prst_buf->status)
 			{
 				struct timespec tsp;
 				struct timeval now;
-				gettimeofday(&now, NULL);
+				gettimeofday(&now, nullptr);
 				tsp.tv_sec = now.tv_sec;
 				tsp.tv_nsec = now.tv_usec * 1000;//nanoseconds
 				tsp.tv_sec += BUFF_WAIT_TIME;//wait for 1 seconds
@@ -173,7 +173,7 @@ namespace RingLog
 
 		if (_show_in_console)
 		{
-			printf("%s\n", log_line);
+			printf("%s", log_line);
 		}
 
 		pthread_mutex_lock(&_mutex);
@@ -240,7 +240,7 @@ namespace RingLog
 		{
 			if (_fp)
 				fclose(_fp);
-			_fp = NULL;
+			_fp = nullptr;
 			return false;
 		}
 		if (!_fp)
@@ -282,12 +282,12 @@ namespace RingLog
 			if (_fp)
 				_log_cnt += 1;
 		}
-		return _fp != NULL;
+		return _fp != nullptr;
 	}
 
 	void* be_thdo(void* args)
 	{
 		ring_log::ins()->persist();
-		return NULL;
+		return nullptr;
 	}
 }

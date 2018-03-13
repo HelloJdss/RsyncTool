@@ -1,5 +1,5 @@
 include_directories(${PROJECT_SOURCE_DIR}/code/common/)
-include_directories(${PROJECT_SOURCE_DIR}/code/common/RingLog)
+include_directories(${PROJECT_SOURCE_DIR}/code/common/LogModule)
 
 set(SRC_LIST main.cpp
 	MainMod.cpp
@@ -9,4 +9,4 @@ set(SRC_LIST main.cpp
 add_executable(rsyncserver ${SRC_LIST} ../common/cm_define.h)
 
 #添加静态链接库
-target_link_libraries(rsyncserver RingLog pthread)
+target_link_libraries(rsyncserver LogModule)
