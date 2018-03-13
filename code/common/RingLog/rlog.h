@@ -222,13 +222,13 @@ namespace RingLog
 		static pthread_cond_t _cond;
 	public:
 		static uint32_t _one_buff_len;
-		static bool _writeconsole;// whether print to console
 
 	private:
 		//singleton
 		static ring_log* _ins;
 		static pthread_once_t _once;
-	};
+        static bool _show_in_console;// whether print to console
+    };
 
 	void* be_thdo(void* args);
 

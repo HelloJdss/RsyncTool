@@ -3,10 +3,17 @@
 #include "MainMod.h"
 #include "rlog.h"
 using namespace RingLog;
+
+
+IMPLEMENT_SINGLETON(MainMod)
+
+int MainMod::m_argc = 0;
+char** MainMod::m_argv = nullptr;
+
 int MainMod::Init(int argc, char ** argv)
 {
-	this->m_argc = argc;
-	this->m_argv = argv;
+	m_argc = argc;
+	m_argv = argv;
 	for (int i = 0; i < m_argc; i++)
 	{
 		_Explain(argv[i]);
@@ -18,7 +25,7 @@ void MainMod::_Explain(char * arg)
 {
 	for (int i = 0; i < NR_COMMANDS; i++)
 	{
-		if (strcmp(arg, commands[i].arg) == 0)
+		if (strcmp(arg, commands[i].arg.c_str()) == 0)
 		{
 			commands[i].pFunc();
 		}
@@ -29,7 +36,7 @@ void command_h()
 {
 	for (int i = 0; i < NR_COMMANDS; i++)
 	{
-		printf("%s\t\t%s", commands[i].arg, commands[i].description);
+		printf("%s\t\t%s", commands[i].arg.c_str(), commands[i].description.c_str());
 	}
 }
 

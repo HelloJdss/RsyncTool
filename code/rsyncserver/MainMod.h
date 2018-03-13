@@ -1,15 +1,18 @@
 #pragma once
+#include "cm_define.h"
 #include <functional>
+#include <string>
+using std::string;
 class MainMod
 {
+    DECLARE_SINGLETON(MainMod)
 public:
-	int Init(int argc, char** argv);
-
+    static int Init(int argc, char** argv);
 private:
-	void _Explain(char* arg);
+	static void _Explain(char* arg);
 private:
-	int m_argc;
-	char** m_argv;
+	static int m_argc;
+	static char** m_argv;
 
 };
 
@@ -18,8 +21,8 @@ void command_d();
 
 static struct command
 {
-	char* arg;
-	char* description;
+	string arg;
+	string description;
 	std::function<void(void)> pFunc;
 } commands[] =
 {

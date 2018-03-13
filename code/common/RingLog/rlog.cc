@@ -28,6 +28,7 @@ namespace RingLog
 	ring_log* ring_log::_ins = NULL;
 	pthread_once_t ring_log::_once = PTHREAD_ONCE_INIT;
 	uint32_t ring_log::_one_buff_len = 30 * 1024 * 1024;//30MB
+	bool  ring_log::_show_in_console = false;
 
 	ring_log::ring_log() :
 		_buff_cnt(3),
@@ -72,7 +73,7 @@ namespace RingLog
 
 	void ring_log::init_path(const char* log_dir, const char* prog_name, int level, bool need_print)
 	{
-		_writeconsole = need_print;
+		_show_in_console = need_print;
 
 		pthread_mutex_lock(&_mutex);
 
@@ -170,7 +171,7 @@ namespace RingLog
 		_lst_lts = 0;
 		bool tell_back = false;
 
-		if (_writeconsole)
+		if (_show_in_console)
 		{
 			printf("%s\n", log_line);
 		}
