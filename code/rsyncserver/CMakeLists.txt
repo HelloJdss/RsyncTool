@@ -9,4 +9,4 @@ set(SRC_LIST main.cpp
 add_executable(rsyncserver ${SRC_LIST} ../common/cm_define.h)
 
 #添加静态链接库
-target_link_libraries(rsyncserver LogModule)
+target_link_libraries(rsyncserver LogModule pthread)

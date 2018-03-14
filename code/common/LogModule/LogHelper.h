@@ -31,7 +31,7 @@ class utc_timer {
 public:
     utc_timer();
 
-    uint64_t get_curr_time(int *p_msec = nullptr);
+    uint64_t get_curr_time(int *p_msec = nullptr); //return sec, arg return 0.msec
 
     int year, mon, day, hour, min, sec;
     char utc_fmt[20];
@@ -47,6 +47,7 @@ private:
 
     uint64_t _sys_acc_min;
     uint64_t _sys_acc_sec;
+
 };
 
 class LogHelper {
@@ -67,6 +68,7 @@ private:
     string m_path;
     LOG_LEVEL m_lv = LOG_LEVEL ::MAX;
     utc_timer m_tm;
+    pthread_mutex_t m_mutex;
 };
 
 #define g_LogHelper LogHelper::Instance()

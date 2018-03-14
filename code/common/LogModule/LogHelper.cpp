@@ -20,9 +20,8 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     RT_ASSERT(m_inited, "LogHelper has not been inited!");
 
     int ms;
-    m_tm.get_curr_time(&ms);
     char log_line[LOG_LEN_LIMIT];
-
+    m_tm.get_curr_time(&ms);
     int prev_len = snprintf(log_line, LOG_LEN_LIMIT, "%s[%s.%03d]", lvl, m_tm.utc_fmt, ms);
 
     va_list arg_ptr;
@@ -63,10 +62,12 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
         }
     }
 
-    //TODO: write to file!
+    //write to file! test multi thread
+    pthread_mutex_lock(&m_mutex);
     if (m_fp != nullptr){
         fwrite(log_line, sizeof(char), len, m_fp);
     }
+    pthread_mutex_unlock(&m_mutex);
 }
 
 void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path) {
@@ -82,7 +83,6 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path) {
     //打开文件
 
     if (m_fp != nullptr){
-
         fclose(m_fp);
         m_fp = nullptr;
     }
