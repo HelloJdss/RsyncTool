@@ -19,6 +19,18 @@
 #define IMPLEMENT_SINGLETON(T) \
     T* T::m_instance = nullptr;
 
+//use following macro instead, if the singleton need destructor
+
+#define DECLARE_SINGLETON_EX(T) \
+    private: \
+        T(){}\
+    public:\
+        static T *Instance() \
+        { \
+            static T instance; \
+            return &instance; \
+        }
+
 #define RT_ASSERT(cond, ...) \
     do { \
         if (!(cond)) { \

@@ -42,4 +42,6 @@ test/
 code/test/
 code/test1/
 code/cmaketest/
+# code/epollframe/
+# code/selectframe/
 /cmake-build-debug/

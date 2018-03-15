@@ -4,16 +4,16 @@
 
 #include <cstdarg>
 #include <unistd.h>//access, getpid, syscall
-#include <sys/syscall.h>
+#include <sys/syscall.h> //SYS_gettid
 #include <sys/stat.h> //mkdir
 #include <cstring>
+#include <cerrno>
 #include "LogHelper.h"
-
-IMPLEMENT_SINGLETON(LogHelper)
 
 pid_t gettid()
 {
-    return syscall(__NR_gettid);
+    //return syscall(__NR_gettid); //only Linux can use
+    return syscall(SYS_gettid);
 }
 
 void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...) {
@@ -76,7 +76,7 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path) {
     this->m_path = Path;
     mkdir(Path.c_str(), 0777);
     //查看是否存在此目录、目录下是否允许创建文件
-    if (access(Path.c_str(), F_OK | W_OK) == -1)
+    if (-1 == access(Path.c_str(), F_OK | W_OK))
     {
         fprintf(stderr, "logdir: %s error: %s\n", Path.c_str(), strerror(errno));
     }
@@ -96,6 +96,7 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path) {
 }
 
 LogHelper::~LogHelper() {
+    LOG_TRACE("~LogHelper");
     if (m_fp != nullptr)
     {
         fclose(m_fp);

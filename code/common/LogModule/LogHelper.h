@@ -4,7 +4,8 @@
 
 #include <string>
 #include <sys/time.h>
-#include <sys/types.h>//getpid, gettid
+#include <pthread.h>
+
 #include "cm_define.h"
 
 extern pid_t gettid(void);
@@ -51,7 +52,7 @@ private:
 };
 
 class LogHelper {
-    DECLARE_SINGLETON(LogHelper)
+    DECLARE_SINGLETON_EX(LogHelper)
 public:
     ~LogHelper();
     void Init(LOG_LEVEL Lv, const string &AppName, const string &Path);

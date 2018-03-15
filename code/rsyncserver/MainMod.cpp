@@ -29,9 +29,11 @@ void MainMod::Init(int argc, char *argv[], std::string appName) {
                 break;
         }
     }
+    LOG_INFO("%s inited!", appName.c_str());
 }
 
 int MainMod::Run() {
+    LOG_INFO("Run");
     return 0;
 }
 
