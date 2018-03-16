@@ -165,7 +165,7 @@ UDPSocket::~UDPSocket() {
 #ifdef LOG_TRACE
     LOG_TRACE("~UDPSocket");
 #endif
-    close(m_socket);
+    Close();
 }
 
 int UDPSocket::Bind(SocketAddress &inSrcAddr) {
@@ -225,11 +225,19 @@ string UDPSocket::GetEndPoint() const {
     return s.append(":").append(stream.str());
 }
 
+inline void UDPSocket::Close() {
+    if(m_socket != -1)
+    {
+        close(m_socket);
+        m_socket = -1;
+    }
+}
+
 TCPSocket::~TCPSocket() {
 #ifdef LOG_TRACE
     LOG_TRACE("~TCPSocket");
 #endif
-    close(m_socket);
+    Close();
 }
 
 void TCPSocket::Connect(const SocketAddress &inAddr) {
@@ -327,7 +335,15 @@ int TCPSocket::Receive(void *inBuffer, int inLen) {
 
 string TCPSocket::GetEndPoint() const {
 	string s;
-    //std::stringstream stream;
-    //stream<<m_port;
-	return s.append(m_ip).append(":");//.append(stream.str());
+    std::stringstream stream;
+    stream<<m_port;
+	return s.append(m_ip).append(":").append(stream.str());
+}
+
+inline void TCPSocket::Close() {
+    if(m_socket != -1)
+    {
+        close(m_socket);
+        m_socket = -1;
+    }
 }

@@ -20,10 +20,11 @@ public:
     void Stop();
 
 private:
+    void removeUnavailableSockets();
+
     TCPSocketPtr m_listenSocket = nullptr;
     SocketAddressPtr m_receivingAddr = nullptr;
     vector<TCPSocketPtr> m_readBlockSockets;
-    vector<TCPSocketPtr> m_readableSockets;
 
     bool m_inited = false;
     volatile bool m_running = false;

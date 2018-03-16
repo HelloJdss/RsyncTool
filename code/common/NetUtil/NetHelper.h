@@ -52,14 +52,18 @@ public:
 
     int RecvFrom(void* inBuffer, int inLen, SocketAddress& outFrom); //Exception: errno
 
+    void Close();
+
     string GetEndPoint() const;
+
+    bool IsAvailable() const { return m_socket != -1; }
 
 private:
     friend class NetHelper;
 
     UDPSocket(int inSocket) : m_socket(inSocket){}
 
-    int m_socket;
+    int m_socket = -1;
     char *m_ip = const_cast<char *>("unknown");
     uint16_t m_port = 0;
 };
@@ -84,14 +88,18 @@ public:
 
     int Receive(void* inBuffer, int inLen);//Exception: errno
 
+    void Close();
+
     string GetEndPoint() const;
+
+    bool IsAvailable() const { return m_socket != -1; }
 
 private:
     friend class NetHelper;
 
     TCPSocket(int inSocket) : m_socket(inSocket){}
 
-    int m_socket;
+    int m_socket = -1;
     char *m_ip = const_cast<char *>("unknown");
     uint16_t m_port = 0;
 };

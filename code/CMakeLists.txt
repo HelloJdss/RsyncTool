@@ -1,5 +1,5 @@
 add_subdirectory(common)
 add_subdirectory(rsyncserver)
-add_subdirectory(epollframe)
+#add_subdirectory(epollframe)
 add_subdirectory(selectframe)
 add_subdirectory(rsyncclient)

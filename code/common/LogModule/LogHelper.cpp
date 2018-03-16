@@ -126,7 +126,9 @@ uint64_t utc_timer::get_curr_time(int *p_msec) {
     //get current ts
     gettimeofday(&tv, nullptr);
     if (p_msec)
+    {
         *p_msec = static_cast<int>(tv.tv_usec / 1000);
+    }
     //if not in same seconds
     if ((uint32_t)tv.tv_sec != _sys_acc_sec)
     {
