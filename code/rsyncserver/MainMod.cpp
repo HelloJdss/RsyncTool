@@ -34,6 +34,8 @@ void MainMod::Init(int argc, char *argv[], std::string appName) {
 
 int MainMod::Run() {
     LOG_INFO("Run");
+    g_NetMod->Init();
+    g_NetMod->Run();
     return 0;
 }
 

@@ -1,3 +1,4 @@
+#include "LogHelper.h"
 #include "MainMod.h"
 
 int main(int argc, char *argv[]) {

@@ -1,3 +1,7 @@
+//
+// Created by carrot on 18-3-12.
+//
+
 #pragma once
 #ifndef RSYNCTOOL_LOGHELPER_H
 #define RSYNCTOOL_LOGHELPER_H
@@ -55,11 +59,14 @@ class LogHelper {
     DECLARE_SINGLETON_EX(LogHelper)
 public:
     ~LogHelper();
+
     void Init(LOG_LEVEL Lv, const string &AppName, const string &Path);
+
     void SetDebugModel() {this->m_isdebug = true;}
+
     LOG_LEVEL GetLV() { return this->m_lv; }
 
-    void TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...);
+    void TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...); //write to file, need inited first
 
 private:
     FILE* m_fp = nullptr;
@@ -144,6 +151,22 @@ private:
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
+
+#define LogCheckConditionVoid(condition, fmt, args...) \
+    do { \
+        if(!(condition)) { \
+            LOG_ERROR(fmt, ##args); \
+            return; \
+        } \
+    } while(0)
+
+#define LogCheckCondition(condition, ret, fmt, args...) \
+    do { \
+        if(!(condition)) { \
+            LOG_ERROR(fmt, ##args); \
+            return ret; \
+        } \
+    } while(0)
 
 
 #endif //RSYNCTOOL_LOGHELPER_H

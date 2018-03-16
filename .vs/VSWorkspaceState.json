@@ -3,9 +3,11 @@
     "",
     "\\code",
     "\\code\\common",
+    "\\code\\common\\LogModule",
+    "\\code\\common\\NetUtil",
     "\\code\\common\\RingLog",
     "\\code\\rsyncserver"
   ],
-  "SelectedNode": "\\code\\rsyncserver\\MainMod.cpp",
+  "SelectedNode": "\\code\\rsyncserver",
   "PreviewInSolutionExplorer": false
 }

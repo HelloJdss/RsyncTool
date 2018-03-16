@@ -1,8 +1,13 @@
+//
+// Created by carrot on 18-3-11.
+//
+
 #pragma once
 
-#include "cm_define.h"
 #include <functional>
 #include <string>
+#include "cm_define.h"
+#include "NetMod.h"
 
 using std::string;
 
@@ -20,7 +25,6 @@ public:
 
 private:
     static ST_command m_cmds[];
-
     static void cmd_h();
     static void cmd_d();
 
