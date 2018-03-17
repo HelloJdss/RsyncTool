@@ -58,4 +58,24 @@
 
 #define TODO() RT_PANIC("Please implement me!")
 
+typedef struct {
+    void* _this;
+    void* _args;
+    bool  _needdel;
+    void* (*_del_func)(void*);
+} thread_params;
+
+template <typename TYPE, void (TYPE::*RunThread)(void*) >
+void* t_Thread(void* params)//线程启动函数，声明为模板函数
+{
+    thread_params* params1 = (thread_params*)params;
+    TYPE* This = (TYPE*)params1->_this;
+    This->RunThread(params1->_args);
+    if (params1->_needdel)
+    {
+        params1->_del_func(params1->_args);
+    }
+    return NULL;
+}
+
 #endif //RSYNCTOOL_CM_DEFINE_H

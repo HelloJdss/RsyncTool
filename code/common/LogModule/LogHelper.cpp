@@ -20,6 +20,7 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     RT_ASSERT(m_inited, "LogHelper has not been inited!");
 
     int ms;
+    //char* log_line = new char[LOG_LEN_LIMIT];
     char log_line[LOG_LEN_LIMIT];
     m_tm.get_curr_time(&ms);
     int prev_len = snprintf(log_line, LOG_LEN_LIMIT, "%s[%s.%03d]", lvl, m_tm.utc_fmt, ms);
@@ -62,7 +63,6 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
         }
     }
 
-    //write to file! test multi thread
     pthread_mutex_lock(&m_mutex);
     if (m_fp != nullptr){
         fwrite(log_line, sizeof(char), len, m_fp);

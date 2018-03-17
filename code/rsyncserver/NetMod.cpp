@@ -24,16 +24,16 @@ void NetMod::Run() {
     LogCheckConditionVoid(m_inited, "NetMod has not been inited!");
     m_running = true;
     m_listenSocket->Listen();
-    timeval tm;
-    tm.tv_sec = 1;
-    tm.tv_usec = 0;    //set timeout to 200ms
+    //timeval tm;
+    //tm.tv_sec = 0;
+    //tm.tv_usec = 0;    //set timeout to 200ms
     while (m_running)
     {
         removeUnavailableSockets();
         LOG_DEBUG("%d", m_readBlockSockets.size());
         vector<TCPSocketPtr> readableSockets;
 
-        if (NetHelper::Select(&m_readBlockSockets, &readableSockets, nullptr, nullptr, nullptr , nullptr , &tm) > 0)
+        if (NetHelper::Select(&m_readBlockSockets, &readableSockets, nullptr, nullptr, nullptr , nullptr , nullptr) > 0)
         {
             for(const TCPSocketPtr& socket : readableSockets)
             {
@@ -59,6 +59,7 @@ void NetMod::Run() {
                         {
                             //TODO: do something when recv data from old client
                             LOG_INFO("recv %s", buffer);
+                            socket->Send("!", 1);
                         }
                         else if (count == 0)
                         {

@@ -8,6 +8,7 @@
 #include <cstdio>   //perror
 #include <cstdlib> //exitsend sendto
 #include <unistd.h> //write read
+#include <iostream>
 
 
 int main(int argc, char *crgv[])
@@ -16,7 +17,7 @@ int main(int argc, char *crgv[])
     int len;
     struct sockaddr_in address;
     int result;
-    char ch = 'A';
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;//inet_addr("127.0.0.1");
@@ -28,9 +29,13 @@ int main(int argc, char *crgv[])
         perror("oops: client");
         exit(1);
     }
-    send(sockfd, &ch, 1, 0);
-    recv(sockfd, &ch, 1, 0);
-    printf("char from server %c", ch);
+    char g[100];
+    while (std::cin >> g) {
+        send(sockfd, g, 100, 0);
+        char buff[100];
+        recv(sockfd, &buff, 100, 0);
+        printf("char from server %s", buff);
+    }
     close(sockfd);
     return 0;
 }
