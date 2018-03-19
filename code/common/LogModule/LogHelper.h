@@ -16,7 +16,8 @@ extern pid_t gettid(void);
 
 using std::string;
 
-enum LOG_LEVEL {
+enum LOG_LEVEL
+{
     MIN = 1,
     FATAL = MIN,
     ERROR,
@@ -32,7 +33,8 @@ enum LOG_LEVEL {
 #define LOG_FILE_PATH "./log"
 
 
-class utc_timer {
+class utc_timer
+{
 public:
     utc_timer();
 
@@ -42,11 +44,13 @@ public:
     char utc_fmt[20];
 
 private:
-    void reset_utc_fmt() {
+    void reset_utc_fmt()
+    {
         snprintf(utc_fmt, 20, "%d-%02d-%02d %02d:%02d:%02d", year, mon, day, hour, min, sec);
     }
 
-    void reset_utc_fmt_sec() {
+    void reset_utc_fmt_sec()
+    {
         snprintf(utc_fmt + 17, 3, "%02d", sec);
     }
 
@@ -55,26 +59,30 @@ private:
 
 };
 
-class LogHelper {
-    DECLARE_SINGLETON_EX(LogHelper)
+class LogHelper
+{
+DECLARE_SINGLETON_EX(LogHelper)
+
 public:
     ~LogHelper();
 
     void Init(LOG_LEVEL Lv, const string &AppName, const string &Path);
 
-    void SetDebugModel() {this->m_isdebug = true;}
+    void SetDebugModel()
+    { this->m_isdebug = true; }
 
-    LOG_LEVEL GetLV() { return this->m_lv; }
+    LOG_LEVEL GetLV()
+    { return this->m_lv; }
 
     void TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...); //write to file, need inited first
 
 private:
-    FILE* m_fp = nullptr;
+    FILE *m_fp = nullptr;
     bool m_inited = false;
     bool m_isdebug = false;
     string m_name;
     string m_path;
-    LOG_LEVEL m_lv = LOG_LEVEL ::MAX;
+    LOG_LEVEL m_lv = LOG_LEVEL::MAX;
     utc_timer m_tm;
     pthread_mutex_t m_mutex;
 };

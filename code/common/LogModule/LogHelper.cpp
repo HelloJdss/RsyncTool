@@ -16,7 +16,8 @@ pid_t gettid()
     return syscall(SYS_gettid);
 }
 
-void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...) {
+void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...)
+{
     RT_ASSERT(m_inited, "LogHelper has not been inited!");
 
     int ms;
@@ -33,8 +34,9 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     va_end(arg_ptr);
     uint32_t len = prev_len + main_len;
 
-    if(this->m_isdebug) {
-        char* pre;
+    if (this->m_isdebug)
+    {
+        char *pre;
         switch (lv)
         {
             case FATAL:
@@ -64,13 +66,15 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     }
 
     pthread_mutex_lock(&m_mutex);
-    if (m_fp != nullptr){
+    if (m_fp != nullptr)
+    {
         fwrite(log_line, sizeof(char), len, m_fp);
     }
     pthread_mutex_unlock(&m_mutex);
 }
 
-void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path) {
+void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path)
+{
     this->m_lv = Lv;
     this->m_name = AppName;
     this->m_path = Path;
@@ -82,20 +86,23 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path) {
     }
     //打开文件
 
-    if (m_fp != nullptr){
+    if (m_fp != nullptr)
+    {
         fclose(m_fp);
         m_fp = nullptr;
     }
 
     m_tm.get_curr_time();
     char log_path[1024] = {};
-    sprintf(log_path, "%s/%s_%d_%02d_%02d_%02d_%02d_%02d.log", Path.c_str(), m_name.c_str(), m_tm.year, m_tm.mon, m_tm.day, m_tm.hour, m_tm.min, m_tm.sec);
+    sprintf(log_path, "%s/%s_%d_%02d_%02d_%02d_%02d_%02d.log", Path.c_str(), m_name.c_str(), m_tm.year, m_tm.mon,
+            m_tm.day, m_tm.hour, m_tm.min, m_tm.sec);
     m_fp = fopen(log_path, "w");
     RT_ASSERT(m_fp != nullptr, "create log file failed!");
     this->m_inited = true;
 }
 
-LogHelper::~LogHelper() {
+LogHelper::~LogHelper()
+{
     LOG_TRACE("~LogHelper");
     if (m_fp != nullptr)
     {
@@ -103,7 +110,8 @@ LogHelper::~LogHelper() {
     }
 }
 
-utc_timer::utc_timer() {
+utc_timer::utc_timer()
+{
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     //set _sys_acc_sec, _sys_acc_min
@@ -121,7 +129,8 @@ utc_timer::utc_timer() {
     reset_utc_fmt();
 }
 
-uint64_t utc_timer::get_curr_time(int *p_msec) {
+uint64_t utc_timer::get_curr_time(int *p_msec)
+{
     struct timeval tv;
     //get current ts
     gettimeofday(&tv, nullptr);
@@ -130,7 +139,7 @@ uint64_t utc_timer::get_curr_time(int *p_msec) {
         *p_msec = static_cast<int>(tv.tv_usec / 1000);
     }
     //if not in same seconds
-    if ((uint32_t)tv.tv_sec != _sys_acc_sec)
+    if ((uint32_t) tv.tv_sec != _sys_acc_sec)
     {
         sec = static_cast<int>(tv.tv_sec % 60);
         _sys_acc_sec = static_cast<uint64_t>(tv.tv_sec);
@@ -140,7 +149,7 @@ uint64_t utc_timer::get_curr_time(int *p_msec) {
             //use _sys_acc_sec update year, mon, day, hour, min, sec
             _sys_acc_min = _sys_acc_sec / 60;
             struct tm cur_tm;
-            localtime_r((time_t*)&_sys_acc_sec, &cur_tm);
+            localtime_r((time_t *) &_sys_acc_sec, &cur_tm);
             year = cur_tm.tm_year + 1900;
             mon = cur_tm.tm_mon + 1;
             day = cur_tm.tm_mday;

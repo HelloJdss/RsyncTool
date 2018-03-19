@@ -30,7 +30,8 @@ int main(int argc, char *crgv[])
         exit(1);
     }
     char g[100];
-    while (std::cin >> g) {
+    while (std::cin >> g)
+    {
         send(sockfd, g, 100, 0);
         char buff[100];
         recv(sockfd, &buff, 100, 0);

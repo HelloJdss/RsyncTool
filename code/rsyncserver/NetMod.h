@@ -9,8 +9,16 @@
 #include "LogHelper.h"
 #include "NetHelper.h"
 
-class NetMod {
-    DECLARE_SINGLETON_EX(NetMod)
+class TCPClient
+{
+private:
+    TCPSocketPtr m_socket;
+
+};
+
+class NetMod
+{
+DECLARE_SINGLETON_EX(NetMod)
 
 public:
     void Init(uint16_t port = 52077);

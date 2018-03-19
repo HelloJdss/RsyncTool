@@ -8,14 +8,16 @@
 #include <sstream>
 #include "NetHelper.h"
 
-SocketAddress::SocketAddress(uint32_t inAddr, uint16_t inPort) {
+SocketAddress::SocketAddress(uint32_t inAddr, uint16_t inPort)
+{
     bzero(GetAsSockAddrIn(), sizeof(*GetAsSockAddrIn()));
     GetAsSockAddrIn()->sin_family = AF_INET;
     GetAsSockAddrIn()->sin_addr.s_addr = htonl(inAddr);
     GetAsSockAddrIn()->sin_port = htons(inPort);
 }
 
-SocketAddress::SocketAddress(const char *inAddr, uint16_t inPort) {
+SocketAddress::SocketAddress(const char *inAddr, uint16_t inPort)
+{
     bzero(GetAsSockAddrIn(), sizeof(*GetAsSockAddrIn()));
     GetAsSockAddrIn()->sin_family = AF_INET;
     GetAsSockAddrIn()->sin_addr.s_addr = inet_addr(inAddr);
@@ -23,10 +25,11 @@ SocketAddress::SocketAddress(const char *inAddr, uint16_t inPort) {
 }
 
 
-SocketAddressPtr NetHelper::CreateIPV4FromString(const string &s) {
+SocketAddressPtr NetHelper::CreateIPV4FromString(const string &s)
+{
     auto pos = s.find_last_of(':');
     string host, port;
-    if(pos != string::npos)
+    if (pos != string::npos)
     {
         host = s.substr(0, pos);
         port = s.substr(pos + 1);
@@ -42,20 +45,20 @@ SocketAddressPtr NetHelper::CreateIPV4FromString(const string &s) {
 
     hint.ai_family = AF_INET;
 
-    addrinfo* result;
+    addrinfo *result;
     int error = getaddrinfo(host.c_str(), port.c_str(), &hint, &result);
-    if(error != 0 && result != nullptr)
+    if (error != 0 && result != nullptr)
     {
         freeaddrinfo(result);
         return nullptr;
     }
 
-    while(!result->ai_addr && result->ai_next)
+    while (!result->ai_addr && result->ai_next)
     {
         result = result->ai_next;
     }
 
-    if(!result->ai_addr)
+    if (!result->ai_addr)
     {
         freeaddrinfo(result);
         return nullptr;
@@ -67,9 +70,10 @@ SocketAddressPtr NetHelper::CreateIPV4FromString(const string &s) {
     return SocketAddressPtr();
 }
 
-UDPSocketPtr NetHelper::CreateUDPSocket(SocketAddressFamily addressFamily) {
+UDPSocketPtr NetHelper::CreateUDPSocket(SocketAddressFamily addressFamily)
+{
     int s = socket(addressFamily, SOCK_DGRAM, IPPROTO_UDP);
-    if (s!= -1)
+    if (s != -1)
     {
         return UDPSocketPtr(new UDPSocket(s));
     }
@@ -82,9 +86,10 @@ UDPSocketPtr NetHelper::CreateUDPSocket(SocketAddressFamily addressFamily) {
     }
 }
 
-TCPSocketPtr NetHelper::CreateTCPSocket(SocketAddressFamily addressFamily) {
+TCPSocketPtr NetHelper::CreateTCPSocket(SocketAddressFamily addressFamily)
+{
     int s = socket(addressFamily, SOCK_STREAM, IPPROTO_TCP);
-    if (s!= -1)
+    if (s != -1)
     {
         return TCPSocketPtr(new TCPSocket(s));
     }
@@ -97,11 +102,12 @@ TCPSocketPtr NetHelper::CreateTCPSocket(SocketAddressFamily addressFamily) {
     }
 }
 
-fd_set *NetHelper::FillSetFromVector(fd_set &outSet, const vector<TCPSocketPtr> *inSockets) {
+fd_set *NetHelper::FillSetFromVector(fd_set &outSet, const vector<TCPSocketPtr> *inSockets)
+{
     if (inSockets)
     {
         FD_ZERO(&outSet);
-        for(const TCPSocketPtr& pSocket : *inSockets)
+        for (const TCPSocketPtr &pSocket : *inSockets)
         {
             FD_SET(pSocket->m_socket, &outSet);
         }
@@ -111,13 +117,14 @@ fd_set *NetHelper::FillSetFromVector(fd_set &outSet, const vector<TCPSocketPtr> 
 }
 
 void NetHelper::FillVectorFromSet(vector<TCPSocketPtr> *outSockets, const vector<TCPSocketPtr> *inSockets,
-                                  const fd_set &inSet) {
-    if(inSockets && outSockets)
+                                  const fd_set &inSet)
+{
+    if (inSockets && outSockets)
     {
         outSockets->clear();
-        for(const TCPSocketPtr& socket : *inSockets)
+        for (const TCPSocketPtr &socket : *inSockets)
         {
-            if(FD_ISSET(socket->m_socket, &inSet))
+            if (FD_ISSET(socket->m_socket, &inSet))
             {
                 outSockets->push_back(socket);
             }
@@ -128,7 +135,8 @@ void NetHelper::FillVectorFromSet(vector<TCPSocketPtr> *outSockets, const vector
 int NetHelper::Select(const vector<TCPSocketPtr> *inReadSet, vector<TCPSocketPtr> *outReadSet,
                       const vector<TCPSocketPtr> *inWriteSet, vector<TCPSocketPtr> *outWriteSet,
                       const vector<TCPSocketPtr> *inExceptSet, vector<TCPSocketPtr> *outExceptSet,
-                      const timeval* _timeout) {
+                      const timeval *_timeout)
+{
     fd_set _read, _write, _except;
 
     fd_set *read_ptr = FillSetFromVector(_read, inReadSet);
@@ -161,14 +169,16 @@ int NetHelper::Select(const vector<TCPSocketPtr> *inReadSet, vector<TCPSocketPtr
 }
 
 
-UDPSocket::~UDPSocket() {
+UDPSocket::~UDPSocket()
+{
 #ifdef LOG_TRACE
     LOG_TRACE("~UDPSocket");
 #endif
     Close();
 }
 
-int UDPSocket::Bind(SocketAddress &inSrcAddr) {
+int UDPSocket::Bind(SocketAddress &inSrcAddr)
+{
     int err = bind(m_socket, &inSrcAddr.m_sockaddr, static_cast<socklen_t>(inSrcAddr.GetSize()));
     if (err != 0)
     {
@@ -178,7 +188,7 @@ int UDPSocket::Bind(SocketAddress &inSrcAddr) {
         return errno;
     }
 
-    if(inSrcAddr.m_sockaddr.sa_family == INET)
+    if (inSrcAddr.m_sockaddr.sa_family == INET)
     {
         m_ip = inet_ntoa(inSrcAddr.GetAsSockAddrIn()->sin_addr);
         m_port = ntohs(inSrcAddr.GetAsSockAddrIn()->sin_port);
@@ -186,7 +196,8 @@ int UDPSocket::Bind(SocketAddress &inSrcAddr) {
     return NO_ERROR;
 }
 
-int UDPSocket::SendTo(const void *inData, int inLen, const SocketAddress &inTo) {
+int UDPSocket::SendTo(const void *inData, int inLen, const SocketAddress &inTo)
+{
     auto bytes = sendto(m_socket, inData, inLen, 0, &inTo.m_sockaddr, static_cast<socklen_t>(inTo.GetSize()));
 
     if (bytes > 0)
@@ -202,7 +213,8 @@ int UDPSocket::SendTo(const void *inData, int inLen, const SocketAddress &inTo) 
     }
 }
 
-int UDPSocket::RecvFrom(void *inBuffer, int inLen, SocketAddress &outFrom) {
+int UDPSocket::RecvFrom(void *inBuffer, int inLen, SocketAddress &outFrom)
+{
     auto fLen = outFrom.GetSize();
     auto bytes = recvfrom(m_socket, inBuffer, inLen, 0, &outFrom.m_sockaddr, reinterpret_cast<socklen_t *>(&fLen));
     if (bytes >= 0)
@@ -218,29 +230,33 @@ int UDPSocket::RecvFrom(void *inBuffer, int inLen, SocketAddress &outFrom) {
     }
 }
 
-string UDPSocket::GetEndPoint() const {
+string UDPSocket::GetEndPoint() const
+{
     string s(m_ip);
     std::stringstream stream;
-    stream<<m_port;
+    stream << m_port;
     return s.append(":").append(stream.str());
 }
 
-inline void UDPSocket::Close() {
-    if(m_socket != -1)
+inline void UDPSocket::Close()
+{
+    if (m_socket != -1)
     {
         close(m_socket);
         m_socket = -1;
     }
 }
 
-TCPSocket::~TCPSocket() {
+TCPSocket::~TCPSocket()
+{
 #ifdef LOG_TRACE
     LOG_TRACE("~TCPSocket");
 #endif
     Close();
 }
 
-void TCPSocket::Connect(const SocketAddress &inAddr) {
+void TCPSocket::Connect(const SocketAddress &inAddr)
+{
     int err = connect(m_socket, &inAddr.m_sockaddr, inAddr.GetSize());
     if (err < 0)
     {
@@ -251,7 +267,8 @@ void TCPSocket::Connect(const SocketAddress &inAddr) {
     }
 }
 
-int TCPSocket::Bind(SocketAddress &inSrcAddr) {
+int TCPSocket::Bind(SocketAddress &inSrcAddr)
+{
     int err = bind(m_socket, &inSrcAddr.m_sockaddr, static_cast<socklen_t>(inSrcAddr.GetSize()));
     if (err != 0)
     {
@@ -261,7 +278,7 @@ int TCPSocket::Bind(SocketAddress &inSrcAddr) {
         return errno;
     }
 
-    if(inSrcAddr.m_sockaddr.sa_family == INET)
+    if (inSrcAddr.m_sockaddr.sa_family == INET)
     {
         m_ip = inet_ntoa(inSrcAddr.GetAsSockAddrIn()->sin_addr);
         m_port = ntohs(inSrcAddr.GetAsSockAddrIn()->sin_port);
@@ -269,9 +286,10 @@ int TCPSocket::Bind(SocketAddress &inSrcAddr) {
     return NO_ERROR;
 }
 
-void TCPSocket::Listen(int inBackLog) {
+void TCPSocket::Listen(int inBackLog)
+{
     int err = listen(m_socket, inBackLog);
-    if(err < 0)
+    if (err < 0)
     {
 #ifdef LOG_ERROR
         LOG_ERROR("%s", strerror(errno));
@@ -280,15 +298,16 @@ void TCPSocket::Listen(int inBackLog) {
     }
 }
 
-std::shared_ptr<TCPSocket> TCPSocket::Accept(SocketAddress &inFromAddr) {
+std::shared_ptr<TCPSocket> TCPSocket::Accept(SocketAddress &inFromAddr)
+{
     socklen_t Length = inFromAddr.GetSize();
     int newSocket = accept(m_socket, &inFromAddr.m_sockaddr, &Length);
     if (newSocket != -1)
     {
         TCPSocketPtr socketPtr = TCPSocketPtr(new TCPSocket(newSocket));
-        if(inFromAddr.m_sockaddr.sa_family == INET)
+        if (inFromAddr.m_sockaddr.sa_family == INET)
         {
-            sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(&inFromAddr.m_sockaddr);
+            sockaddr_in *addr = reinterpret_cast<sockaddr_in *>(&inFromAddr.m_sockaddr);
             socketPtr->m_ip = inet_ntoa(addr->sin_addr);
             socketPtr->m_port = ntohs(addr->sin_port);
         }
@@ -303,7 +322,8 @@ std::shared_ptr<TCPSocket> TCPSocket::Accept(SocketAddress &inFromAddr) {
     }
 }
 
-int TCPSocket::Send(const void *inData, int inLen) {
+int TCPSocket::Send(const void *inData, int inLen)
+{
     auto bytes = send(m_socket, inData, inLen, 0);
     if (bytes < 0)
     {
@@ -318,7 +338,8 @@ int TCPSocket::Send(const void *inData, int inLen) {
     }
 }
 
-int TCPSocket::Receive(void *inBuffer, int inLen) {
+int TCPSocket::Receive(void *inBuffer, int inLen)
+{
     auto bytes = recv(m_socket, inBuffer, inLen, 0);
     if (bytes >= 0)
     {
@@ -333,15 +354,17 @@ int TCPSocket::Receive(void *inBuffer, int inLen) {
     }
 }
 
-string TCPSocket::GetEndPoint() const {
-	string s;
+string TCPSocket::GetEndPoint() const
+{
+    string s;
     std::stringstream stream;
-    stream<<m_port;
-	return s.append(m_ip).append(":").append(stream.str());
+    stream << m_port;
+    return s.append(m_ip).append(":").append(stream.str());
 }
 
-inline void TCPSocket::Close() {
-    if(m_socket != -1)
+inline void TCPSocket::Close()
+{
+    if (m_socket != -1)
     {
         close(m_socket);
         m_socket = -1;
