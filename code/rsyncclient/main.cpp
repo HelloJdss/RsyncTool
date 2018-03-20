@@ -9,7 +9,8 @@
 #include <cstdlib> //exitsend sendto
 #include <unistd.h> //write read
 #include <iostream>
-
+#include <cstring>
+#include "MsgHelper.h"
 
 int main(int argc, char *crgv[])
 {
@@ -30,12 +31,18 @@ int main(int argc, char *crgv[])
         exit(1);
     }
     char g[100];
+    bzero(g, 100);
     while (std::cin >> g)
     {
-        send(sockfd, g, 100, 0);
+        auto bytes = MsgHelper::CreateBytes(g, strlen(g) + 1);
+        ST_PackageHeader a;
+        a.op = 1;
+        auto data = MsgHelper::PackageData(a, bytes);
+        send(sockfd, data->ToChars(), data->Size(), 0);
         char buff[100];
         recv(sockfd, &buff, 100, 0);
         printf("char from server %s", buff);
+        bzero(g, 100);
     }
     close(sockfd);
     return 0;

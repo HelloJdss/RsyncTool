@@ -1,13 +1,15 @@
+//
+// Created by carrot on 18-3-19.
+//
+
 #include <unistd.h>
-#include <pthread.h>
-#include <csignal>
 #include "LogHelper.h"
 #include "MainMod.h"
 
+using namespace RsyncClient;
+
 extern char *optarg;
 extern int optind, opterr, optopt;
-
-using namespace RsyncServer;
 
 ST_command MainMod::m_cmds[] = {
         {'h', "Show all commands and descriptions.",                MainMod::cmd_h},
@@ -38,26 +40,15 @@ void MainMod::Init(int argc, char *argv[], std::string appName)
                 break;
         }
     }
-    RT_ASSERT(sem_init(&g_sem, 0, 0) == 0, "Init Sem Failed!");
-
     LOG_INFO("%s inited!", appName.c_str());
 }
 
 int MainMod::Run()
 {
     LOG_INFO("Run");
-    //CreateThreadDetached(runNetMod, nullptr);
-
-    struct sigaction acct;
-
-    acct.sa_handler = MainMod::onRecvSignal;
-    sigemptyset(&acct.sa_mask);
-    acct.sa_flags = 0;
-
-    sigaction(SIGINT, &acct, nullptr);
-
-    runNetMod(nullptr);
-    //getchar();
+    //g_NetMod->Init();
+    //g_NetMod->Run();
+    return 0;
 }
 
 void MainMod::cmd_h()
@@ -77,36 +68,4 @@ void MainMod::cmd_d()
     LOG_INFO("info");
     LOG_TRACE("trace");
     LOG_ERROR("hello world");
-}
-
-void* MainMod::runNetMod(void* port)
-{
-    g_NetMod->Stop();
-    if(port)
-    {
-        g_NetMod->Init(*(uint16_t*)port);
-    }
-    else
-    {
-        g_NetMod->Init();
-    }
-    g_NetMod->Run();
-}
-
-pthread_t MainMod::CreateThreadDetached(void* (*Func)(void*), void* arg)
-{
-    pthread_t pid;
-    LogCheckCondition(0 == pthread_create(&pid, nullptr, Func, arg), -1, "Create Thread Failed!");
-    pthread_detach(pid);
-    return pid;
-}
-
-void MainMod::onRecvSignal(int sig)
-{
-    if(sig == SIGINT)
-    {
-        LOG_FATAL("Receive Sig: SIGINT, Process will exit now...");
-        g_NetMod->Stop();
-        exit(0);
-    }
 }

@@ -76,7 +76,7 @@ void *t_Thread(void *params)//线程启动函数，声明为模板函数
     {
         params1->_del_func(params1->_args);
     }
-    return NULL;
+    return nullptr;
 }
 
 #endif //RSYNCTOOL_CM_DEFINE_H

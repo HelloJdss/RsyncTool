@@ -1,5 +1,5 @@
 //
-// Created by xiao on 18-3-13.
+// Created by carrot on 18-3-13.
 //
 
 #include <cstdarg>
@@ -9,6 +9,8 @@
 #include <cstring>
 #include <cerrno>
 #include "LogHelper.h"
+
+pthread_mutex_t LogHelper::m_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pid_t gettid()
 {

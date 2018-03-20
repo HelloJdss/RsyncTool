@@ -79,9 +79,6 @@ UDPSocketPtr NetHelper::CreateUDPSocket(SocketAddressFamily addressFamily)
     }
     else
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         return nullptr;
     }
 }
@@ -95,9 +92,6 @@ TCPSocketPtr NetHelper::CreateTCPSocket(SocketAddressFamily addressFamily)
     }
     else
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         return nullptr;
     }
 }
@@ -182,9 +176,6 @@ int UDPSocket::Bind(SocketAddress &inSrcAddr)
     int err = bind(m_socket, &inSrcAddr.m_sockaddr, static_cast<socklen_t>(inSrcAddr.GetSize()));
     if (err != 0)
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         return errno;
     }
 
@@ -206,9 +197,6 @@ int UDPSocket::SendTo(const void *inData, int inLen, const SocketAddress &inTo)
     }
     else
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         throw errno; //throw exception
     }
 }
@@ -223,9 +211,6 @@ int UDPSocket::RecvFrom(void *inBuffer, int inLen, SocketAddress &outFrom)
     }
     else
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         throw errno; //throw exception
     }
 }
@@ -260,9 +245,6 @@ void TCPSocket::Connect(const SocketAddress &inAddr)
     int err = connect(m_socket, &inAddr.m_sockaddr, inAddr.GetSize());
     if (err < 0)
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         throw errno; //throw exception
     }
 }
@@ -272,9 +254,6 @@ int TCPSocket::Bind(SocketAddress &inSrcAddr)
     int err = bind(m_socket, &inSrcAddr.m_sockaddr, static_cast<socklen_t>(inSrcAddr.GetSize()));
     if (err != 0)
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         return errno;
     }
 
@@ -291,9 +270,6 @@ void TCPSocket::Listen(int inBackLog)
     int err = listen(m_socket, inBackLog);
     if (err < 0)
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         throw errno; //throw exception
     }
 }
@@ -315,9 +291,6 @@ std::shared_ptr<TCPSocket> TCPSocket::Accept(SocketAddress &inFromAddr)
     }
     else
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         return nullptr;
     }
 }
@@ -327,9 +300,6 @@ int TCPSocket::Send(const void *inData, int inLen)
     auto bytes = send(m_socket, inData, inLen, 0);
     if (bytes < 0)
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         throw errno; //throw exception
     }
     else
@@ -347,9 +317,6 @@ int TCPSocket::Receive(void *inBuffer, int inLen)
     }
     else
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
         throw errno; //throw exception
     }
 }

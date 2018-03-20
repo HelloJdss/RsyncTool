@@ -6,38 +6,57 @@
 #ifndef RSYNCTOOL_NETMOD_H
 #define RSYNCTOOL_NETMOD_H
 
+#include <unordered_map>
 #include "LogHelper.h"
 #include "NetHelper.h"
+#include "MsgHelper.h"
 
-class TCPClient
+namespace RsyncServer
 {
-private:
-    TCPSocketPtr m_socket;
+    class TCPClient
+    {
+    public:
+        TCPClient(TCPSocketPtr socket) : m_socket(socket)
+        {}
 
-};
+        ~TCPClient(){LOG_TRACE("~TCPClient");}
 
-class NetMod
-{
-DECLARE_SINGLETON_EX(NetMod)
+        MsgHelper m_msgHelper;
 
-public:
-    void Init(uint16_t port = 52077);
+        TCPSocketPtr m_socket;
 
-    void Run();
+    };
 
-    void Stop();
+    typedef std::shared_ptr<TCPClient> TCPClientPtr;
 
-private:
-    void removeUnavailableSockets();
+    class NetMod
+    {
+    DECLARE_SINGLETON_EX(NetMod)
 
-    TCPSocketPtr m_listenSocket = nullptr;
-    SocketAddressPtr m_receivingAddr = nullptr;
-    vector<TCPSocketPtr> m_readBlockSockets;
+    public:
+        void Init(uint16_t port = 52077);
 
-    bool m_inited = false;
-    volatile bool m_running = false;
-};
+        void Run();
+
+        void Stop();
+
+        void RunThread(void *);
+
+    private:
+        void removeUnavailableSockets();
+
+        TCPSocketPtr m_listenSocket = nullptr;
+        SocketAddressPtr m_receivingAddr = nullptr;
+
+        vector<TCPSocketPtr> m_readBlockSockets;
+
+        std::unordered_map<TCPSocketPtr, TCPClientPtr> m_clientMap;
+
+        bool m_inited = false;
+        volatile bool m_running = false;
+    };
 
 #define g_NetMod NetMod::Instance()
+}
 
 #endif //RSYNCTOOL_NETMOD_H

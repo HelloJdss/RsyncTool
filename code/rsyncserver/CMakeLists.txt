@@ -5,7 +5,7 @@ include_directories(${PROJECT_SOURCE_DIR}/code/common/NetUtil)
 set(SRC_LIST main.cpp
         MainMod.cpp
         NetMod.cpp
-        NetMod.h)
+        NetMod.h ../common/cm_struct.h)
 
 #添加可执行文件
 add_executable(rsyncserver ${SRC_LIST} ../common/cm_define.h)

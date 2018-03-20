@@ -28,7 +28,7 @@ enum LOG_LEVEL
     MAX = TRACE,
 };
 
-#define LOG_LEN_LIMIT 1000
+#define LOG_LEN_LIMIT 1024
 #define LOG_LEVEL_DEFALT LOG_LEVEL::MAX
 #define LOG_FILE_PATH "./log"
 
@@ -84,7 +84,7 @@ private:
     string m_path;
     LOG_LEVEL m_lv = LOG_LEVEL::MAX;
     utc_timer m_tm;
-    pthread_mutex_t m_mutex;
+    static pthread_mutex_t m_mutex;
 };
 
 #define g_LogHelper LogHelper::Instance()

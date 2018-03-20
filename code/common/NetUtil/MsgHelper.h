@@ -6,12 +6,12 @@
 #define RSYNCTOOL_MSGHELPER_H
 
 #include <memory>
+#include <queue>
+#include <semaphore.h>
 #include "cm_define.h"
+#include "cm_struct.h"
 
-struct ST_PackageHeader
-{
-    int op = 0;
-};
+#define BUFFER_INIT_SIZE 100
 
 class Bytes
 {
@@ -39,11 +39,14 @@ public:
     char *ToChars() const
     { return reinterpret_cast<char *>(m_bytes); }
 
+    std::vector<char> ToArray() const;
+
+    std::string ToString() const;
 
 private:
     friend class MsgHelper;
 
-    Bytes(unsigned char *in, int size);
+    Bytes(unsigned char *in, size_t size);
 
     Bytes()
     {}
@@ -57,15 +60,49 @@ typedef std::shared_ptr<Bytes> BytesPtr;
 class MsgHelper
 {
 public:
+    MsgHelper();
+
+    MsgHelper(const MsgHelper &) = delete;
+
+    MsgHelper &operator=(const MsgHelper &) = delete;
+
     static BytesPtr CreateBytes(char inData[], int size);
 
     /**
-     * @brief [0..3][4..m][m+1..n] Length + Header + Data
+     * @brief [0..7][8..m][m+1..n] Length + Header + Data
      * @param inData
      * @param header
      * @return
      */
-    static BytesPtr PackageData(BytesPtr inData, ST_PackageHeader& header);
+    static BytesPtr PackageData(ST_PackageHeader &outheader, BytesPtr inData);
+
+    void ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata);
+
+    unsigned char *GetBuffer()
+    { return m_buffer; }
+
+    int GetStartIndex()
+    { return m_currentPos; }
+
+    int GetRemainBytes()
+    { return m_buffer_size - m_currentPos; }
+
+    void AddCount(int count);
+
+    bool HasMessage();
+
+private:
+    void resetBuffer();
+
+    void disposal();
+
+    unsigned char *m_buffer = nullptr;
+    int m_buffer_size = 0;
+
+    uint32_t m_processPos, m_currentPos;
+    std::queue<BytesPtr> m_msgs;
+
+    pthread_mutex_t m_mutex;
 };
 
 

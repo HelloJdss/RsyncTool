@@ -2,7 +2,11 @@
 // Created by carrot on 18-3-15.
 //
 
+#include <common/cm_define.h>
 #include "NetMod.h"
+#include "MainMod.h"
+
+using namespace RsyncServer;
 
 void NetMod::Init(uint16_t port)
 {
@@ -27,13 +31,14 @@ void NetMod::Run()
     m_running = true;
     m_listenSocket->Listen();
     //timeval tm;
-    //tm.tv_sec = 0;
-    //tm.tv_usec = 200000;    //set timeout to 200ms
+    //tm.tv_sec = 10;
+    //tm.tv_usec = 0;    //set timeout to 10s
+    vector<TCPSocketPtr> readableSockets;
     while (m_running)
     {
         removeUnavailableSockets();
         LOG_DEBUG("%d", m_readBlockSockets.size());
-        vector<TCPSocketPtr> readableSockets;
+        readableSockets.clear();
 
         if (NetHelper::Select(&m_readBlockSockets, &readableSockets, nullptr, nullptr, nullptr, nullptr, nullptr) > 0)
         {
@@ -47,33 +52,56 @@ void NetMod::Run()
 
                     //TODO: do something when new client connect! ...
 
-                    //test
                     LOG_INFO("Accept Connection[%s]", newSocket->GetEndPoint().c_str());
-                    newSocket->Send("HelloWorld", 10);
+                    //newSocket->Send("HelloWorld", 10);
+                    m_clientMap[newSocket] = TCPClientPtr(new TCPClient(newSocket));
                 }
-                else
+                else    //receive data from an old client
                 {
-                    //receive data from an old client
-                    char buffer[10];
-                    try
+                    if (!(m_clientMap.find(socket) == m_clientMap.end()))
                     {
-                        int count = socket->Receive(buffer, 10);
-                        if (count > 0)
+                        try
                         {
-                            //TODO: do something when recv data from old client
-                            LOG_INFO("recv %s", buffer);
-                            socket->Send("!", 1);
+                            int count = socket->Receive(m_clientMap[socket]->m_msgHelper.GetBuffer() + m_clientMap[socket]->m_msgHelper.GetStartIndex(),
+                                                        m_clientMap[socket]->m_msgHelper.GetRemainBytes());
+                            if (count > 0)
+                            {
+                                //TODO: do something when recv data from old client
+                                m_clientMap[socket]->m_msgHelper.AddCount(count);
+
+                                pthread_t pid;
+                                thread_params params;
+                                params._this = this;
+                                params._args = &m_clientMap[socket];
+                                params._needdel = false;
+                                params._del_func = nullptr;
+                                if(pthread_create(&pid, NULL, t_Thread<NetMod, &NetMod::RunThread>, &params)==0)
+                                {
+                                    pthread_detach(pid);
+                                }
+                                else
+                                {
+                                    LOG_ERROR("Thread Create Failed: %s", strerror(errno));
+                                }
+                            }
+                            else if (count == 0)
+                            {
+                                //client disconnect
+                                LOG_INFO("RsyncClient[%s] Disconnected!", socket->GetEndPoint().c_str());
+                                socket->Close();
+                            }
                         }
-                        else if (count == 0)
+                        catch (int err)
                         {
-                            //client disconnect
-                            LOG_INFO("Client[%s] Disconnected!", socket->GetEndPoint().c_str());
                             socket->Close();
+                            LOG_ERROR("%s", strerror(errno));
+                            continue;
                         }
                     }
-                    catch (int err)
+                    else
                     {
-                        continue;
+                        LOG_WARN("clientMap did not find socket[%s]", socket->GetEndPoint().c_str());
+                        socket->Close();
                     }
                 }
             }
@@ -87,7 +115,26 @@ void NetMod::removeUnavailableSockets()
     {
         if (!m_readBlockSockets.at(i)->IsAvailable())
         {
+            m_clientMap.erase(*(m_readBlockSockets.begin() + i));
             m_readBlockSockets.erase(m_readBlockSockets.begin() + i);
         }
+    }
+}
+
+void NetMod::Stop()
+{
+    m_running = false;
+}
+
+void NetMod::RunThread(void *arg)
+{
+    TCPClientPtr clientPtr = *(TCPClientPtr*)arg;
+    while (clientPtr->m_msgHelper.HasMessage())
+    {
+        LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
+        ST_PackageHeader header;
+        BytesPtr data;
+        clientPtr->m_msgHelper.ReadMessage(header, &data);
+        LOG_INFO("Recv Meg from[%s]: op[%d], data:%s", clientPtr->m_socket->GetEndPoint().c_str(), header.op, data->ToString().c_str());
     }
 }
