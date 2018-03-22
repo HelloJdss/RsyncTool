@@ -11,6 +11,7 @@
 #include <iostream>
 #include <cstring>
 #include "MsgHelper.h"
+#include "MD5.h"
 
 int main(int argc, char *crgv[])
 {
@@ -19,7 +20,12 @@ int main(int argc, char *crgv[])
     struct sockaddr_in address;
     int result;
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    std::string str = "123456";
+    MD5 md5 = MD5(str);
+    std::string hashStr = md5.hexdigest();
+    std::cout << hashStr << std::endl;
+
+    /*sockfd = socket(AF_INET, SOCK_STREAM, 0);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;//inet_addr("127.0.0.1");
     address.sin_port = htons(52077);
@@ -44,6 +50,6 @@ int main(int argc, char *crgv[])
         printf("char from server %s", buff);
         bzero(g, 100);
     }
-    close(sockfd);
+    close(sockfd);*/
     return 0;
 }
