@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <queue>
-#include <semaphore.h>
 #include "cm_define.h"
 #include "cm_struct.h"
 
@@ -22,18 +21,11 @@ public:
 
     ~Bytes();
 
-    std::shared_ptr<Bytes> Skip(size_t num);
+    std::shared_ptr<Bytes> Skip(uint32_t num);
 
-    /**
-     * @brief Concat a Bytes
-     * @param bytes
-     * @param from
-     * @param to
-     * @return
-     */
-    std::shared_ptr<Bytes> Concat(const Bytes &bytes, size_t from = 0, size_t to = -1);
+    std::shared_ptr<Bytes> Concat(const Bytes &bytes, uint32_t from = 0, uint32_t to = -1);
 
-    size_t Size() const
+    uint32_t Size() const
     { return m_length; }
 
     char *ToChars() const
@@ -46,13 +38,13 @@ public:
 private:
     friend class MsgHelper;
 
-    Bytes(unsigned char *in, size_t size);
+    Bytes(unsigned char *in, uint32_t size);
 
     Bytes()
     {}
 
-    unsigned char *m_bytes = nullptr;
-    size_t m_length = 0;
+    uint8_t *m_bytes = nullptr;
+    uint32_t m_length = 0;
 };
 
 typedef std::shared_ptr<Bytes> BytesPtr;
@@ -66,7 +58,9 @@ public:
 
     MsgHelper &operator=(const MsgHelper &) = delete;
 
-    static BytesPtr CreateBytes(char inData[], int size);
+    static BytesPtr CreateBytes(char inData[], uint32_t size);
+
+    static BytesPtr CreateBytes(uint8_t inData[], uint32_t size);
 
     /**
      * @brief [0..7][8..m][m+1..n] Length + Header + Data
@@ -74,9 +68,10 @@ public:
      * @param header
      * @return
      */
-    static BytesPtr PackageData(ST_PackageHeader &outheader, BytesPtr inData);
+    static BytesPtr PackageData(ST_PackageHeader &header, BytesPtr inData);
 
     void ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata);
+
 
     unsigned char *GetBuffer()
     { return m_buffer; }

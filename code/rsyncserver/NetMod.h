@@ -19,7 +19,14 @@ namespace RsyncServer
         TCPClient(TCPSocketPtr socket) : m_socket(socket)
         {}
 
-        ~TCPClient(){LOG_TRACE("~TCPClient");}
+        ~TCPClient()
+        { LOG_TRACE("~TCPClient"); }
+
+        void Dispatch();
+
+    private:
+
+        friend class NetMod;
 
         MsgHelper m_msgHelper;
 

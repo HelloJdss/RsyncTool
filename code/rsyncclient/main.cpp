@@ -1,55 +1,53 @@
 //
 // Created by carrot on 18-3-15.
 //
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h> //sockaddr_in
-#include <arpa/inet.h> // inet_addr
-#include <cstdio>   //perror
-#include <cstdlib> //exitsend sendto
-#include <unistd.h> //write read
+
 #include <iostream>
-#include <cstring>
 #include "MsgHelper.h"
-#include "MD5.h"
+#include "NetHelper.h"
+#include "MainMod.h"
+#include "Generator.h"
+#include "BlockInfos_generated.h"
+#include "Protocol/Protocol_define.h"
 
-int main(int argc, char *crgv[])
+using namespace RsyncClient;
+using namespace Protocol;
+
+int main(int argc, char *argv[])
 {
-    int sockfd;
-    int len;
-    struct sockaddr_in address;
-    int result;
+    MainMod::Init(argc, argv, "rsyncclient");
 
-    std::string str = "123456";
-    MD5 md5 = MD5(str);
-    std::string hashStr = md5.hexdigest();
-    std::cout << hashStr << std::endl;
+    Generator generator;
+    generator.GenerateBlockInfos("./console.txt");
 
-    /*sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;//inet_addr("127.0.0.1");
-    address.sin_port = htons(52077);
-    len = sizeof(address);
-    result = connect(sockfd, reinterpret_cast<const sockaddr *>(&address), len);
-    if (result == -1)
+    auto infos = generator.GetBlockInfos("./console.txt");
+
+    flatbuffers::FlatBufferBuilder builder;
+
+    std::vector<flatbuffers::Offset<Protocol::BlockInfo> > blockVec;
+    for (auto it : infos)
     {
-        perror("oops: client");
-        exit(1);
+        blockVec.push_back(Protocol::CreateBlockInfo(builder, builder.CreateString(it.filename), it.splitsize, it.order, it.offset,
+                                                        it.length, it.checksum, builder.CreateString(it.md5)));
     }
-    char g[100];
-    bzero(g, 100);
-    while (std::cin >> g)
+
+    auto fbb = Protocol::CreateFileBlockInfos(builder, builder.CreateString("./console.txt"), builder.CreateString("./Console.txt"), builder.CreateVector(blockVec));
+    builder.Finish(fbb);
+
+
+
+    auto socket = NetHelper::CreateTCPSocket(INET);
+    try
     {
-        auto bytes = MsgHelper::CreateBytes(g, strlen(g) + 1);
-        ST_PackageHeader a;
-        a.op = 1;
-        auto data = MsgHelper::PackageData(a, bytes);
-        send(sockfd, data->ToChars(), data->Size(), 0);
-        char buff[100];
-        recv(sockfd, &buff, 100, 0);
-        printf("char from server %s", buff);
-        bzero(g, 100);
+        socket->Connect(SocketAddress(INADDR_ANY, 52077));
+        ST_PackageHeader header(Opcode::REVERSE_SYNC_REQ, 1);
+        auto bytes = MsgHelper::PackageData(header, MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
+        socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+        getchar();
     }
-    close(sockfd);*/
+    catch (int err)
+    {
+        LOG_ERROR("%s", strerror(err));
+    }
     return 0;
 }

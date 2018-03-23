@@ -38,7 +38,6 @@ void MainMod::Init(int argc, char *argv[], std::string appName)
                 break;
         }
     }
-    RT_ASSERT(sem_init(&g_sem, 0, 0) == 0, "Init Sem Failed!");
 
     LOG_INFO("%s inited!", appName.c_str());
 }

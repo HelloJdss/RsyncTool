@@ -40,6 +40,7 @@ documentation and/or software.
 
 /* system implementation headers */
 #include <stdio.h>
+#include <cstring>
 
 
 // Constants for MD5Transform routine.
@@ -363,5 +364,13 @@ std::string md5(const std::string str)
 {
     MD5 md5 = MD5(str);
 
+    return md5.hexdigest();
+}
+
+std::string md5(const char *buf, uint32_t length)
+{
+    MD5 md5;
+    md5.update(buf, length);
+    md5.finalize();
     return md5.hexdigest();
 }

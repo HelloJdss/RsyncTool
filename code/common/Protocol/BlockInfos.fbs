@@ -1,0 +1,21 @@
+namespace Protocol;
+
+table BlockInfo
+{
+    Filename:string;
+    Splitsize:uint;     //分块大小
+    Order:long;         //块序号
+    Offset:long;        //块偏移
+    Length:long;        //块长度
+    Checksum:uint;      //一级签名
+    Md5:string;         //二级签名
+}
+
+table FileBlockInfos
+{
+    SrcPath:string;         //源主机文件路径和名称(请求同步方，持有不完整文件)
+    DesPath:string;         //目标主机文件路径和名称(持有完整文件方)
+    Infos:[BlockInfo];      //块信息
+}
+
+root_type FileBlockInfos;

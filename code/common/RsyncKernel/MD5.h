@@ -61,5 +61,6 @@ private:
 };
 
 std::string md5(const std::string str);
+std::string md5(const char *buf, uint32_t length);
 
 #endif //RSYNCTOOL_MD5_H

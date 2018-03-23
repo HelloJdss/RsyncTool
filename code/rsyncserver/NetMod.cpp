@@ -5,7 +5,10 @@
 #include <common/cm_define.h>
 #include "NetMod.h"
 #include "MainMod.h"
+#include "Protocol/Protocol_define.h"
+#include "BlockInfos_generated.h"
 
+using namespace Protocol;
 using namespace RsyncServer;
 
 void NetMod::Init(uint16_t port)
@@ -13,9 +16,11 @@ void NetMod::Init(uint16_t port)
     m_listenSocket = NetHelper::CreateTCPSocket(INET);
     //m_receivingAddr = SocketAddressPtr(new SocketAddress("127.0.0.1", port));
     m_receivingAddr = SocketAddressPtr(new SocketAddress(INADDR_ANY, port));
-    if (m_listenSocket->Bind(*m_receivingAddr) != NO_ERROR)
+    auto err = m_listenSocket->Bind(*m_receivingAddr);
+    if (err != NO_ERROR)
     {
         m_inited = false;
+        LOG_ERROR("Server Socket Bind Failed: %s", strerror(err));
         return;
     }
     //readableSockets.clear();
@@ -58,7 +63,7 @@ void NetMod::Run()
                 }
                 else    //receive data from an old client
                 {
-                    if (!(m_clientMap.find(socket) == m_clientMap.end()))
+                    if (m_clientMap.find(socket) != m_clientMap.end())
                     {
                         try
                         {
@@ -132,9 +137,25 @@ void NetMod::RunThread(void *arg)
     while (clientPtr->m_msgHelper.HasMessage())
     {
         LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
-        ST_PackageHeader header;
-        BytesPtr data;
-        clientPtr->m_msgHelper.ReadMessage(header, &data);
-        LOG_INFO("Recv Meg from[%s]: op[%d], data:%s", clientPtr->m_socket->GetEndPoint().c_str(), header.op, data->ToString().c_str());
+        clientPtr->Dispatch();
+    }
+}
+
+using namespace Protocol;
+
+void TCPClient::Dispatch()
+{
+    ST_PackageHeader header;
+    BytesPtr data;
+    m_msgHelper.ReadMessage(header, &data);
+    LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(), Reflection::GetEnumKeyName(header.getOpCode()).c_str() , header.getTaskId(), data->Size());
+
+    switch (header.getOpCode())
+    {
+        case Opcode::REVERSE_SYNC_REQ:
+        default:
+            LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
+            m_socket->Close();
+            break;
     }
 }

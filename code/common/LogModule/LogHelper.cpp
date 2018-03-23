@@ -26,7 +26,7 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     //char* log_line = new char[LOG_LEN_LIMIT];
     char log_line[LOG_LEN_LIMIT];
     m_tm.get_curr_time(&ms);
-    int prev_len = snprintf(log_line, LOG_LEN_LIMIT, "%s[%s.%03d]", lvl, m_tm.utc_fmt, ms);
+    int prev_len = snprintf(log_line, LOG_LEN_LIMIT, "[%s.%03d]%s", m_tm.utc_fmt, ms, lvl);
 
     va_list arg_ptr;
     va_start(arg_ptr, format);
@@ -71,6 +71,7 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     if (m_fp != nullptr)
     {
         fwrite(log_line, sizeof(char), len, m_fp);
+        fflush(m_fp);
     }
     pthread_mutex_unlock(&m_mutex);
 }
@@ -98,7 +99,7 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path)
     char log_path[1024] = {};
     sprintf(log_path, "%s/%s_%d_%02d_%02d_%02d_%02d_%02d.log", Path.c_str(), m_name.c_str(), m_tm.year, m_tm.mon,
             m_tm.day, m_tm.hour, m_tm.min, m_tm.sec);
-    m_fp = fopen(log_path, "w");
+    m_fp = fopen(log_path, "a");
     RT_ASSERT(m_fp != nullptr, "create log file failed!");
     this->m_inited = true;
 }

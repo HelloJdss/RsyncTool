@@ -1,4 +1,6 @@
 #add_subdirectory(RingLog)
 add_subdirectory(LogModule)
 add_subdirectory(NetUtil)
-add_subdirectory(Algorithm)
+add_subdirectory(RsyncKernel)
+add_subdirectory(3rd)
+add_subdirectory(Protocol)

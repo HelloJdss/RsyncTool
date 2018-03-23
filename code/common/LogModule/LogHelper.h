@@ -6,6 +6,7 @@
 #ifndef RSYNCTOOL_LOGHELPER_H
 #define RSYNCTOOL_LOGHELPER_H
 
+#include <cstring>
 #include <string>
 #include <sys/time.h>
 #include <pthread.h>
@@ -95,7 +96,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= TRACE) \
         { \
-            g_LogHelper->TryAppend(TRACE, "[TRACE]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(TRACE, "[TRACE]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
@@ -105,7 +106,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= DEBUG) \
         { \
-            g_LogHelper->TryAppend(DEBUG, "[DEBUG]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(DEBUG, "[DEBUG]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
@@ -115,7 +116,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= INFO) \
         { \
-            g_LogHelper->TryAppend(INFO, "[INFO]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(INFO, "[INFO!]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
@@ -125,7 +126,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= INFO) \
         { \
-            g_LogHelper->TryAppend(INFO, "[INFO]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(INFO, "[INFO!]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
@@ -135,7 +136,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= WARN) \
         { \
-            g_LogHelper->TryAppend(WARN, "[WARN]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(WARN, "[WARN!]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
@@ -145,7 +146,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= ERROR) \
         { \
-            g_LogHelper->TryAppend(ERROR, "[ERROR]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(ERROR, "[ERROR]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)
@@ -155,7 +156,7 @@ private:
     { \
         if (g_LogHelper->GetLV() >= FATAL) \
         { \
-            g_LogHelper->TryAppend(FATAL, "[FATAL]", "[%u]%s:%d(%s): " fmt "\n", \
+            g_LogHelper->TryAppend(FATAL, "[FATAL]", "[%5u]%s:%d(%s): " fmt "\n", \
                     gettid(), __FILE__, __LINE__, __FUNCTION__, ##args); \
         } \
     } while (0)

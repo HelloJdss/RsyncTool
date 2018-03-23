@@ -13,8 +13,6 @@ namespace RsyncServer
 {
     using std::string;
 
-    static sem_t g_sem;
-
     struct ST_command
     {
         char arg;
