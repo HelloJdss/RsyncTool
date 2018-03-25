@@ -38,7 +38,7 @@ struct ST_NewBlock
 
 class Inspector
 {
-
+    bool CheckFileExist(const string& filename);
 };
 
 

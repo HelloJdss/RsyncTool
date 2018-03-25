@@ -1,0 +1,13 @@
+namespace Protocol;
+
+enum Err:short
+{
+    NO_SUCH_FILE,       //没有该文件
+}
+
+table ErrorCode
+{
+    Code:Err;
+}
+
+root_type ErrorCode;

@@ -17,6 +17,7 @@ namespace Protocol
         REVERSE_SYNC_REQ,       //反向同步请求
         REVERSE_SYNC_ACK,       //反向同步回复
 
+        ERROR_CODE,             //错误码
         MAX,
     };
 
@@ -32,6 +33,8 @@ namespace Protocol
                     return std::string("REVERSE_SYNC_REQ");
                 case REVERSE_SYNC_ACK:
                     return std::string("REVERSE_SYNC_ACK");
+                case ERROR_CODE:
+                    return std::string("ERROR_CODE");
                 default:
                     return std::string("INVALID");
             }
