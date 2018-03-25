@@ -25,6 +25,7 @@ namespace RsyncServer
         void Dispatch();
 
     private:
+        void onRecieveReverseSyncReq(uint32_t taskID, BytesPtr data); //接收到反向同步请求
 
         friend class NetMod;
 

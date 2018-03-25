@@ -90,6 +90,12 @@ private:
 
 #define g_LogHelper LogHelper::Instance()
 
+#define LOG_LastError() \
+    do \
+    { \
+        LOG_ERROR("%s", strerror(errno)); \
+    } while(0)
+
 //format: [LEVEL][yy-mm-dd h:m:s.ms][tid]file_name:line_no(func_name):content
 #define LOG_TRACE(fmt, args...) \
     do \

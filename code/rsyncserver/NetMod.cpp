@@ -2,10 +2,10 @@
 // Created by carrot on 18-3-15.
 //
 
-#include <common/cm_define.h>
+#include "cm_define.h"
 #include "NetMod.h"
 #include "MainMod.h"
-#include "Protocol/Protocol_define.h"
+#include "Protocol_define.h"
 #include "BlockInfos_generated.h"
 
 using namespace Protocol;
@@ -99,7 +99,7 @@ void NetMod::Run()
                         catch (int err)
                         {
                             socket->Close();
-                            LOG_ERROR("%s", strerror(errno));
+                            LOG_LastError();
                             continue;
                         }
                     }
@@ -153,9 +153,26 @@ void TCPClient::Dispatch()
     switch (header.getOpCode())
     {
         case Opcode::REVERSE_SYNC_REQ:
+            onRecieveReverseSyncReq(header.getTaskId(), data);
+            break;
         default:
             LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
             m_socket->Close();
             break;
     }
 }
+
+void TCPClient::onRecieveReverseSyncReq(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Recv Reverse Sync Req!");
+    /*
+     * TODO:
+     * 1.拆包
+     * 2.检查目标文件(本机)是否存在，若不存在则返回错误码
+     * 3.根据taskID建立到数据的映射
+     * 4.收到的数据根据checksum建立到md5的映射
+     * 5.循环检验本地文件
+     * 6.返回重建文件的菜单：可校验一块返回一块，建立流水线作业
+     */
+}
+

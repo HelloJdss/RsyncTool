@@ -12,8 +12,6 @@
 
 struct ST_PackageHeader
 {
-
-
     ST_PackageHeader()
     {
         reset();
@@ -41,8 +39,8 @@ struct ST_PackageHeader
     { bzero(this, sizeof(*this)); }
 
 private:
-    Protocol::Opcode    opcode;
-    uint32_t            taskID;
+    Protocol::Opcode opcode;
+    uint32_t taskID;
 };
 
 #endif //RSYNCTOOL_CM_STRUCT_H

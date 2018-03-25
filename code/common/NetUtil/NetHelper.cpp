@@ -155,9 +155,7 @@ int NetHelper::Select(const vector<TCPSocketPtr> *inReadSet, vector<TCPSocketPtr
     }
     else if (toRet < 0)
     {
-#ifdef LOG_ERROR
-        LOG_ERROR("%s", strerror(errno));
-#endif
+        LOG_LastError();
     }
     return toRet;
 }
