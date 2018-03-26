@@ -44,7 +44,7 @@ Bytes &Bytes::operator=(const Bytes &bytes)
     return *this;
 }
 
-inline std::shared_ptr<Bytes> Bytes::Skip(uint32_t num)
+std::shared_ptr<Bytes> Bytes::Skip(uint32_t num)
 {
     if (num >= m_length)
     {

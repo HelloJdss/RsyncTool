@@ -245,6 +245,13 @@ void TCPSocket::Connect(const SocketAddress &inAddr)
     {
         throw errno; //throw exception
     }
+    if (inAddr.m_sockaddr.sa_family == INET)
+    {
+        sockaddr addr = inAddr.m_sockaddr;
+        sockaddr_in* addr_in = reinterpret_cast<sockaddr_in *>(&addr);
+        m_ip = inet_ntoa(addr_in->sin_addr);
+        m_port = ntohs(addr_in->sin_port);
+    }
 }
 
 int TCPSocket::Bind(SocketAddress &inSrcAddr)
@@ -333,5 +340,17 @@ inline void TCPSocket::Close()
     {
         close(m_socket);
         m_socket = -1;
+    }
+}
+
+void TCPSocket::SetRecvTimeOut(uint64_t sec, uint64_t usec)
+{
+    struct timeval tv_out;
+    tv_out.tv_sec = sec;
+    tv_out.tv_usec = usec;
+    auto err = setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, &tv_out, sizeof(tv_out));
+    if (err != 0)
+    {
+        LOG_LastError();
     }
 }

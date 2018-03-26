@@ -24,17 +24,29 @@ public:
 
     size_t ReadBytes(char* buffer, size_t nitems);
 
+    size_t ReadBytes(char* buffer, size_t nitems, size_t offset);
+
     size_t Read(void* buffer, size_t size, size_t nitems);     //需要指定buffer的数据类型字长size
 
-    size_t WriteBytes(const char* buffer, size_t nitems, bool flush = false);   //flush为true则立即执行flush
+    size_t Read(void* buffer, size_t size, size_t nitems, size_t offset);   //从指定位置读取
 
-    size_t Write(const void* buffer, size_t size, size_t nitems, bool flush = false);
+    size_t WriteBytes(const char* buffer, size_t nitems, bool flush);   //flush为true则立即执行flush
+
+    size_t WriteBytes(const char* buffer, size_t nitems, size_t offset, bool flush); //从指定位置写入
+
+    size_t Write(const void* buffer, size_t size, size_t nitems, bool flush);
+
+    size_t Write(const void* buffer, size_t size, size_t nitems, size_t offset, bool flush);
+
+    bool SetSize(size_t size);  //设置文件的大小
 
     bool Flush();
 
     string BaseName();
 
     string Path();
+
+    int64_t Size();
 
 private:
     friend class FileHelper;
@@ -48,6 +60,8 @@ private:
     FILE *m_fp = nullptr;
 };
 
+typedef std::shared_ptr<File> FilePtr;
+
 class FileHelper
 {
 public:
@@ -55,7 +69,5 @@ public:
 
     static string GetPath(const string& filename);
 };
-
-typedef std::shared_ptr<File> FilePtr;
 
 #endif //RSYNCTOOL_FILEHELPER_H

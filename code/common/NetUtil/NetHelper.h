@@ -94,6 +94,8 @@ public:
 
     int Receive(void *inBuffer, int inLen);//Exception: errno
 
+    void SetRecvTimeOut(uint64_t sec, uint64_t usec);
+
     void Close();
 
     string GetEndPoint() const;

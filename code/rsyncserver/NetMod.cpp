@@ -4,9 +4,10 @@
 
 #include "cm_define.h"
 #include "NetMod.h"
-#include "MainMod.h"
-#include "Protocol_define.h"
+#include "FileHelper.h"
 #include "BlockInfos_generated.h"
+#include "ErrorCode_generated.h"
+#include "ReconstructList_generated.h"
 
 using namespace Protocol;
 using namespace RsyncServer;
@@ -67,7 +68,8 @@ void NetMod::Run()
                     {
                         try
                         {
-                            int count = socket->Receive(m_clientMap[socket]->m_msgHelper.GetBuffer() + m_clientMap[socket]->m_msgHelper.GetStartIndex(),
+                            int count = socket->Receive(m_clientMap[socket]->m_msgHelper.GetBuffer() +
+                                                        m_clientMap[socket]->m_msgHelper.GetStartIndex(),
                                                         m_clientMap[socket]->m_msgHelper.GetRemainBytes());
                             if (count > 0)
                             {
@@ -80,7 +82,7 @@ void NetMod::Run()
                                 params._args = &m_clientMap[socket];
                                 params._needdel = false;
                                 params._del_func = nullptr;
-                                if(pthread_create(&pid, NULL, t_Thread<NetMod, &NetMod::RunThread>, &params)==0)
+                                if (pthread_create(&pid, NULL, t_Thread<NetMod, &NetMod::RunThread>, &params) == 0)
                                 {
                                     pthread_detach(pid);
                                 }
@@ -133,12 +135,23 @@ void NetMod::Stop()
 
 void NetMod::RunThread(void *arg)
 {
-    TCPClientPtr clientPtr = *(TCPClientPtr*)arg;
+    TCPClientPtr clientPtr = *(TCPClientPtr *) arg;
     while (clientPtr->m_msgHelper.HasMessage())
     {
         LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
         clientPtr->Dispatch();
     }
+}
+
+NetMod::~NetMod()
+{
+    m_running = false;
+    m_inited = false;
+    m_readBlockSockets.clear();
+    m_clientMap.clear();
+    m_listenSocket = nullptr;
+    m_receivingAddr = nullptr;
+    LOG_TRACE("~NetMod");
 }
 
 using namespace Protocol;
@@ -148,12 +161,13 @@ void TCPClient::Dispatch()
     ST_PackageHeader header;
     BytesPtr data;
     m_msgHelper.ReadMessage(header, &data);
-    LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(), Reflection::GetEnumKeyName(header.getOpCode()).c_str() , header.getTaskId(), data->Size());
+    LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
+             Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
 
     switch (header.getOpCode())
     {
         case Opcode::REVERSE_SYNC_REQ:
-            onRecieveReverseSyncReq(header.getTaskId(), data);
+            onRecvReverseSyncReq(header.getTaskId(), data);
             break;
         default:
             LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
@@ -162,7 +176,7 @@ void TCPClient::Dispatch()
     }
 }
 
-void TCPClient::onRecieveReverseSyncReq(uint32_t taskID, BytesPtr data)
+void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
 {
     LOG_TRACE("Recv Reverse Sync Req!");
     /*
@@ -174,5 +188,59 @@ void TCPClient::onRecieveReverseSyncReq(uint32_t taskID, BytesPtr data)
      * 5.循环检验本地文件
      * 6.返回重建文件的菜单：可校验一块返回一块，建立流水线作业
      */
+
+    auto blocksInfo = Protocol::GetFileBlockInfos(data->ToChars());
+    auto pFilename = blocksInfo->DesPath();
+    auto pFile = FileHelper::CreateFilePtr(pFilename->str(), "r");
+    auto blocksize = blocksInfo->Splitsize();
+    if (pFile == nullptr)   //本地不存在该文件
+    {
+
+        flatbuffers::FlatBufferBuilder builder;
+        auto fbb = Protocol::CreateErrorCode(builder, Err_NO_SUCH_FILE, builder.CreateString(pFilename));
+        builder.Finish(fbb);
+        this->SendToClient(Opcode::ERROR_CODE, taskID,
+                           MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
+        return;
+    }
+
+    //若存在该文件，则读取文件大小，小于块大小的直接传输，大于块大小的重新计算
+    if (pFile->Size() < 0)
+    {
+        LOG_LastError();
+        flatbuffers::FlatBufferBuilder builder;
+        auto fbb = Protocol::CreateErrorCode(builder, Err_UNKNOWN, builder.CreateString(strerror(errno)));
+        builder.Finish(fbb);
+        this->SendToClient(Opcode::ERROR_CODE, taskID,
+                           MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
+        return;
+    }
+    else if (pFile->Size() < blocksize)
+    {
+        char buff[blocksize];
+        auto count = pFile->ReadBytes(buff, blocksize);
+
+        flatbuffers::FlatBufferBuilder builder;
+        auto fbb = Protocol::CreateNewBlockAck(builder, builder.CreateString(blocksInfo->SrcPath()),
+                                               builder.CreateString(blocksInfo->DesPath()), blocksize, pFile->Size(),
+                                               Protocol::CreateNewBlock(builder, builder.CreateString(pFilename), 0, 0,
+                                                                        pFile->Size(), builder.CreateString("-"),
+                                                                        builder.CreateVector((uint8_t *) buff, count)));
+        builder.Finish(fbb);
+        this->SendToClient(Opcode::REVERSE_SYNC_ACK, taskID,
+                           MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
+        return;
+    }
+
+
+}
+
+void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
+{
+
+    ST_PackageHeader header(op, taskID);
+    auto bytes = MsgHelper::PackageData(header,
+                                        MsgHelper::CreateBytes(data->ToChars(), data->Size()));
+    m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
 }
 

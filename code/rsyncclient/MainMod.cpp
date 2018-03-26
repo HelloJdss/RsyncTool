@@ -5,8 +5,11 @@
 #include <unistd.h>
 #include "LogHelper.h"
 #include "MainMod.h"
+#include "NetMod.h"
+
 
 using namespace RsyncClient;
+
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -45,9 +48,11 @@ void MainMod::Init(int argc, char *argv[], std::string appName)
 
 int MainMod::Run()
 {
-    LOG_INFO("Run");
-    //g_NetMod->Init();
-    //g_NetMod->Run();
+    LOG_INFO("Run"); //任务完成之前，不断阻塞等待接受消息
+    if(g_NetMod->Init())
+    {
+        g_NetMod->Run();
+    }
     return 0;
 }
 
@@ -67,5 +72,5 @@ void MainMod::cmd_d()
     LOG_FATAL("fatal");
     LOG_INFO("info");
     LOG_TRACE("trace");
-    LOG_ERROR("hello world");
+    LOG_ERROR("error");
 }

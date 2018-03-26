@@ -1,21 +1,22 @@
 namespace Protocol;
 
-table BlockInfo
+table NewBlock
 {
     Filename:string;
     Order:long;         //块序号
     Offset:long;        //块偏移
-    Length:long;        //块长度
-    Checksum:uint;      //一级签名
+    Length:ulong;        //块长度
     Md5:string;         //二级签名
+    Data:[ubyte];       //数据
 }
 
-table FileBlockInfos
+table NewBlockAck
 {
     SrcPath:string;         //源主机文件路径和名称(请求同步方，持有不完整文件)
     DesPath:string;         //目标主机文件路径和名称(持有完整文件方)
     Splitsize:uint;         //分块大小
-    Infos:[BlockInfo];      //块信息
+    Length:ulong;           //文件总长度
+    Infos:NewBlock;         //块信息
 }
 
-root_type FileBlockInfos;
+root_type NewBlockAck;

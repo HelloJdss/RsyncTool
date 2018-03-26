@@ -5,7 +5,7 @@
 #include <string.h>
 #include "FileHelper.h"
 
-inline File::~File()
+File::~File()
 {
     if (m_fp)
     {
@@ -13,7 +13,7 @@ inline File::~File()
     }
 }
 
-inline bool File::Open(const string &filename, char const *mode)
+bool File::Open(const string &filename, char const *mode)
 {
     if (m_fp)
     {
@@ -26,17 +26,17 @@ inline bool File::Open(const string &filename, char const *mode)
     return m_fp != nullptr;
 }
 
-inline File::File(const string &filename, char const *mode)
+File::File(const string &filename, char const *mode)
 {
     Open(filename, mode);
 }
 
-inline size_t File::ReadBytes(char *buffer, size_t nitems)
+size_t File::ReadBytes(char *buffer, size_t nitems)
 {
     return Read(buffer, 1, nitems);
 }
 
-inline size_t File::Read(void *buffer, size_t size, size_t nitems)
+size_t File::Read(void *buffer, size_t size, size_t nitems)
 {
     size_t ret = 0;
     if (m_fp)
@@ -46,12 +46,12 @@ inline size_t File::Read(void *buffer, size_t size, size_t nitems)
     return ret;
 }
 
-inline size_t File::WriteBytes(const char *buffer, size_t nitems, bool flush)
+size_t File::WriteBytes(const char *buffer, size_t nitems, bool flush)
 {
     return Write(buffer, 1, nitems, flush);
 }
 
-inline size_t File::Write(const void *buffer, size_t size, size_t nitems, bool flush)
+size_t File::Write(const void *buffer, size_t size, size_t nitems, bool flush)
 {
     size_t ret = 0;
     if (m_fp)
@@ -65,7 +65,7 @@ inline size_t File::Write(const void *buffer, size_t size, size_t nitems, bool f
     return ret;
 }
 
-inline bool File::Flush()
+bool File::Flush()
 {
     if (m_fp)
     {
@@ -75,7 +75,7 @@ inline bool File::Flush()
     return false;
 }
 
-inline string File::Path()
+string File::Path()
 {
     return m_path;
 }
@@ -85,7 +85,76 @@ string File::BaseName()
     return m_basename;
 }
 
-inline std::shared_ptr<File> FileHelper::CreateFilePtr(const string &filename, char const *mode)
+int64_t File::Size()
+{
+    if (!m_fp)
+    {
+        return -1;
+    }
+    int64_t n = ftell(m_fp);
+    fseek(m_fp, 0, SEEK_END);
+    int64_t ret = ftell(m_fp);
+    fseek(m_fp, n, SEEK_SET);
+
+    return ret;
+}
+
+bool File::SetSize(size_t size)
+{
+    if (m_fp)
+    {
+        if (size > 0)
+        {
+            int64_t n = ftell(m_fp);    //记录旧指针
+            fseek(m_fp, size - 1, SEEK_SET);
+            fputc(0, m_fp);
+            fseek(m_fp, n, SEEK_SET);
+        }
+    }
+    return false;
+}
+
+size_t File::Read(void *buffer, size_t size, size_t nitems, size_t offset)
+{
+    if(m_fp)
+    {
+        fseek(m_fp, offset, SEEK_SET);
+        return Read(buffer, size, nitems);
+    }
+    return 0;
+}
+
+size_t File::ReadBytes(char *buffer, size_t nitems, size_t offset)
+{
+    if(m_fp)
+    {
+        fseek(m_fp, offset, SEEK_SET);
+        return ReadBytes(buffer, nitems);
+    }
+    return 0;
+}
+
+size_t File::WriteBytes(const char *buffer, size_t nitems, size_t offset, bool flush)
+{
+    if(m_fp)
+    {
+        fseek(m_fp, offset, SEEK_SET);
+        return WriteBytes(buffer, nitems, flush);
+    }
+    return 0;
+}
+
+size_t File::Write(const void *buffer, size_t size, size_t nitems, size_t offset, bool flush)
+{
+    if(m_fp)
+    {
+        fseek(m_fp, offset, SEEK_SET);
+        return Write(buffer, size, nitems, flush);
+    }
+    return 0;
+}
+
+std::shared_ptr<File> FileHelper::CreateFilePtr(const string &filename, char const *mode)
 {
     auto fp = std::shared_ptr<File>(new File(filename, mode));
     if (fp->m_fp)

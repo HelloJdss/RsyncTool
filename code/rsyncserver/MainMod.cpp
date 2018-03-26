@@ -75,7 +75,7 @@ void MainMod::cmd_d()
     LOG_FATAL("fatal");
     LOG_INFO("info");
     LOG_TRACE("trace");
-    LOG_ERROR("hello world");
+    LOG_ERROR("error");
 }
 
 void* MainMod::runNetMod(void* port)

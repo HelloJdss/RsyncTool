@@ -11,20 +11,23 @@ namespace Protocol {
 struct ErrorCode;
 
 enum Err {
-  Err_NO_SUCH_FILE = 0,
-  Err_MIN = Err_NO_SUCH_FILE,
+  Err_UNKNOWN = 0,
+  Err_NO_SUCH_FILE = 1,
+  Err_MIN = Err_UNKNOWN,
   Err_MAX = Err_NO_SUCH_FILE
 };
 
-inline const Err (&EnumValuesErr())[1] {
-  static const Err values[] = {
+inline Err (&EnumValuesErr())[2] {
+  static Err values[] = {
+    Err_UNKNOWN,
     Err_NO_SUCH_FILE
   };
   return values;
 }
 
-inline const char * const *EnumNamesErr() {
-  static const char * const names[] = {
+inline const char **EnumNamesErr() {
+  static const char *names[] = {
+    "UNKNOWN",
     "NO_SUCH_FILE",
     nullptr
   };
@@ -38,14 +41,20 @@ inline const char *EnumNameErr(Err e) {
 
 struct ErrorCode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CODE = 4
+    VT_CODE = 4,
+    VT_TIP = 6
   };
   Err Code() const {
     return static_cast<Err>(GetField<int16_t>(VT_CODE, 0));
   }
+  const flatbuffers::String *TIP() const {
+    return GetPointer<const flatbuffers::String *>(VT_TIP);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int16_t>(verifier, VT_CODE) &&
+           VerifyOffset(verifier, VT_TIP) &&
+           verifier.Verify(TIP()) &&
            verifier.EndTable();
   }
 };
@@ -55,6 +64,9 @@ struct ErrorCodeBuilder {
   flatbuffers::uoffset_t start_;
   void add_Code(Err Code) {
     fbb_.AddElement<int16_t>(ErrorCode::VT_CODE, static_cast<int16_t>(Code), 0);
+  }
+  void add_TIP(flatbuffers::Offset<flatbuffers::String> TIP) {
+    fbb_.AddOffset(ErrorCode::VT_TIP, TIP);
   }
   explicit ErrorCodeBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -70,10 +82,22 @@ struct ErrorCodeBuilder {
 
 inline flatbuffers::Offset<ErrorCode> CreateErrorCode(
     flatbuffers::FlatBufferBuilder &_fbb,
-    Err Code = Err_NO_SUCH_FILE) {
+    Err Code = Err_UNKNOWN,
+    flatbuffers::Offset<flatbuffers::String> TIP = 0) {
   ErrorCodeBuilder builder_(_fbb);
+  builder_.add_TIP(TIP);
   builder_.add_Code(Code);
   return builder_.Finish();
+}
+
+inline flatbuffers::Offset<ErrorCode> CreateErrorCodeDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    Err Code = Err_UNKNOWN,
+    const char *TIP = nullptr) {
+  return Protocol::CreateErrorCode(
+      _fbb,
+      Code,
+      TIP ? _fbb.CreateString(TIP) : 0);
 }
 
 inline const Protocol::ErrorCode *GetErrorCode(const void *buf) {

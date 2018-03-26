@@ -38,7 +38,7 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
         return false;
     }
 
-    LOG_TRACE("File[%s] Open Success! Length:[%llu], SplitSize: %lld", basename(filename.c_str()), n, splitsize);
+    LOG_TRACE("File[%s] Open Success! Length:[%llu], SplitSize: %lu", basename(filename.c_str()), n, splitsize);
 
     fseek(fp, 0, SEEK_SET);
 
@@ -52,7 +52,6 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
     {
         ST_BlockInfo info;
         info.filename = string(basename(filename.c_str()));
-        info.splitsize = splitsize;
         info.order = i / splitsize;
         info.offset = i;
 

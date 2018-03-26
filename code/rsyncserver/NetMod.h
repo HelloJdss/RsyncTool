@@ -24,8 +24,10 @@ namespace RsyncServer
 
         void Dispatch();
 
+        void SendToClient(Protocol::Opcode op, uint32_t taskID, BytesPtr data);
+
     private:
-        void onRecieveReverseSyncReq(uint32_t taskID, BytesPtr data); //接收到反向同步请求
+        void onRecvReverseSyncReq(uint32_t taskID, BytesPtr data); //接收到反向同步请求
 
         friend class NetMod;
 
@@ -42,6 +44,7 @@ namespace RsyncServer
     DECLARE_SINGLETON_EX(NetMod)
 
     public:
+        ~NetMod();
         void Init(uint16_t port = 52077);
 
         void Run();

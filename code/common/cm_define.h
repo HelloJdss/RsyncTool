@@ -8,6 +8,9 @@
 
 #include <cassert>
 
+#define RTVector    std::vector
+#define RTMap       std::unordered_map
+
 #define DECLARE_SINGLETON(T) \
     private: \
         T(){}\

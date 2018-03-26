@@ -7,7 +7,7 @@ include_directories(${PROJECT_SOURCE_DIR}/code/common/3rd/flatbuffers)
 include_directories(${PROJECT_SOURCE_DIR}/code/common/3rd)
 include_directories(${PROJECT_SOURCE_DIR}/code/common/)
 
-set(SRC_LIST main.cpp MainMod.cpp)
+set(SRC_LIST main.cpp MainMod.cpp NetMod.cpp)
 
 add_executable(rsyncclient ${SRC_LIST})
 

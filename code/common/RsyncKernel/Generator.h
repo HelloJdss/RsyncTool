@@ -8,18 +8,16 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
+#include "cm_define.h"
 
 using std::string;
 using std::vector;
 using std::unordered_map;
 
-#define RTVector    std::vector
-#define RTMap       std::unordered_map
-
 struct ST_BlockInfo
 {
     string      filename;
-    int32_t     splitsize;
     int64_t     order;
     int64_t     offset;
     int64_t     length;
@@ -29,7 +27,6 @@ struct ST_BlockInfo
     ST_BlockInfo()
     {
         filename.clear();
-        splitsize = 0;
         order = 0;
         offset = 0;
         length = 0;
@@ -55,9 +52,11 @@ public:
 
 private:
 
-    RTMap<string, BlockInfoVec>     m_fileInfos;
-    RTMap<string, string>           m_Md5ToData;    //MD5 ==> data
+    RTMap<string, BlockInfoVec>     m_fileInfos;    //name ==> BlockInfos
+    RTMap<string, string>           m_Md5ToData;    //MD5  ==> data
 };
+
+typedef std::shared_ptr<Generator> GeneratorPtr;
 
 
 #endif //RSYNCTOOL_GENERATOR_H
