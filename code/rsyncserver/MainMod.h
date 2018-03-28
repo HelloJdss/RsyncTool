@@ -28,8 +28,6 @@ namespace RsyncServer
 
         static int Run();
 
-        static pthread_t CreateThreadDetached(void* (*Func)(void*), void* arg);
-
 
     private:
         static void* runNetMod(void* port);

@@ -48,6 +48,8 @@ public:
 
     int64_t Size();
 
+    bool Eof();
+
 private:
     friend class FileHelper;
 

@@ -5,38 +5,15 @@
 #ifndef RSYNCTOOL_GENERATOR_H
 #define RSYNCTOOL_GENERATOR_H
 
-#include <string>
-#include <vector>
-#include <unordered_map>
+
 #include <memory>
 #include "cm_define.h"
-
-using std::string;
-using std::vector;
-using std::unordered_map;
-
-struct ST_BlockInfo
-{
-    string      filename;
-    int64_t     order;
-    int64_t     offset;
-    int64_t     length;
-    uint32_t    checksum;
-    string      md5;
-
-    ST_BlockInfo()
-    {
-        filename.clear();
-        order = 0;
-        offset = 0;
-        length = 0;
-        checksum = 0;
-        md5.clear();
-    }
-};
+#include "cm_struct.h"
 
 /*
- * Generator 负责一次性生成文件的分块多级签名信息
+ * Generator 负责一次性生成文件的分块多级签名信息,每个Task一个
+ * 输入： 文件名和分块大小
+ * 输出： 文件分块信息
  */
 
 class Generator

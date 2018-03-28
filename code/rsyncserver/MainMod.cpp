@@ -92,14 +92,6 @@ void* MainMod::runNetMod(void* port)
     g_NetMod->Run();
 }
 
-pthread_t MainMod::CreateThreadDetached(void* (*Func)(void*), void* arg)
-{
-    pthread_t pid;
-    LogCheckCondition(0 == pthread_create(&pid, nullptr, Func, arg), -1, "Create Thread Failed!");
-    pthread_detach(pid);
-    return pid;
-}
-
 void MainMod::onRecvSignal(int sig)
 {
     if(sig == SIGINT)

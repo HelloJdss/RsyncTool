@@ -8,7 +8,29 @@
 #include <strings.h>
 #include <cstdint>
 #include <netinet/in.h>
-#include <common/Protocol/Protocol_define.h>
+#include "Protocol/Protocol_define.h"
+
+struct ST_BlockInfo
+{
+    std::string     filename;
+    int64_t         order;
+    int64_t         offset;
+    int64_t         length;
+    uint32_t        checksum;
+    std::string     md5;
+    std::string     data;
+
+    ST_BlockInfo()
+    {
+        filename.clear();
+        order = 0;
+        offset = 0;
+        length = 0;
+        checksum = 0;
+        md5.clear();
+        data.clear();
+    }
+};
 
 struct ST_PackageHeader
 {

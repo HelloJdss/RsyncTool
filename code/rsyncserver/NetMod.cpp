@@ -55,11 +55,7 @@ void NetMod::Run()
                     SocketAddress newclientaddr;
                     auto newSocket = m_listenSocket->Accept(newclientaddr);
                     m_readBlockSockets.push_back(newSocket);
-
-                    //TODO: do something when new client connect! ...
-
                     LOG_INFO("Accept Connection[%s]", newSocket->GetEndPoint().c_str());
-                    //newSocket->Send("HelloWorld", 10);
                     m_clientMap[newSocket] = TCPClientPtr(new TCPClient(newSocket));
                 }
                 else    //receive data from an old client
@@ -73,28 +69,22 @@ void NetMod::Run()
                                                         m_clientMap[socket]->m_msgHelper.GetRemainBytes());
                             if (count > 0)
                             {
-                                //TODO: do something when recv data from old client
                                 m_clientMap[socket]->m_msgHelper.AddCount(count);
 
-                                pthread_t pid;
-                                thread_params params;
-                                params._this = this;
-                                params._args = &m_clientMap[socket];
-                                params._needdel = false;
-                                params._del_func = nullptr;
-                                if (pthread_create(&pid, NULL, t_Thread<NetMod, &NetMod::RunThread>, &params) == 0)
+                                //为每个客户端单独创建一个线程
+                                //RunThread(this, &m_clientMap[socket], true);
+                                auto ptr = MsgThreadPtr(new MsgThread);
+                                ptr->SetArgs(m_clientMap[socket]);
+                                if (ptr->Start())
                                 {
-                                    pthread_detach(pid);
-                                }
-                                else
-                                {
-                                    LOG_ERROR("Thread Create Failed: %s", strerror(errno));
+                                    ptr->Detach();
+                                    m_threads.push_back(ptr);
                                 }
                             }
                             else if (count == 0)
                             {
                                 //client disconnect
-                                LOG_INFO("RsyncClient[%s] Disconnected!", socket->GetEndPoint().c_str());
+                                LOG_INFO("RemoteClient[%s] Disconnected!", socket->GetEndPoint().c_str());
                                 socket->Close();
                             }
                         }
@@ -126,6 +116,14 @@ void NetMod::removeUnavailableSockets()
             m_readBlockSockets.erase(m_readBlockSockets.begin() + i);
         }
     }
+
+    for (long i = m_threads.size() - 1; i >= 0; --i)
+    {
+        if (m_threads.at(i)->GetState() == Thread::THREAD_STATUS_EXIT)
+        {
+            m_threads.erase(m_threads.begin() + i); //溢出已经结束的线程
+        }
+    }
 }
 
 void NetMod::Stop()
@@ -133,7 +131,7 @@ void NetMod::Stop()
     m_running = false;
 }
 
-void NetMod::RunThread(void *arg)
+/*void NetMod::RunThread(void *arg)
 {
     TCPClientPtr clientPtr = *(TCPClientPtr *) arg;
     while (clientPtr->m_msgHelper.HasMessage())
@@ -141,7 +139,7 @@ void NetMod::RunThread(void *arg)
         LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
         clientPtr->Dispatch();
     }
-}
+}*/
 
 NetMod::~NetMod()
 {
@@ -153,6 +151,16 @@ NetMod::~NetMod()
     m_receivingAddr = nullptr;
     LOG_TRACE("~NetMod");
 }
+
+/*void NetMod::onThreadCreated(void *args)
+{
+    TCPClientPtr clientPtr = *(TCPClientPtr *) args;
+    while (clientPtr->m_msgHelper.HasMessage())
+    {
+        LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
+        clientPtr->Dispatch();
+    }
+}*/
 
 using namespace Protocol;
 
@@ -204,7 +212,7 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
         return;
     }
 
-    //若存在该文件，则读取文件大小，小于块大小的直接传输，大于块大小的重新计算
+    //若存在该文件，则读取文件大小，小于等于块大小的直接传输，大于块大小的重新计算
     if (pFile->Size() < 0)
     {
         LOG_LastError();
@@ -215,7 +223,7 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
                            MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
         return;
     }
-    else if (pFile->Size() < blocksize)
+    else if (pFile->Size() <= blocksize)
     {
         char buff[blocksize];
         auto count = pFile->ReadBytes(buff, blocksize);
@@ -231,6 +239,19 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
                            MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
         return;
     }
+    else
+    {
+        for (auto it = blocksInfo->Infos()->begin(); it != blocksInfo->Infos()->end(); it++)
+        {
+            ST_BlockInfo info;
+            info.filename = it->Filename()->str();
+            info.order = it->Order();
+            info.offset = it->Offset();
+            info.length = it->Length();
+            info.checksum = it->Checksum();
+            info.md5 = it->Md5()->str();
+        }
+    }
 
 
 }
@@ -244,3 +265,16 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
     m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
 }
 
+void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)
+{
+    m_ptr = tcpClientPtr;
+}
+
+void MsgThread::Runnable()
+{
+    while (m_ptr->m_msgHelper.HasMessage())
+    {
+        LOG_TRACE("Client[%s] has Message!", m_ptr->m_socket->GetEndPoint().c_str());
+        m_ptr->Dispatch();
+    }
+}

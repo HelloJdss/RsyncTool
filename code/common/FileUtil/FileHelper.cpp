@@ -154,6 +154,15 @@ size_t File::Write(const void *buffer, size_t size, size_t nitems, size_t offset
     return 0;
 }
 
+bool File::Eof()
+{
+    if(m_fp)
+    {
+        return static_cast<bool>(feof(m_fp));
+    }
+    return false;
+}
+
 std::shared_ptr<File> FileHelper::CreateFilePtr(const string &filename, char const *mode)
 {
     auto fp = std::shared_ptr<File>(new File(filename, mode));

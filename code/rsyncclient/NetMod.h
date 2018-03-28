@@ -12,6 +12,7 @@
 #include "MsgHelper.h"
 #include "Generator.h"
 #include "FileHelper.h"
+#include "LogHelper.h"
 #include "Protocol_define.h"
 
 namespace RsyncClient
