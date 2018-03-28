@@ -4,7 +4,6 @@
 
 #include "cm_define.h"
 #include "NetMod.h"
-#include "FileHelper.h"
 #include "BlockInfos_generated.h"
 #include "ErrorCode_generated.h"
 #include "ReconstructList_generated.h"
@@ -97,7 +96,7 @@ void NetMod::Run()
                     }
                     else
                     {
-                        LOG_WARN("clientMap did not find socket[%s]", socket->GetEndPoint().c_str());
+                        LOG_WARN("ClientMap did not find socket[%s]", socket->GetEndPoint().c_str());
                         socket->Close();
                     }
                 }
@@ -241,6 +240,7 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
     }
     else
     {
+        InspectorPtr p = InspectorPtr(new Inspector(pFilename->str(), blocksize));
         for (auto it = blocksInfo->Infos()->begin(); it != blocksInfo->Infos()->end(); it++)
         {
             ST_BlockInfo info;
@@ -250,10 +250,11 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
             info.length = it->Length();
             info.checksum = it->Checksum();
             info.md5 = it->Md5()->str();
+            p->AddInfos(info);
         }
+        //p->StartGetBlocks(nullptr);
+        p->StartGetBlocks(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectBlockInfo, this));
     }
-
-
 }
 
 void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
@@ -263,6 +264,11 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
     auto bytes = MsgHelper::PackageData(header,
                                         MsgHelper::CreateBytes(data->ToChars(), data->Size()));
     m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+}
+
+void TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo)
+{
+    LOG_TRACE("HEHEHEHEHEH!");
 }
 
 void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)

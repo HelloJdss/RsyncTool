@@ -41,7 +41,6 @@ namespace RsyncServer
         MsgHelper m_msgHelper;
 
         TCPSocketPtr m_socket;
-
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;

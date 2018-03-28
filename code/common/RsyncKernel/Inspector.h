@@ -20,8 +20,13 @@ using std::unordered_map;
  * 负责根据拿到的签名信息，对比本地文件并生成重建块,每个文件一个
  */
 
+typedef std::function<void (uint32_t, const ST_BlockInfo&)> INSPECTOR_CALLBACK;
+#define INSPECTOR_CALLBACK_FUNC(_f, _this) std::bind((_f), (_this), std::placeholders::_1, std::placeholders::_2)
+
+
 class Inspector
 {
+public:
     Inspector(const string& filename, uint32_t blocksize)
     {
         m_filename = filename;
@@ -35,28 +40,22 @@ class Inspector
 
     void AddInfos(const ST_BlockInfo &info);
 
-    bool HasNextBlock();
-
-    void StartGetBlocks(std::function<void (uint32_t, const ST_BlockInfo&)>* callback);
-
-    RTVector<ST_BlockInfo> GetBlocks();
-
-    void RunThread(void *param);
-
-    static void onDestroy(void *func_ptr);
+    void StartGetBlocks(INSPECTOR_CALLBACK callback);
 
 private:
-    RTSet<uint32_t> m_checksums;    //path ==> [checksum]
-    RTMap<string, RTVector<ST_BlockInfo> > m_md52infos; //md5  ==> [BlockInfo]
+    bool checkMatched(ST_BlockInfo& ret);   //检查是否有匹配块
+
+    RTSet<uint32_t> m_checksums;    //[checksum]
+    RTMap<string, ST_BlockInfo> m_md52infos; //md5  ==> BlockInfo
     RTMap<uint32_t, RTVector<string> > m_checksum2md5; //checksum ==> md5
     uint32_t m_blocksize = 0;
-    FilePtr m_fileptr;              //path ==> FilePtr
     string m_filename;
+
+    FilePtr m_fileptr;              //path ==> FilePtr
     uint32_t m_checksum = 0;
     string m_buffer;
+    size_t m_start = 0, m_end = 0;
 };
-
-#define INSPECTOR_CALLBACK(_func, _this) (new std::bind(_func, _this, std::placeholders::_1, std::placeholders::_2))
 
 typedef std::shared_ptr<Inspector> InspectorPtr;
 
