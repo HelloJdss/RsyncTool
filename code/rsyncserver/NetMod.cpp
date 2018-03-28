@@ -4,9 +4,9 @@
 
 #include "cm_define.h"
 #include "NetMod.h"
-#include "BlockInfos_generated.h"
 #include "ErrorCode_generated.h"
 #include "ReconstructList_generated.h"
+
 
 using namespace Protocol;
 using namespace RsyncServer;
@@ -167,19 +167,22 @@ void TCPClient::Dispatch()
 {
     ST_PackageHeader header;
     BytesPtr data;
-    m_msgHelper.ReadMessage(header, &data);
-    LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
-             Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
-
-    switch (header.getOpCode())
+    while(m_msgHelper.ReadMessage(header, &data))
     {
-        case Opcode::REVERSE_SYNC_REQ:
-            onRecvReverseSyncReq(header.getTaskId(), data);
-            break;
-        default:
-            LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
-            m_socket->Close();
-            break;
+        LOG_TRACE("Client[%s] has Message!", m_socket->GetEndPoint().c_str());
+        LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
+                 Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
+
+        switch (header.getOpCode())
+        {
+            case Opcode::REVERSE_SYNC_REQ:
+                onRecvReverseSyncReq(header.getTaskId(), data);
+                break;
+            default:
+                LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
+                m_socket->Close();
+                break;
+        }
     }
 }
 
@@ -198,8 +201,9 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
 
     auto blocksInfo = Protocol::GetFileBlockInfos(data->ToChars());
     auto pFilename = blocksInfo->DesPath();
-    auto pFile = FileHelper::CreateFilePtr(pFilename->str(), "r");
     auto blocksize = blocksInfo->Splitsize();
+    auto pFile = FileHelper::CreateFilePtr(pFilename->str(), "r");
+
     if (pFile == nullptr)   //本地不存在该文件
     {
 
@@ -240,7 +244,11 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
     }
     else
     {
-        InspectorPtr p = InspectorPtr(new Inspector(pFilename->str(), blocksize));
+        pFile = nullptr; //
+
+        m_tasks[taskID][pFilename->str()] = blocksInfo;
+
+        InspectorPtr p = InspectorPtr(new Inspector(taskID, pFilename->str(), blocksize));
         for (auto it = blocksInfo->Infos()->begin(); it != blocksInfo->Infos()->end(); it++)
         {
             ST_BlockInfo info;
@@ -254,6 +262,8 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
         }
         //p->StartGetBlocks(nullptr);
         p->StartGetBlocks(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectBlockInfo, this));
+
+        m_tasks[taskID][pFilename->str()] = nullptr;
     }
 }
 
@@ -269,6 +279,14 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
 void TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo)
 {
     LOG_TRACE("HEHEHEHEHEH!");
+
+    LogCheckConditionVoid(m_tasks[taskID][blockInfo.filename] != nullptr, "m_tasks map failed!");
+
+
+    //char buff[100] = "abcdefg";
+    //LOG_DEBUG("%s %s %s", string(buff, 0, 7).c_str(), string().append(buff, 0, 7).c_str(), string().assign(buff, 7).c_str());
+    LOG_DEBUG("Send Block[%lld]: Offset: %lld Length: %lld MD5: %s",
+              blockInfo.order, blockInfo.offset, blockInfo.length, blockInfo.md5.c_str());
 }
 
 void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)
@@ -278,9 +296,5 @@ void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)
 
 void MsgThread::Runnable()
 {
-    while (m_ptr->m_msgHelper.HasMessage())
-    {
-        LOG_TRACE("Client[%s] has Message!", m_ptr->m_socket->GetEndPoint().c_str());
-        m_ptr->Dispatch();
-    }
+    m_ptr->Dispatch();
 }

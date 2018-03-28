@@ -4,12 +4,15 @@
 
 #include <string.h>
 #include "FileHelper.h"
+#include "LogHelper.h"
 
 File::~File()
 {
     if (m_fp)
     {
         fclose(m_fp);
+        m_fp = nullptr;
+        LOG_TRACE("Close File[%s]!", m_path.c_str());
     }
 }
 
@@ -21,8 +24,9 @@ bool File::Open(const string &filename, char const *mode)
     }
     m_fp = fopen(filename.c_str(), mode);
     m_basename = basename(filename.c_str());
-
     m_path = FileHelper::GetPath(filename);
+
+    LOG_TRACE("Open File[%s]:[%s]!", m_path.c_str(), m_fp != nullptr ? "Success":"Failed");
     return m_fp != nullptr;
 }
 

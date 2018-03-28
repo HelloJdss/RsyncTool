@@ -12,6 +12,7 @@
 #include "MsgHelper.h"
 #include "Inspector.h"
 #include "ThreadBase.h"
+#include "BlockInfos_generated.h"
 
 namespace RsyncServer
 {
@@ -41,6 +42,8 @@ namespace RsyncServer
         MsgHelper m_msgHelper;
 
         TCPSocketPtr m_socket;
+
+        RTMap<uint32_t , RTMap<string, const Protocol::FileBlockInfos*> > m_tasks; // task ==> filename ==> BlockInfos ptr
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;

@@ -27,8 +27,9 @@ typedef std::function<void (uint32_t, const ST_BlockInfo&)> INSPECTOR_CALLBACK;
 class Inspector
 {
 public:
-    Inspector(const string& filename, uint32_t blocksize)
+    Inspector(uint32_t taskID, const string& filename, uint32_t blocksize)
     {
+        m_taskID = taskID;
         m_filename = filename;
         m_blocksize = blocksize;
     }
@@ -50,11 +51,14 @@ private:
     RTMap<uint32_t, RTVector<string> > m_checksum2md5; //checksum ==> md5
     uint32_t m_blocksize = 0;
     string m_filename;
+    uint32_t m_taskID = 0;
 
-    FilePtr m_fileptr;              //path ==> FilePtr
+    FilePtr m_fileptr = nullptr;              //path ==> FilePtr
     uint32_t m_checksum = 0;
     string m_buffer;
     size_t m_start = 0, m_end = 0;
+    uint64_t m_order = 0;
+    uint64_t m_offset = 0;
 };
 
 typedef std::shared_ptr<Inspector> InspectorPtr;

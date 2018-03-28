@@ -179,24 +179,31 @@ void MsgHelper::disposal()
     }
 }
 
-void MsgHelper::ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata)
+bool MsgHelper::ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata)
 {
     *outdata = nullptr;
     outheader.reset();
-    if (HasMessage())
+    BytesPtr bytesPtr;
+    pthread_mutex_lock(&m_mutex);
+    if (!m_msgs.empty())
     {
-        pthread_mutex_lock(&m_mutex);
-        BytesPtr bytesPtr = m_msgs.front();
+        bytesPtr = m_msgs.front();
         m_msgs.pop();
         pthread_mutex_unlock(&m_mutex);
 
         outheader = *(ST_PackageHeader *) bytesPtr->m_bytes;
         *outdata = CreateBytes(reinterpret_cast<char *>(bytesPtr->m_bytes + sizeof(ST_PackageHeader)),
                                bytesPtr->m_length - sizeof(ST_PackageHeader));
+        return true;
     }
+    else
+    {
+        pthread_mutex_unlock(&m_mutex);
+    }
+    return false;
 }
 
-inline bool MsgHelper::HasMessage()
+bool MsgHelper::HasMessage()
 {
     pthread_mutex_lock(&m_mutex);
     bool ret = !m_msgs.empty();

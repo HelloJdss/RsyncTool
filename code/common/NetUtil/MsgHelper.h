@@ -70,7 +70,7 @@ public:
      */
     static BytesPtr PackageData(ST_PackageHeader &header, BytesPtr inData);
 
-    void ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata);
+    bool ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata);
 
 
     unsigned char *GetBuffer()

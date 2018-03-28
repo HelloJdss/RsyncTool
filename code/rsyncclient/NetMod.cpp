@@ -19,22 +19,24 @@ void NetMod::Dispatch()
 {
     ST_PackageHeader header;
     BytesPtr data;
-    m_msgHelper.ReadMessage(header, &data);
-    LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serversocket->GetEndPoint().c_str(),
-             Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
-
-    switch (header.getOpCode())
+    while(m_msgHelper.ReadMessage(header, &data))
     {
-        case Opcode::REVERSE_SYNC_ACK:
-            onRecvReverseSyncAck(header.getTaskId(), data);
-            break;
-        case Opcode::ERROR_CODE:
-            onRecvErrorCode(header.getTaskId(), data);
-            break;
-        default:
-            LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_serversocket->GetEndPoint().c_str());
-            m_serversocket->Close();
-            break;
+        LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serversocket->GetEndPoint().c_str(),
+                 Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
+
+        switch (header.getOpCode())
+        {
+            case Opcode::REVERSE_SYNC_ACK:
+                onRecvReverseSyncAck(header.getTaskId(), data);
+                break;
+            case Opcode::ERROR_CODE:
+                onRecvErrorCode(header.getTaskId(), data);
+                break;
+            default:
+                LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_serversocket->GetEndPoint().c_str());
+                m_serversocket->Close();
+                break;
+        }
     }
 }
 
@@ -153,10 +155,7 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
         if (count > 0)
         {
             m_msgHelper.AddCount(count);
-            while (m_msgHelper.HasMessage())
-            {
-                this->Dispatch();
-            }
+            this->Dispatch();
         }
         else if (count == 0)
         {
