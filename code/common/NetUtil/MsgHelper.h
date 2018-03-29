@@ -10,7 +10,7 @@
 #include "cm_define.h"
 #include "cm_struct.h"
 
-#define BUFFER_INIT_SIZE 100
+#define BUFFER_INIT_SIZE 1500
 
 class Bytes
 {

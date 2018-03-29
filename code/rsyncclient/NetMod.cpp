@@ -5,21 +5,21 @@
 #include "NetMod.h"
 #include "BlockInfos_generated.h"
 #include "ErrorCode_generated.h"
-#include "ReconstructList_generated.h"
+#include "NewBlockInfo_generated.h"
 
 using namespace Protocol;
 using namespace RsyncClient;
 
 void NetMod::Run()
 {
-    this->CreateNewTask(Opcode::REVERSE_SYNC_REQ, "./test.txt", "./test.txt");
+    this->CreateNewTask(Opcode::REVERSE_SYNC_REQ, "./test.txt", "./test1.txt");
 }
 
 void NetMod::Dispatch()
 {
     ST_PackageHeader header;
     BytesPtr data;
-    while(m_msgHelper.ReadMessage(header, &data))
+    while (m_msgHelper.ReadMessage(header, &data))
     {
         LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serversocket->GetEndPoint().c_str(),
                  Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
@@ -48,6 +48,10 @@ NetMod::~NetMod()
 
 void NetMod::onRecvErrorCode(uint32_t taskID, BytesPtr data)
 {
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = Protocol::VerifyErrorCodeBuffer(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
     auto err = Protocol::GetErrorCode(data->ToChars());
     LOG_WARN("Receive Error Code: Task[%lu] : [%s] [%s]", taskID, Protocol::EnumNameErr(err->Code()),
              err->TIP()->c_str());
@@ -55,32 +59,50 @@ void NetMod::onRecvErrorCode(uint32_t taskID, BytesPtr data)
 
 void NetMod::onRecvReverseSyncAck(uint32_t taskID, BytesPtr data)
 {
-    auto newblock = Protocol::GetNewBlockAck(data->ToChars());
+    LOG_TRACE("RecvReverseSyncAck");
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = Protocol::VerifyNewBlockAckBuffer(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    auto pNewBlockAck = Protocol::GetNewBlockAck(data->ToChars());
+
     RTVector<FileBaseDataPtr> &vector1 = m_task2data[taskID];
     for (auto &it: vector1)
     {
-        if (it->m_filePath == newblock->SrcPath()->str())
+        if (it->m_filePath == pNewBlockAck->SrcPath()->str())
         {
-            it->m_newSize = newblock->Length();
+            it->m_newSize = pNewBlockAck->Length();
             if (it->m_pnewfile == nullptr)
             {
-                it->m_pnewfile = FileHelper::CreateFilePtr(it->m_filePath.append(".tmp"), "w");
+                it->m_pnewfile = FileHelper::CreateFilePtr(it->m_filePath + ".tmp", "w");
                 it->m_pnewfile->SetSize(it->m_newSize);
             }
-            auto ninfo = newblock->Infos();
-            LOG_DEBUG("%s", ninfo->Md5()->c_str());
-            if (ninfo->Md5()->str() == "-")
+
+            auto pBlock = pNewBlockAck->Infos();
+            LOG_DEBUG("%s", pBlock->Md5()->c_str());
+
+            if (pBlock->Md5()->str() == "-")
             {
-                it->m_pnewfile->WriteBytes(reinterpret_cast<char const *>(ninfo->Data()->data()), ninfo->Length(),
-                                           ninfo->Offset(),
+                LogCheckConditionVoid(pBlock->Data()->str().length() == pBlock->Length(), "Err!");
+                it->m_pnewfile->WriteBytes(pBlock->Data()->str().data(), pBlock->Length(),
+                                           pBlock->Offset(),
                                            true);
-                it->m_processLen += ninfo->Length();
-                LOG_INFO("Task[%lu] File[%s]: Reconstruct block[%ld] success!", taskID, it->m_filePath.c_str(),
-                         ninfo->Order());
+                it->m_processLen += pBlock->Length();
+                LOG_INFO("Task[%lu] File[%s]: Reconstruct block[%lld +> %ld] success!", taskID, it->m_filePath.c_str(),
+                         pBlock->Offset(), pBlock->Length());
             }
             else
             {
                 //TODO:根据md5重建
+                auto pData = m_task2generator[taskID]->GetDataByMd5(pBlock->Md5()->str());
+                LogCheckConditionVoid(pData.length() == pBlock->Length(), "Err!");
+                it->m_pnewfile->WriteBytes(pData.data(), pBlock->Length(),
+                                           pBlock->Offset(),
+                                           true);
+                it->m_processLen += pBlock->Length();
+                LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld => %ld] success!", taskID,
+                         it->m_filePath.c_str(), pBlock->Offset(), pBlock->Length());
             }
 
             if (it->m_processLen == it->m_newSize)
@@ -106,20 +128,20 @@ void NetMod::CreateNewTask(Protocol::Opcode op, const string &src, const string 
     }
 }
 
-void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const string &des)
+void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const string &des, uint32_t blocksize)
 {
     if (m_task2generator[taskID] == nullptr)
     {
         m_task2generator[taskID] = GeneratorPtr(new Generator);
     }
 
-    auto baseptr = FileBaseDataPtr(new FileBaseData);
+    auto pFileBaseData = FileBaseDataPtr(new FileBaseData);
 
-    baseptr->m_filePath = src;
+    pFileBaseData->m_filePath = src;
 
-    m_task2data[taskID].push_back(baseptr);
+    m_task2data[taskID].push_back(pFileBaseData);
 
-    m_task2generator[taskID]->GenerateBlockInfos(src);
+    m_task2generator[taskID]->GenerateBlockInfos(src, blocksize);
 
 
     auto infos = m_task2generator[taskID]->GetBlockInfos(src);
@@ -129,13 +151,12 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
     std::vector<flatbuffers::Offset<Protocol::BlockInfo> > blockVec;
     for (auto it : infos)
     {
-        blockVec.push_back(
-                Protocol::CreateBlockInfo(builder, builder.CreateString(it.filename), it.order, it.offset,
-                                          it.length, it.checksum, builder.CreateString(it.md5)));
+        blockVec.push_back(Protocol::CreateBlockInfo(builder, it.offset,
+                                                     it.length, it.checksum, builder.CreateString(it.md5)));
     }
 
-    auto fbb = Protocol::CreateFileBlockInfos(builder, builder.CreateString(src),
-                                              builder.CreateString(des), 512, builder.CreateVector(blockVec));
+    auto fbb = Protocol::CreateFileBlockInfos(builder, builder.CreateString(src), builder.CreateString(des),
+                                              blocksize, builder.CreateVector(blockVec));
     builder.Finish(fbb);
 
 
@@ -150,8 +171,8 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
 
     while (m_running)
     {
-        auto count = m_serversocket
-                ->Receive(m_msgHelper.GetBuffer() + m_msgHelper.GetStartIndex(), m_msgHelper.GetRemainBytes());
+        auto count = m_serversocket->Receive(m_msgHelper.GetBuffer() + m_msgHelper.GetStartIndex(),
+                                             m_msgHelper.GetRemainBytes());
         if (count > 0)
         {
             m_msgHelper.AddCount(count);

@@ -5,7 +5,7 @@
 #include "cm_define.h"
 #include "NetMod.h"
 #include "ErrorCode_generated.h"
-#include "ReconstructList_generated.h"
+#include "NewBlockInfo_generated.h"
 
 
 using namespace Protocol;
@@ -130,16 +130,6 @@ void NetMod::Stop()
     m_running = false;
 }
 
-/*void NetMod::RunThread(void *arg)
-{
-    TCPClientPtr clientPtr = *(TCPClientPtr *) arg;
-    while (clientPtr->m_msgHelper.HasMessage())
-    {
-        LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
-        clientPtr->Dispatch();
-    }
-}*/
-
 NetMod::~NetMod()
 {
     m_running = false;
@@ -151,23 +141,13 @@ NetMod::~NetMod()
     LOG_TRACE("~NetMod");
 }
 
-/*void NetMod::onThreadCreated(void *args)
-{
-    TCPClientPtr clientPtr = *(TCPClientPtr *) args;
-    while (clientPtr->m_msgHelper.HasMessage())
-    {
-        LOG_TRACE("Client[%s] has Message!", clientPtr->m_socket->GetEndPoint().c_str());
-        clientPtr->Dispatch();
-    }
-}*/
-
 using namespace Protocol;
 
 void TCPClient::Dispatch()
 {
     ST_PackageHeader header;
     BytesPtr data;
-    while(m_msgHelper.ReadMessage(header, &data))
+    while (m_msgHelper.ReadMessage(header, &data))
     {
         LOG_TRACE("Client[%s] has Message!", m_socket->GetEndPoint().c_str());
         LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
@@ -190,7 +170,6 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
 {
     LOG_TRACE("Recv Reverse Sync Req!");
     /*
-     * TODO:
      * 1.拆包
      * 2.检查目标文件(本机)是否存在，若不存在则返回错误码
      * 3.根据taskID建立到数据的映射
@@ -199,6 +178,10 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
      * 6.返回重建文件的菜单：可校验一块返回一块，建立流水线作业
      */
 
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = Protocol::VerifyFileBlockInfosBuffer(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
     auto blocksInfo = Protocol::GetFileBlockInfos(data->ToChars());
     auto pFilename = blocksInfo->DesPath();
     auto blocksize = blocksInfo->Splitsize();
@@ -206,7 +189,6 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
 
     if (pFile == nullptr)   //本地不存在该文件
     {
-
         flatbuffers::FlatBufferBuilder builder;
         auto fbb = Protocol::CreateErrorCode(builder, Err_NO_SUCH_FILE, builder.CreateString(pFilename));
         builder.Finish(fbb);
@@ -233,10 +215,13 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
 
         flatbuffers::FlatBufferBuilder builder;
         auto fbb = Protocol::CreateNewBlockAck(builder, builder.CreateString(blocksInfo->SrcPath()),
-                                               builder.CreateString(blocksInfo->DesPath()), blocksize, pFile->Size(),
-                                               Protocol::CreateNewBlock(builder, builder.CreateString(pFilename), 0, 0,
-                                                                        pFile->Size(), builder.CreateString("-"),
-                                                                        builder.CreateVector((uint8_t *) buff, count)));
+                                               builder.CreateString(blocksInfo->DesPath()),
+                                               blocksize,
+                                               pFile->Size(),
+                                               Protocol::CreateNewBlock(builder, 0,
+                                                                        pFile->Size(),
+                                                                        builder.CreateString("-"),
+                                                                        builder.CreateString(buff, count)));
         builder.Finish(fbb);
         this->SendToClient(Opcode::REVERSE_SYNC_ACK, taskID,
                            MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
@@ -244,16 +229,14 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
     }
     else
     {
-        pFile = nullptr; //
-
         m_tasks[taskID][pFilename->str()] = blocksInfo;
 
         InspectorPtr p = InspectorPtr(new Inspector(taskID, pFilename->str(), blocksize));
-        for (auto it = blocksInfo->Infos()->begin(); it != blocksInfo->Infos()->end(); it++)
+        for (auto it : *blocksInfo->Infos())
         {
             ST_BlockInfo info;
-            info.filename = it->Filename()->str();
-            info.order = it->Order();
+            //info.filename = it->Filename()->str();
+            //info.order = it->Order();
             info.offset = it->Offset();
             info.length = it->Length();
             info.checksum = it->Checksum();
@@ -276,13 +259,29 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
     m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
 }
 
-void TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo)
+void
+TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo, const string &filename, size_t filesize)
 {
-    LogCheckConditionVoid(m_tasks[taskID][blockInfo.filename] != nullptr, "m_tasks map failed!");
+    LogCheckConditionVoid(m_tasks[taskID][filename] != nullptr, "m_tasks map failed!");
     //char buff[100] = "abcdefg";
     //LOG_DEBUG("%s %s %s", string(buff, 0, 7).c_str(), string().append(buff, 0, 7).c_str(), string().assign(buff, 7).c_str()); // string(buff, 0, 7) will cause core dump
-    LOG_DEBUG("Send Block[%lld]: Offset: %lld Length: %lld MD5: %s",
-              blockInfo.order, blockInfo.offset, blockInfo.length, blockInfo.md5.c_str());
+    LOG_DEBUG("Send Block: Offset: %lld Length: %d MD5: %s", blockInfo.offset, blockInfo.length, blockInfo.md5.c_str());
+
+    auto &blocksInfo = m_tasks[taskID][filename];
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto fbb = Protocol::CreateNewBlockAck(builder, builder.CreateString(blocksInfo->SrcPath()),
+                                           builder.CreateString(blocksInfo->DesPath()),
+                                           blocksInfo->Splitsize(),
+                                           filesize,
+                                           Protocol::CreateNewBlock(builder, blockInfo.offset,
+                                                                    blockInfo.length,
+                                                                    builder.CreateString(blockInfo.md5),
+                                                                    builder.CreateString(blockInfo.data)));
+    builder.Finish(fbb);
+    this->SendToClient(Opcode::REVERSE_SYNC_ACK,
+                       taskID,
+                       MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
 }
 
 void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)

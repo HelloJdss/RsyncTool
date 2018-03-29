@@ -40,6 +40,8 @@ namespace Protocol
             }
         }
     };
+
+    static char const * NewBlockAckVerify = "NewBlockAck";
 }
 
 #endif //RSYNCTOOL_PROTOCOL_DEFINE_H

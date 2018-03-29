@@ -64,7 +64,7 @@ namespace RsyncClient
 
     private:
 
-        void createReverseSyncTask(uint32_t taskID, const string& src, const string& des);  //创建反向同步任务
+        void createReverseSyncTask(uint32_t taskID, const string &src, const string &des, uint32_t blocksize = 1024);  //创建反向同步任务
 
         void onRecvErrorCode(uint32_t taskID, BytesPtr data);
 

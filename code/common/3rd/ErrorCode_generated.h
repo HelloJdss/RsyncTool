@@ -17,16 +17,16 @@ enum Err {
   Err_MAX = Err_NO_SUCH_FILE
 };
 
-inline Err (&EnumValuesErr())[2] {
-  static Err values[] = {
+inline const Err (&EnumValuesErr())[2] {
+  static const Err values[] = {
     Err_UNKNOWN,
     Err_NO_SUCH_FILE
   };
   return values;
 }
 
-inline const char **EnumNamesErr() {
-  static const char *names[] = {
+inline const char * const *EnumNamesErr() {
+  static const char * const names[] = {
     "UNKNOWN",
     "NO_SUCH_FILE",
     nullptr

@@ -14,24 +14,16 @@ struct FileBlockInfos;
 
 struct BlockInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_FILENAME = 4,
-    VT_ORDER = 6,
-    VT_OFFSET = 8,
-    VT_LENGTH = 10,
-    VT_CHECKSUM = 12,
-    VT_MD5 = 14
+    VT_OFFSET = 4,
+    VT_LENGTH = 6,
+    VT_CHECKSUM = 8,
+    VT_MD5 = 10
   };
-  const flatbuffers::String *Filename() const {
-    return GetPointer<const flatbuffers::String *>(VT_FILENAME);
-  }
-  int64_t Order() const {
-    return GetField<int64_t>(VT_ORDER, 0);
-  }
   int64_t Offset() const {
     return GetField<int64_t>(VT_OFFSET, 0);
   }
-  int64_t Length() const {
-    return GetField<int64_t>(VT_LENGTH, 0);
+  int32_t Length() const {
+    return GetField<int32_t>(VT_LENGTH, 0);
   }
   uint32_t Checksum() const {
     return GetField<uint32_t>(VT_CHECKSUM, 0);
@@ -41,11 +33,8 @@ struct BlockInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_FILENAME) &&
-           verifier.Verify(Filename()) &&
-           VerifyField<int64_t>(verifier, VT_ORDER) &&
            VerifyField<int64_t>(verifier, VT_OFFSET) &&
-           VerifyField<int64_t>(verifier, VT_LENGTH) &&
+           VerifyField<int32_t>(verifier, VT_LENGTH) &&
            VerifyField<uint32_t>(verifier, VT_CHECKSUM) &&
            VerifyOffset(verifier, VT_MD5) &&
            verifier.Verify(Md5()) &&
@@ -56,17 +45,11 @@ struct BlockInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct BlockInfoBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_Filename(flatbuffers::Offset<flatbuffers::String> Filename) {
-    fbb_.AddOffset(BlockInfo::VT_FILENAME, Filename);
-  }
-  void add_Order(int64_t Order) {
-    fbb_.AddElement<int64_t>(BlockInfo::VT_ORDER, Order, 0);
-  }
   void add_Offset(int64_t Offset) {
     fbb_.AddElement<int64_t>(BlockInfo::VT_OFFSET, Offset, 0);
   }
-  void add_Length(int64_t Length) {
-    fbb_.AddElement<int64_t>(BlockInfo::VT_LENGTH, Length, 0);
+  void add_Length(int32_t Length) {
+    fbb_.AddElement<int32_t>(BlockInfo::VT_LENGTH, Length, 0);
   }
   void add_Checksum(uint32_t Checksum) {
     fbb_.AddElement<uint32_t>(BlockInfo::VT_CHECKSUM, Checksum, 0);
@@ -88,34 +71,26 @@ struct BlockInfoBuilder {
 
 inline flatbuffers::Offset<BlockInfo> CreateBlockInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> Filename = 0,
-    int64_t Order = 0,
     int64_t Offset = 0,
-    int64_t Length = 0,
+    int32_t Length = 0,
     uint32_t Checksum = 0,
     flatbuffers::Offset<flatbuffers::String> Md5 = 0) {
   BlockInfoBuilder builder_(_fbb);
-  builder_.add_Length(Length);
   builder_.add_Offset(Offset);
-  builder_.add_Order(Order);
   builder_.add_Md5(Md5);
   builder_.add_Checksum(Checksum);
-  builder_.add_Filename(Filename);
+  builder_.add_Length(Length);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<BlockInfo> CreateBlockInfoDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const char *Filename = nullptr,
-    int64_t Order = 0,
     int64_t Offset = 0,
-    int64_t Length = 0,
+    int32_t Length = 0,
     uint32_t Checksum = 0,
     const char *Md5 = nullptr) {
   return Protocol::CreateBlockInfo(
       _fbb,
-      Filename ? _fbb.CreateString(Filename) : 0,
-      Order,
       Offset,
       Length,
       Checksum,

@@ -20,8 +20,8 @@ using std::unordered_map;
  * 负责根据拿到的签名信息，对比本地文件并生成重建块,每个文件一个
  */
 
-typedef std::function<void (uint32_t, const ST_BlockInfo&)> INSPECTOR_CALLBACK;
-#define INSPECTOR_CALLBACK_FUNC(_f, _this) std::bind((_f), (_this), std::placeholders::_1, std::placeholders::_2)
+typedef std::function<void (uint32_t, const ST_BlockInfo&, const string&, size_t)> INSPECTOR_CALLBACK;
+#define INSPECTOR_CALLBACK_FUNC(_f, _this) std::bind((_f), (_this), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 
 
 class Inspector
@@ -56,9 +56,8 @@ private:
     FilePtr m_fileptr = nullptr;              //path ==> FilePtr
     uint32_t m_checksum = 0;
     string m_buffer;
-    size_t m_start = 0, m_end = 0;
-    uint64_t m_order = 0;
-    uint64_t m_offset = 0;
+    int32_t m_start = 0, m_end = 0;
+    int64_t m_offset = 0;
 };
 
 typedef std::shared_ptr<Inspector> InspectorPtr;

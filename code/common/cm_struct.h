@@ -12,18 +12,18 @@
 
 struct ST_BlockInfo
 {
-    std::string     filename;
-    int64_t         order;
+    //std::string     filename;
+    //int64_t         order;
     int64_t         offset;
-    int64_t         length;
+    int32_t         length;
     uint32_t        checksum;
     std::string     md5;
     std::string     data;
 
     ST_BlockInfo()
     {
-        filename.clear();
-        order = 0;
+        //filename.clear();
+        //order = 0;
         offset = 0;
         length = 0;
         checksum = 0;

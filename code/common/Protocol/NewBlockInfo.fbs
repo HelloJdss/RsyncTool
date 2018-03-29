@@ -2,12 +2,12 @@ namespace Protocol;
 
 table NewBlock
 {
-    Filename:string;
-    Order:long;         //块序号
-    Offset:long;        //块偏移
-    Length:ulong;        //块长度
-    Md5:string;         //二级签名
-    Data:[ubyte];       //数据
+    //Filename:string;
+    //Order:int;         //块序号
+    Offset:long;         //块偏移
+    Length:int;          //块长度
+    Md5:string;          //二级签名
+    Data:string;         //数据
 }
 
 table NewBlockAck

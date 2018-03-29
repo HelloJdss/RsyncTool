@@ -309,6 +309,7 @@ int TCPSocket::Send(const void *inData, int inLen)
     }
     else
     {
+        LOG_TRACE("Send bytes[%ld]", bytes);
         return bytes;
     }
 }
@@ -318,6 +319,7 @@ int TCPSocket::Receive(void *inBuffer, int inLen)
     auto bytes = recv(m_socket, inBuffer, inLen, 0);
     if (bytes >= 0)
     {
+        LOG_TRACE("Recv bytes[%ld]", bytes);
         return bytes;
     }
     else

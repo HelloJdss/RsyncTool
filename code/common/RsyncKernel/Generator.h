@@ -23,7 +23,7 @@ class Generator
 public:
     const BlockInfoVec& GetBlockInfos(const string& filename);
 
-    bool GenerateBlockInfos(const string& filename, uint32_t splitsize = 512);
+    bool GenerateBlockInfos(const string& filename, uint32_t splitsize);
 
     const string &GetDataByMd5(const string &md5);
 

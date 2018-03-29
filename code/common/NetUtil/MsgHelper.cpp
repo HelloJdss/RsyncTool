@@ -139,6 +139,7 @@ void MsgHelper::AddCount(int count)
         auto t = new uint8_t[newsize];
         bzero(t, newsize);
         memcpy(t, m_buffer + m_processPos, m_buffer_size - m_processPos);
+        m_currentPos -= m_processPos;
         m_processPos = 0;
         delete[] m_buffer;
         m_buffer = t;

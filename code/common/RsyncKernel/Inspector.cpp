@@ -9,10 +9,6 @@
 
 void Inspector::AddInfos(const ST_BlockInfo &info)
 {
-    if (info.filename != m_filename)
-    {
-        return;
-    }
     m_checksums.insert(info.checksum);
     m_checksum2md5[info.checksum].push_back(info.md5);
     m_md52infos[info.md5] = info;
@@ -21,10 +17,12 @@ void Inspector::AddInfos(const ST_BlockInfo &info)
 void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
 {
     //TODO: 根据本地文件流，生成新建块流
-    //callback(1, ST_BlockInfo());
     m_fileptr = FileHelper::CreateFilePtr(m_filename, "r");
     LogCheckConditionVoid(m_fileptr != nullptr, "m_fileptr is null! filename:[%s]", m_filename.c_str());
     char buff[m_blocksize];
+
+    auto filesize = m_fileptr->Size();
+
     auto count = m_fileptr->ReadBytes(buff, m_blocksize); //首次读取一整块的数据
     if (count == 0)
     {
@@ -41,7 +39,6 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
     {
         ST_BlockInfo info;
         bzero(buff, m_blocksize);
-        count = 0;
         LOG_DEBUG("checksum[%lu]", m_checksum);
         if (checkMatched(info)) //找到块匹配
         {
@@ -50,26 +47,28 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
                 //前面存在未匹配的部分
                 //TODO: 1.打包前面的部分并发送，2打包匹配部分并发送
                 ST_BlockInfo info1;
-                info1.filename = m_filename;
-                info1.order = m_order;
                 info1.offset = m_offset;
                 info1.length = m_start;
                 info1.md5 = "-";
                 info1.data.assign(m_buffer, 0, m_start);
 
-                callback(m_taskID, info1);
+                callback(m_taskID, info1, m_filename, filesize);
 
                 m_buffer.erase(0, m_start);
-                m_order++;
-                m_offset += m_end - m_start;
+//                m_order++;
+                m_offset += m_start;
                 m_end -= m_start;
                 m_start = 0;
 
             }
             //TODO: 只打包匹配部分，并将缓冲区前移，m_start, m_end修改位置
 
-            callback(m_taskID, info);
-            m_order++;
+
+//            info.order = m_order;
+            info.offset = m_offset;
+            callback(m_taskID, info, m_filename, filesize); //必须更新偏移量，因为info的结构体信息是旧的
+
+//            m_order++;
             m_offset += m_end - m_start;
             m_buffer.erase(m_start, m_end - m_start);
             m_end = m_start;
@@ -95,14 +94,12 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
                 //TODO：打包发送所有未发送的数据
 
                 ST_BlockInfo info1;
-                info1.filename = m_filename;
-                info1.order = m_order;
                 info1.offset = m_offset;
                 info1.length = m_end;
                 info1.md5 = "-";
                 info1.data.assign(m_buffer, 0, m_end);
 
-                callback(m_taskID, info1);
+                callback(m_taskID, info1, m_filename, filesize);
                 m_buffer.erase(0, m_end);
                 m_start = m_end = 0;
                 return;
@@ -120,17 +117,14 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
             if(m_start >= m_blocksize)
             {
                 ST_BlockInfo info1;
-                info1.filename = m_filename;
-                info1.order = m_order;
                 info1.offset = m_offset;
                 info1.length = m_blocksize;
                 info1.md5 = "-";
                 info1.data.assign(m_buffer, 0, m_blocksize);
 
-                callback(m_taskID, info1);
+                callback(m_taskID, info1, m_filename, filesize);
 
                 m_buffer.erase(0, m_blocksize);
-                m_order++;
                 m_offset += m_blocksize;
                 m_end -= m_blocksize;
                 m_start -= m_blocksize;
