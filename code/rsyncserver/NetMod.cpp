@@ -278,13 +278,9 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
 
 void TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo)
 {
-    LOG_TRACE("HEHEHEHEHEH!");
-
     LogCheckConditionVoid(m_tasks[taskID][blockInfo.filename] != nullptr, "m_tasks map failed!");
-
-
     //char buff[100] = "abcdefg";
-    //LOG_DEBUG("%s %s %s", string(buff, 0, 7).c_str(), string().append(buff, 0, 7).c_str(), string().assign(buff, 7).c_str());
+    //LOG_DEBUG("%s %s %s", string(buff, 0, 7).c_str(), string().append(buff, 0, 7).c_str(), string().assign(buff, 7).c_str()); // string(buff, 0, 7) will cause core dump
     LOG_DEBUG("Send Block[%lld]: Offset: %lld Length: %lld MD5: %s",
               blockInfo.order, blockInfo.offset, blockInfo.length, blockInfo.md5.c_str());
 }

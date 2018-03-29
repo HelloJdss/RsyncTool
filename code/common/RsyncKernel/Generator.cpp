@@ -4,8 +4,9 @@
 
 #include "LogHelper.h"
 #include "Generator.h"
-#include "RollingChecksum.h"
 #include "MD5.h"
+#include "FileHelper.h"
+#include "RollingChecksum.h"
 
 Generator::BlockInfoVec const &Generator::GetBlockInfos(const string &filename)
 {
@@ -20,27 +21,18 @@ Generator::BlockInfoVec const &Generator::GetBlockInfos(const string &filename)
 
 bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
 {
-    FILE *fp;
-    fp = fopen(filename.c_str(), "rb");
-    if (fp == nullptr)
-    {
-        LOG_ERROR("%s", strerror(errno));
-        return false;
-    }
+    auto fp = FileHelper::CreateFilePtr(filename, "rb");
+    LogCheckCondition(fp!= nullptr, false, "open file [%s] failed! errno: %s", filename.c_str(), strerror(errno));
 
 
-    fseek(fp, 0, SEEK_END);
-
-    int64_t n = ftell(fp);
+    int64_t n = fp->Size();
     if (n == -1)
     {
-        LOG_ERROR("%s", strerror(errno));
+        LOG_LastError();
         return false;
     }
 
-    LOG_TRACE("File[%s] Open Success! Length:[%llu], SplitSize: %lu", basename(filename.c_str()), n, splitsize);
-
-    fseek(fp, 0, SEEK_SET);
+    LOG_DEBUG("File[%s] Open Success! Length:[%llu], SplitSize: %lu", basename(filename.c_str()), n, splitsize);
 
     m_fileInfos[filename].clear();
 
@@ -55,13 +47,13 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
         info.order = i / splitsize;
         info.offset = i;
 
-        size_t count = fread(buff, 1, splitsize, fp);
+        size_t count = fp->ReadBytes(buff, splitsize);
 
         i += count;
 
         info.length = count;
 
-        info.checksum = RollingChecksum::adler32_checksum(buff, splitsize);
+        info.checksum = RollingChecksum::adler32_checksum(buff, count);
 
         info.md5 = md5(buff, count);
 
@@ -71,7 +63,7 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
 
         m_Md5ToData[info.md5] = m_fileInfos[filename].back().md5;   //这种赋值方式是为了利用string的写时复制特性，避免不必要的拷贝
 
-        LOG_TRACE("[%3lld\%] Finish Block[%lld]: Offset: %lld Length: %lld CheckSum: %u MD5: %s", i * 100 / n,
+        LOG_DEBUG("[%3lld\%] Finish Block[%lld]: Offset: %lld Length: %lld CheckSum: %u MD5: %s", i * 100 / n,
                   info.order,info.offset, info.length, info.checksum, info.md5.c_str());
     }
 

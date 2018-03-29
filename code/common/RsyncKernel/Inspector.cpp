@@ -40,6 +40,9 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
     while (true)
     {
         ST_BlockInfo info;
+        bzero(buff, m_blocksize);
+        count = 0;
+        LOG_DEBUG("checksum[%lu]", m_checksum);
         if (checkMatched(info)) //找到块匹配
         {
             if (m_start > 0)
@@ -70,10 +73,22 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
             m_offset += m_end - m_start;
             m_buffer.erase(m_start, m_end - m_start);
             m_end = m_start;
+
+            count = m_fileptr->ReadBytes(buff, m_blocksize); //读取一整块的数据
+            if (count == 0)
+            {
+                return;
+            }
+
+            m_start = 0;
+            m_end = count;
+
+            m_checksum = RollingChecksum::adler32_checksum(buff, count);
+            m_buffer = string().assign(buff, 0, count);
         }
         else //未发现匹配项
         {
-            auto count = m_fileptr->ReadBytes(buff, 1);
+            count = m_fileptr->ReadBytes(buff, 1);
             if (count == 0)
             {
                 //文件读取结束
@@ -83,7 +98,7 @@ void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
                 info1.filename = m_filename;
                 info1.order = m_order;
                 info1.offset = m_offset;
-                info1.length = m_start;
+                info1.length = m_end;
                 info1.md5 = "-";
                 info1.data.assign(m_buffer, 0, m_end);
 
