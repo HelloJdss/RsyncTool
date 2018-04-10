@@ -1,0 +1,24 @@
+namespace Protocol;
+
+//客户端请求查看服务器某目录下文件列表
+
+/*
+ * 流程:1. Client接受命令行输入，建立ViewDirReq告知服务器需要浏览的目录名
+ ×      2. Server收到Req后，根据目录名，浏览目录，生成文件列表，通过ViewDirAck回复给Client，若目录不存在，通过ErrorCode返回错误码：NO_SUCH_DIR
+ */
+
+table ViewDirReq
+{
+    DesDir:string;  //目标目录
+}
+
+table FileInfo
+{
+    FilePath:string;    //文件名及其绝对路径
+    FileSize:ulong;     //文件总大小
+}
+
+table ViewDirAck
+{
+    FileList:[FileInfo];  //文件列表
+}

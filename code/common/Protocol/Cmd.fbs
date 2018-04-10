@@ -1,0 +1,37 @@
+namespace Protocol;
+
+//所有的协议指令码
+
+enum Opcode:int
+{
+   MIN = 0,
+
+   C_S_VIEW_DIR_REQ,            //浏览文件夹文件
+   S_C_VIEW_DIR_ACK,
+
+   C_S_PUSH_REQ,                //正向同步请求，携带需要同步的文件信息
+
+   FILE_DIGEST_INFO,            //文件摘要信息，一个文件一个
+   FILE_REBUILD_INFO,           //文件重建信息, 每个文件块一个
+
+   C_S_PULL_REQ,                //反向同步请求
+   S_C_PULL_ACK,                //反向同步回复
+
+   ERROR_CODE,                  //错误码
+   MAX,
+}
+
+enum Err:short
+{
+    UNKNOWN,            //未知错误
+    NO_SUCH_FILE,       //没有该文件
+    NO_SUCH_DIR,        //没有该目录
+}
+
+table ErrorCode
+{
+    Code:Err;
+    TIP:string;
+}
+
+root_type ErrorCode;

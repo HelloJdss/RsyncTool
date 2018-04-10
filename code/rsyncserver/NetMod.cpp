@@ -185,7 +185,7 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
     auto blocksInfo = Protocol::GetFileBlockInfos(data->ToChars());
     auto pFilename = blocksInfo->DesPath();
     auto blocksize = blocksInfo->Splitsize();
-    auto pFile = FileHelper::CreateFilePtr(pFilename->str(), "r");
+    auto pFile = FileHelper::OpenFile(pFilename->str(), "r");
 
     if (pFile == nullptr)   //本地不存在该文件
     {

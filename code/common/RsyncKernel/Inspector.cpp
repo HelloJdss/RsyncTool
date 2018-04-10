@@ -17,7 +17,7 @@ void Inspector::AddInfos(const ST_BlockInfo &info)
 void Inspector::StartGetBlocks(INSPECTOR_CALLBACK callback)
 {
     //TODO: 根据本地文件流，生成新建块流
-    m_fileptr = FileHelper::CreateFilePtr(m_filename, "r");
+    m_fileptr = FileHelper::OpenFile(m_filename, "r");
     LogCheckConditionVoid(m_fileptr != nullptr, "m_fileptr is null! filename:[%s]", m_filename.c_str());
     char buff[m_blocksize];
 

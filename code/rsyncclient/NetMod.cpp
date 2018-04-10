@@ -21,7 +21,7 @@ void NetMod::Dispatch()
     BytesPtr data;
     while (m_msgHelper.ReadMessage(header, &data))
     {
-        LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serversocket->GetEndPoint().c_str(),
+        LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serverSocket->GetEndPoint().c_str(),
                  Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
 
         switch (header.getOpCode())
@@ -33,8 +33,8 @@ void NetMod::Dispatch()
                 onRecvErrorCode(header.getTaskId(), data);
                 break;
             default:
-                LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_serversocket->GetEndPoint().c_str());
-                m_serversocket->Close();
+                LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_serverSocket->GetEndPoint().c_str());
+                m_serverSocket->Close();
                 break;
         }
     }
@@ -43,7 +43,7 @@ void NetMod::Dispatch()
 NetMod::~NetMod()
 {
     m_running = false;
-    m_serversocket = nullptr;
+    m_serverSocket = nullptr;
 }
 
 void NetMod::onRecvErrorCode(uint32_t taskID, BytesPtr data)
@@ -75,7 +75,7 @@ void NetMod::onRecvReverseSyncAck(uint32_t taskID, BytesPtr data)
             it->m_newSize = pNewBlockAck->Length();
             if (it->m_pnewfile == nullptr)
             {
-                it->m_pnewfile = FileHelper::CreateFilePtr(it->m_filePath + ".tmp", "w");
+                it->m_pnewfile = FileHelper::OpenFile(it->m_filePath + ".tmp", "w");
                 it->m_pnewfile->SetSize(it->m_newSize);
             }
 
@@ -95,7 +95,7 @@ void NetMod::onRecvReverseSyncAck(uint32_t taskID, BytesPtr data)
             else
             {
                 //TODO:根据md5重建
-                auto pData = m_task2generator[taskID]->GetDataByMd5(pBlock->Md5()->str());
+                auto pData = m_task2generator[taskID]->GetChunkDataByMd5(pBlock->Md5()->str());
                 LogCheckConditionVoid(pData.length() == pBlock->Length(), "Err!");
                 it->m_pnewfile->WriteBytes(pData.data(), pBlock->Length(),
                                            pBlock->Offset(),
@@ -141,10 +141,10 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
 
     m_task2data[taskID].push_back(pFileBaseData);
 
-    m_task2generator[taskID]->GenerateBlockInfos(src, blocksize);
+    m_task2generator[taskID]->Generate(src, blocksize);
 
 
-    auto infos = m_task2generator[taskID]->GetBlockInfos(src);
+    auto infos = m_task2generator[taskID]->GetBlockInfoVec();
 
     flatbuffers::FlatBufferBuilder builder;
 
@@ -163,15 +163,15 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
     ST_PackageHeader header(Opcode::REVERSE_SYNC_REQ, 1);
     auto bytes = MsgHelper::PackageData(header,
                                         MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
-    m_serversocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+    m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
 
-    m_serversocket->SetRecvTimeOut(30, 0);  //30秒延迟
+    m_serverSocket->SetRecvTimeOut(30, 0);  //30秒延迟
 
     m_running = true;
 
     while (m_running)
     {
-        auto count = m_serversocket->Receive(m_msgHelper.GetBuffer() + m_msgHelper.GetStartIndex(),
+        auto count = m_serverSocket->Receive(m_msgHelper.GetBuffer() + m_msgHelper.GetStartIndex(),
                                              m_msgHelper.GetRemainBytes());
         if (count > 0)
         {
@@ -189,10 +189,17 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
 
 bool NetMod::Init()
 {
-    m_serversocket = NetHelper::CreateTCPSocket(INET);
+    m_serverSocket = NetHelper::CreateTCPSocket(INET);
     try
     {
-        m_serversocket->Connect(SocketAddress(INADDR_ANY, 52077));
+        if(m_serverIp.empty())
+        {
+            m_serverSocket->Connect(SocketAddress(INADDR_ANY, m_serverPort));
+        }
+        else
+        {
+            m_serverSocket->Connect(SocketAddress(m_serverIp.c_str(), m_serverPort));
+        }
         return true;
     }
     catch (int err)
@@ -201,3 +208,26 @@ bool NetMod::Init()
         return false;
     }
 }
+
+void
+NetMod::AddTask(TaskType taskType, const string &src, const string &des, const string &desIP, const uint16_t desPort)
+{
+    static uint32_t taskID = 10000;
+
+    m_serverIp = desIP;
+    m_serverPort = desPort;
+
+    ST_TaskInfo taskInfo;
+    switch (taskType)
+    {
+        case TaskType::ClientToServer:
+
+            break;
+        case TaskType::ServerToClient:
+            break;
+        default:
+            LOG_ERROR("Unknown TaskType!");
+            break;
+    }
+}
+

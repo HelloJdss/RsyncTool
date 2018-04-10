@@ -8,20 +8,14 @@
 #include "FileHelper.h"
 #include "RollingChecksum.h"
 
-Generator::BlockInfoVec const &Generator::GetBlockInfos(const string &filename)
+const RTVector<ST_BlockInfo> &Generator::GetBlockInfoVec()
 {
-    auto it = m_fileInfos.find(filename);
-    if (it != m_fileInfos.end())
-    {
-        return it->second;
-    }
-    static BlockInfoVec nullVec;
-    return nullVec;
+    return m_blockInfoVec;
 }
 
-bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
+bool Generator::Generate(const string &filename, uint32_t splitsize)
 {
-    auto fp = FileHelper::CreateFilePtr(filename, "rb");
+    auto fp = FileHelper::OpenFile(filename, "rb");
     LogCheckCondition(fp!= nullptr, false, "open file [%s] failed! errno: %s", filename.c_str(), strerror(errno));
 
 
@@ -34,7 +28,8 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
 
     LOG_DEBUG("File[%s] Open Success! Length:[%llu], SplitSize: %lu", basename(filename.c_str()), n, splitsize);
 
-    m_fileInfos[filename].clear();
+    m_blockInfoVec.clear();
+    m_Md5ToData.clear();
 
     char buff[splitsize];
 
@@ -43,8 +38,6 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
     while (i < n)
     {
         ST_BlockInfo info;
-//        info.filename = filename;
-//        info.order = i / splitsize;
         info.offset = i;
 
         size_t count = fp->ReadBytes(buff, splitsize);
@@ -59,9 +52,9 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
 
         info.data.assign(buff, count);
 
-        m_fileInfos[filename].push_back(info);
+        m_blockInfoVec.push_back(info);
 
-        m_Md5ToData[info.md5] = m_fileInfos[filename].back().data;   //这种赋值方式是为了利用string的写时复制特性，避免不必要的拷贝
+        m_Md5ToData[info.md5] = m_blockInfoVec.back().data;   //这种赋值方式是为了利用string的写时复制特性，避免不必要的拷贝
 
         LOG_DEBUG("[%3lld\%] Finish Block: Offset: %lld Length: %d CheckSum: %u MD5: %s", i * 100 / n,
                   info.offset, info.length, info.checksum, info.md5.c_str());
@@ -70,14 +63,18 @@ bool Generator::GenerateBlockInfos(const string &filename, uint32_t splitsize)
     return true;
 }
 
-const string &Generator::GetDataByMd5(const string &md5)
+const string &Generator::GetChunkDataByMd5(const string &md5)
 {
-    auto it = m_Md5ToData.find(md5);
-    if (it != m_Md5ToData.end())
-    {
-        return it->second;
-    }
+    return m_Md5ToData[md5];
+}
 
-    static string empty;
-    return empty;
+Generator::Generator()
+{
+    m_blockInfoVec.clear();
+    m_Md5ToData.clear();
+}
+
+Generator::Generator(string const &filename, uint32_t splitsize)
+{
+    Generate(filename, splitsize);
 }

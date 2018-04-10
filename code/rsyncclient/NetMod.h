@@ -54,6 +54,8 @@ namespace RsyncClient
     public:
         ~NetMod();
 
+        void AddTask(TaskType taskType, const string& src, const string& des, const string& desIP, uint16_t desPort);
+
         bool Init();
 
         void Run();
@@ -73,10 +75,15 @@ namespace RsyncClient
         volatile bool m_running = false;
 
         MsgHelper m_msgHelper;
-        TCPSocketPtr m_serversocket;
+        TCPSocketPtr m_serverSocket;
 
         RTMap<uint32_t, RTVector<FileBaseDataPtr>> m_task2data;            // task ID   ===> [basedata]
         RTMap<uint32_t, GeneratorPtr> m_task2generator;          // task ID   ===> generator
+
+        string m_serverIp;
+        uint16_t m_serverPort = 48888;
+        RTMap<uint32_t ,ST_TaskInfo> m_taskInfos;                  //taskID ==> taskInfo 任务列表
+
     };
 
 #define g_NetMod NetMod::Instance()

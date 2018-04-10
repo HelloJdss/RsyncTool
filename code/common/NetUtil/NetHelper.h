@@ -26,14 +26,11 @@ public:
 
     SocketAddress(const char *inAddr, uint16_t inPort);
 
-    SocketAddress(const sockaddr &inSockAddr)
-    { memcpy(&m_sockaddr, &inSockAddr, sizeof(sockaddr)); }
+    SocketAddress(const sockaddr &inSockAddr) { memcpy(&m_sockaddr, &inSockAddr, sizeof(sockaddr)); }
 
-    sockaddr_in *GetAsSockAddrIn()
-    { return reinterpret_cast<sockaddr_in *>(&m_sockaddr); }
+    sockaddr_in *GetAsSockAddrIn() { return reinterpret_cast<sockaddr_in *>(&m_sockaddr); }
 
-    size_t GetSize() const
-    { return sizeof(sockaddr); }
+    size_t GetSize() const { return sizeof(sockaddr); }
 
 private:
     friend class UDPSocket;

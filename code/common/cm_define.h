@@ -45,7 +45,7 @@
             return &instance; \
         }
 
-#define RT_RAWTIP(...) \
+#define RT_ERROR(...) \
     do{ \
         fflush(stdout); \
         fprintf(stderr, "\33[1;31m"); \
@@ -56,7 +56,7 @@
 #define RT_ASSERT(cond, ...) \
     do { \
         if (!(cond)) { \
-            RT_RAWTIP(__VA_ARGS__); \
+            RT_ERROR(__VA_ARGS__); \
             assert(cond); \
         } \
     } while (0)
