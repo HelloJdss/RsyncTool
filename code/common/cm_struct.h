@@ -32,7 +32,7 @@ struct ST_BlockInfo
     }
 };
 
-struct ST_PackageHeader
+struct ST_PackageHeader //包头
 {
     ST_PackageHeader()
     {
@@ -62,9 +62,11 @@ private:
 
 enum TaskType
 {
+    NONE                =   0,
     ClientToServer      =   1,  //客户端同步至服务器
     ServerToClient      =   2,  //服务器同步至客户端
 
+    ViewDir                =  98,  //查看文件
     Finished            =  99,  //已完成的任务
 };
 
@@ -74,6 +76,14 @@ struct ST_TaskInfo  //任务信息
     TaskType         m_type;
     std::string      m_src;    //客户端文件或目录路径
     std::string      m_des;    //服务器文件或目录路径
+
+    ST_TaskInfo()
+    {
+        m_taskID = 0;
+        m_type = NONE;
+        m_src.clear();
+        m_des.clear();
+    }
 };
 
 #endif //RSYNCTOOL_CM_STRUCT_H

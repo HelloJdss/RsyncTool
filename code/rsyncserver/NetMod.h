@@ -29,6 +29,9 @@ namespace RsyncServer
 
         void SendToClient(Protocol::Opcode op, uint32_t taskID, BytesPtr data);
 
+        void SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t * buff, uint32_t size);
+
+
     private:
         friend class NetMod;
 
@@ -46,6 +49,8 @@ namespace RsyncServer
         TCPSocketPtr m_socket;
 
         RTMap<uint32_t, RTMap<string, const Protocol::FileBlockInfos *> > m_tasks; // task ==> filename ==> BlockInfos ptr
+
+        void onRecvViewDirReq(uint32_t taskID, BytesPtr data);  //接收到浏览文件请求
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;

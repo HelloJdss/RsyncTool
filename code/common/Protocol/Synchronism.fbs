@@ -38,7 +38,7 @@ table SyncFileList
 table FileDigest        //生成文件摘要
 {
     Path:FilePath;          //文件路径和名称
-    TaskID:uint;            //任务编号（每个任务对应一个文件的同步任务）
+    //TaskID:uint;            //任务编号（每个任务对应一个文件的同步任务）（在包头中已经给出）
     Splitsize:uint;         //分块大小
     Infos:[BlockInfo];      //块信息
 }

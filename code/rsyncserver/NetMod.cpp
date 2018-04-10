@@ -7,6 +7,8 @@
 #include "ErrorCode_generated.h"
 #include "NewBlockInfo_generated.h"
 
+#include "ViewDir_generated.h"
+
 
 using namespace Protocol;
 using namespace RsyncServer;
@@ -14,8 +16,8 @@ using namespace RsyncServer;
 void NetMod::Init(uint16_t port)
 {
     m_listenSocket = NetHelper::CreateTCPSocket(INET);
-    //m_receivingAddr = SocketAddressPtr(new SocketAddress("127.0.0.1", port));
-    m_receivingAddr = SocketAddressPtr(new SocketAddress(INADDR_ANY, port));
+    m_receivingAddr = SocketAddressPtr(new SocketAddress("127.0.0.1", port));
+    //m_receivingAddr = SocketAddressPtr(new SocketAddress(INADDR_ANY, port));
     auto err = m_listenSocket->Bind(*m_receivingAddr);
     if (err != NO_ERROR)
     {
@@ -158,6 +160,10 @@ void TCPClient::Dispatch()
             case Opcode::REVERSE_SYNC_REQ:
                 onRecvReverseSyncReq(header.getTaskId(), data);
                 break;
+
+            case Opcode::VIEW_DIR_REQ:
+                onRecvViewDirReq(header.getTaskId(), data);
+                break;
             default:
                 LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
                 m_socket->Close();
@@ -282,6 +288,60 @@ TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo, co
     this->SendToClient(Opcode::REVERSE_SYNC_ACK,
                        taskID,
                        MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
+}
+
+void TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Receive View Dir Req!");
+    /*
+     * 1.拆包
+     * 2.检查目标文件(本机)是否存在，若不存在则返回错误码
+     * 3.读取文件列表，打包返回
+     */
+
+    auto pViewDirReq = flatbuffers::GetRoot<ViewDirReq>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pViewDirReq->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    auto dp = FileHelper::OpenDir(pViewDirReq->DesDir()->str());
+
+    if (!dp)
+    {
+        flatbuffers::FlatBufferBuilder builder;
+        auto fbb = Protocol::CreateErrorCode(builder, Err_NO_SUCH_DIR, builder.CreateString(strerror(errno)));
+        builder.Finish(fbb);
+
+        this->SendToClient(Opcode::ERROR_CODE, taskID, builder.GetBufferPointer(), builder.GetSize());
+        return;
+    }
+
+    auto List = dp->AllFiles();
+
+    flatbuffers::FlatBufferBuilder builder;
+
+    std::vector<flatbuffers::Offset<Protocol::FileInfo> > vector1;
+
+    for (auto &name:List)
+    {
+        auto fp = FileHelper::OpenFile(name, "r");
+        if (fp)
+        {
+            vector1.push_back(Protocol::CreateFileInfo(builder,
+                                                       builder.CreateString(FileHelper::GetRealPath(fp->Name())),
+                                                       fp->Size()));
+        }
+    }
+    auto fbb = Protocol::CreateViewDirAck(builder, builder.CreateVector(vector1));
+    builder.Finish(fbb);
+
+    this->SendToClient(Opcode::VIEW_DIR_ACK, taskID, builder.GetBufferPointer(), builder.GetSize());
+}
+
+void TCPClient::SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t *buff, uint32_t size)
+{
+    this->SendToClient(op, taskID, MsgHelper::CreateBytes(buff, size));
 }
 
 void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)

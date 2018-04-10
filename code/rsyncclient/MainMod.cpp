@@ -218,6 +218,7 @@ bool MainMod::cmd_v(string des) //
             string ip = ipPort.substr(0, pos);
             uint16_t port = static_cast<uint16_t>(std::stoi(ipPort.substr(pos + 1)));
             printf("set dir: %s, ip: %s port: %u\n", desDir.c_str(), ip.c_str(), port);
+            g_NetMod->AddTask(TaskType::ViewDir, nullptr, &desDir, ip, port);
             return true;
         }
 

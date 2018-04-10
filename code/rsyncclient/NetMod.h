@@ -54,7 +54,7 @@ namespace RsyncClient
     public:
         ~NetMod();
 
-        void AddTask(TaskType taskType, const string& src, const string& des, const string& desIP, uint16_t desPort);
+        void AddTask(TaskType taskType, string const *src, string const *des, const string &desIP, uint16_t desPort);
 
         bool Init();
 
@@ -65,6 +65,14 @@ namespace RsyncClient
         void Dispatch();
 
     private:
+
+        void createViewDirTask(const string& des);  //创建文件浏览任务
+
+        void launchViewDirTask(uint32_t taskID);    //启动文件浏览任务
+
+        void onRecvViewDirAck(uint32_t taskID, BytesPtr data);
+
+
 
         void createReverseSyncTask(uint32_t taskID, const string &src, const string &des, uint32_t blocksize = 1024);  //创建反向同步任务
 
@@ -82,7 +90,9 @@ namespace RsyncClient
 
         string m_serverIp;
         uint16_t m_serverPort = 48888;
-        RTMap<uint32_t ,ST_TaskInfo> m_taskInfos;                  //taskID ==> taskInfo 任务列表
+        RTMap<uint32_t ,ST_TaskInfo> m_tasks;                  //taskID ==> taskInfo 任务列表
+
+        uint32_t m_taskIndex = 10000;
 
     };
 

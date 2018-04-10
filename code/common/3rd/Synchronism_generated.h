@@ -220,15 +220,11 @@ inline flatbuffers::Offset<SyncFileList> CreateSyncFileListDirect(
 struct FileDigest FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PATH = 4,
-    VT_TASKID = 6,
-    VT_SPLITSIZE = 8,
-    VT_INFOS = 10
+    VT_SPLITSIZE = 6,
+    VT_INFOS = 8
   };
   const FilePath *Path() const {
     return GetPointer<const FilePath *>(VT_PATH);
-  }
-  uint32_t TaskID() const {
-    return GetField<uint32_t>(VT_TASKID, 0);
   }
   uint32_t Splitsize() const {
     return GetField<uint32_t>(VT_SPLITSIZE, 0);
@@ -240,7 +236,6 @@ struct FileDigest FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_PATH) &&
            verifier.VerifyTable(Path()) &&
-           VerifyField<uint32_t>(verifier, VT_TASKID) &&
            VerifyField<uint32_t>(verifier, VT_SPLITSIZE) &&
            VerifyOffset(verifier, VT_INFOS) &&
            verifier.Verify(Infos()) &&
@@ -254,9 +249,6 @@ struct FileDigestBuilder {
   flatbuffers::uoffset_t start_;
   void add_Path(flatbuffers::Offset<FilePath> Path) {
     fbb_.AddOffset(FileDigest::VT_PATH, Path);
-  }
-  void add_TaskID(uint32_t TaskID) {
-    fbb_.AddElement<uint32_t>(FileDigest::VT_TASKID, TaskID, 0);
   }
   void add_Splitsize(uint32_t Splitsize) {
     fbb_.AddElement<uint32_t>(FileDigest::VT_SPLITSIZE, Splitsize, 0);
@@ -279,13 +271,11 @@ struct FileDigestBuilder {
 inline flatbuffers::Offset<FileDigest> CreateFileDigest(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<FilePath> Path = 0,
-    uint32_t TaskID = 0,
     uint32_t Splitsize = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<BlockInfo>>> Infos = 0) {
   FileDigestBuilder builder_(_fbb);
   builder_.add_Infos(Infos);
   builder_.add_Splitsize(Splitsize);
-  builder_.add_TaskID(TaskID);
   builder_.add_Path(Path);
   return builder_.Finish();
 }
@@ -293,13 +283,11 @@ inline flatbuffers::Offset<FileDigest> CreateFileDigest(
 inline flatbuffers::Offset<FileDigest> CreateFileDigestDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<FilePath> Path = 0,
-    uint32_t TaskID = 0,
     uint32_t Splitsize = 0,
     const std::vector<flatbuffers::Offset<BlockInfo>> *Infos = nullptr) {
   return Protocol::CreateFileDigest(
       _fbb,
       Path,
-      TaskID,
       Splitsize,
       Infos ? _fbb.CreateVector<flatbuffers::Offset<BlockInfo>>(*Infos) : 0);
 }

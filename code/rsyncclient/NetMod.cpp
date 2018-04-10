@@ -7,12 +7,56 @@
 #include "ErrorCode_generated.h"
 #include "NewBlockInfo_generated.h"
 
+#include "ViewDir_generated.h"
+
 using namespace Protocol;
 using namespace RsyncClient;
 
 void NetMod::Run()
 {
-    this->CreateNewTask(Opcode::REVERSE_SYNC_REQ, "./test.txt", "./test1.txt");
+    //this->CreateNewTask(Opcode::REVERSE_SYNC_REQ, "./test.txt", "./test1.txt");
+
+    for (auto it = m_tasks.begin(); it != m_tasks.end(); ++it)   //逐个启动任务
+    {
+        switch (it->second.m_type)
+        {
+            case TaskType::ViewDir:
+                launchViewDirTask(it->second.m_taskID);
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    m_serverSocket->SetRecvTimeOut(30, 0);  //30秒延迟，若30秒仍收不到服务器的消息，则终止
+
+    m_running = true;
+
+    while (m_running)
+    {
+        try
+        {
+            auto count = m_serverSocket->Receive(m_msgHelper.GetBuffer() + m_msgHelper.GetStartIndex(),
+                                                 m_msgHelper.GetRemainBytes());
+            if (count > 0)
+            {
+                m_msgHelper.AddCount(count);
+                this->Dispatch();
+            }
+            else if (count == 0)
+            {
+                LOG_WARN("Server Close Connection!");
+                m_running = false;
+                return;
+            }
+        }
+        catch (int err)
+        {
+            LOG_FATAL("Catch Exception: [%s]", strerror(err));
+            m_running = false;
+        }
+    }
 }
 
 void NetMod::Dispatch()
@@ -31,6 +75,9 @@ void NetMod::Dispatch()
                 break;
             case Opcode::ERROR_CODE:
                 onRecvErrorCode(header.getTaskId(), data);
+                break;
+            case Opcode::VIEW_DIR_ACK :
+                onRecvViewDirAck(header.getTaskId(), data);
                 break;
             default:
                 LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_serverSocket->GetEndPoint().c_str());
@@ -192,7 +239,7 @@ bool NetMod::Init()
     m_serverSocket = NetHelper::CreateTCPSocket(INET);
     try
     {
-        if(m_serverIp.empty())
+        if (m_serverIp.empty())
         {
             m_serverSocket->Connect(SocketAddress(INADDR_ANY, m_serverPort));
         }
@@ -210,24 +257,71 @@ bool NetMod::Init()
 }
 
 void
-NetMod::AddTask(TaskType taskType, const string &src, const string &des, const string &desIP, const uint16_t desPort)
+NetMod::AddTask(TaskType taskType, string const *src, string const *des, const string &desIP, uint16_t desPort)
 {
-    static uint32_t taskID = 10000;
 
     m_serverIp = desIP;
     m_serverPort = desPort;
 
-    ST_TaskInfo taskInfo;
     switch (taskType)
     {
         case TaskType::ClientToServer:
-
             break;
         case TaskType::ServerToClient:
+            break;
+
+        case TaskType::ViewDir:
+            LogCheckConditionVoid(des, "des Path is<null>");
+            createViewDirTask(*des);
             break;
         default:
             LOG_ERROR("Unknown TaskType!");
             break;
     }
+}
+
+void NetMod::createViewDirTask(const string &des)
+{
+    ST_TaskInfo newTask;
+    newTask.m_taskID = ++m_taskIndex;
+    newTask.m_type = TaskType::ViewDir;
+    newTask.m_des = des;
+
+    m_tasks[newTask.m_taskID] = newTask;
+    LOG_INFO("Add Task: [%lu] Type: [View Dir] Des: [%s]", newTask.m_taskID, newTask.m_des.c_str());
+}
+
+void NetMod::launchViewDirTask(uint32_t taskID)
+{
+    LogCheckConditionVoid(m_tasks[taskID].m_type == TaskType::ViewDir, "Launch Task Failed!");
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto fbb = Protocol::CreateViewDirReq(builder, builder.CreateString(m_tasks[taskID].m_des));
+    builder.Finish(fbb);
+
+    ST_PackageHeader header(Opcode::VIEW_DIR_REQ, taskID);
+    auto bytes = MsgHelper::PackageData(header,
+                                        MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
+    m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+    LOG_INFO("Launch Task: [%lu] Type: [View Dir] Des: [%s]", m_tasks[taskID].m_taskID, m_tasks[taskID].m_des.c_str());
+}
+
+void NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Receive View Dir Ack");
+
+    auto pViewDirAck = flatbuffers::GetRoot<ViewDirAck>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pViewDirAck->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    int i = 1;
+    for (auto item : *pViewDirAck->FileList())
+    {
+        LOG_INFO("%d: Path: [%s] Size: [%lld]", i++, item->FilePath()->c_str(), item->FileSize());
+    }
+
+    m_tasks[taskID].m_type = TaskType::Finished;
 }
 

@@ -12,10 +12,11 @@ table ViewDirReq
     DesDir:string;  //目标目录
 }
 
+
 table FileInfo
 {
     FilePath:string;    //文件名及其绝对路径
-    FileSize:ulong;     //文件总大小
+    FileSize:long;     //文件总大小
 }
 
 table ViewDirAck

@@ -71,14 +71,14 @@ struct FileInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *FilePath() const {
     return GetPointer<const flatbuffers::String *>(VT_FILEPATH);
   }
-  uint64_t FileSize() const {
-    return GetField<uint64_t>(VT_FILESIZE, 0);
+  int64_t FileSize() const {
+    return GetField<int64_t>(VT_FILESIZE, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_FILEPATH) &&
            verifier.Verify(FilePath()) &&
-           VerifyField<uint64_t>(verifier, VT_FILESIZE) &&
+           VerifyField<int64_t>(verifier, VT_FILESIZE) &&
            verifier.EndTable();
   }
 };
@@ -89,8 +89,8 @@ struct FileInfoBuilder {
   void add_FilePath(flatbuffers::Offset<flatbuffers::String> FilePath) {
     fbb_.AddOffset(FileInfo::VT_FILEPATH, FilePath);
   }
-  void add_FileSize(uint64_t FileSize) {
-    fbb_.AddElement<uint64_t>(FileInfo::VT_FILESIZE, FileSize, 0);
+  void add_FileSize(int64_t FileSize) {
+    fbb_.AddElement<int64_t>(FileInfo::VT_FILESIZE, FileSize, 0);
   }
   explicit FileInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -107,7 +107,7 @@ struct FileInfoBuilder {
 inline flatbuffers::Offset<FileInfo> CreateFileInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<flatbuffers::String> FilePath = 0,
-    uint64_t FileSize = 0) {
+    int64_t FileSize = 0) {
   FileInfoBuilder builder_(_fbb);
   builder_.add_FileSize(FileSize);
   builder_.add_FilePath(FilePath);
@@ -117,7 +117,7 @@ inline flatbuffers::Offset<FileInfo> CreateFileInfo(
 inline flatbuffers::Offset<FileInfo> CreateFileInfoDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *FilePath = nullptr,
-    uint64_t FileSize = 0) {
+    int64_t FileSize = 0) {
   return Protocol::CreateFileInfo(
       _fbb,
       FilePath ? _fbb.CreateString(FilePath) : 0,
