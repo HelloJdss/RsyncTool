@@ -14,8 +14,13 @@
 #include <vector>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <pthread.h>
 
 using std::string;
+
+/**
+ * 提供了mutex来保持写时线程安全
+ */
 
 class File
 {
@@ -23,7 +28,7 @@ public:
 
     ~File();
 
-    bool Open(const string &filename, const char *mode = "a+");
+    bool Open(const string &filename, const char *mode = "a+"); //打开文件, "w和w+会自动创建文件和目录"
 
     size_t ReadBytes(char *buffer, size_t nitems);
 
@@ -45,7 +50,9 @@ public:
 
     bool Flush();
 
-    string Name();
+    string Path();
+
+    string BaseName();
 
     int64_t Size();
 
@@ -65,6 +72,8 @@ private:
     FILE *m_fp = nullptr;
 
     struct stat m_stat;
+
+    pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
 };
 
 typedef std::shared_ptr<File> FilePtr;
@@ -94,7 +103,7 @@ typedef std::shared_ptr<Dir> DirPtr;
 class FileHelper
 {
 public:
-    static FilePtr OpenFile(const string &file_name, const char *mode = "a+"); //打开文件
+    static FilePtr OpenFile(const string &file_name, const char *mode = "a+"); //打开文件, "w和w+会自动创建文件和目录"
 
     static DirPtr OpenDir(const string &dir_name); //打开目录
 

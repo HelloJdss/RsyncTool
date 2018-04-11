@@ -5,7 +5,7 @@ namespace Protocol;
 /*
  * 流程：a)正向同步：push
  *         1. client准备需要同步的文件列表SyncFileList发送给server
- *         2. server根据文件列表，将每一个文件生成摘要FileDigest发送给client，如果文件不存在，则发送空块信息
+ *         2. server根据文件列表，将每一个文件生成摘要FileDigest发送给client，如果文件不存在，则发送空块信息(分块大小为0)
  *         3. clinet收到Digest，先发送重建文件的基本信息FileRebuildInfo，再逐步计算本地文件生成重建块FileRebuildChunk发送给server，如果文件不存在，则发送错误码
  *         4. server收到Chunk，重建文件，完成后重命名替换文件，若收到错误码，则终止本Task
  *       b)反向同步: pull
@@ -15,14 +15,7 @@ namespace Protocol;
  */
 
 
-table FilePath
-{
-    SrcPath:string;         //文件在客户端的路径和名称
-    DesPath:string;         //文件在服务端的路径和名称
-}
-
-
-table BlockInfo
+table ChunkInfo
 {
     Offset:long;         //块偏移
     Length:int;          //块长度
@@ -30,31 +23,33 @@ table BlockInfo
     Md5:string;          //二级签名
 }
 
-table SyncFileList
+table SyncFile
 {
-    List:[FilePath];    //需要同步的文件列表
+    SrcPath:string;         //文件在客户端的路径和名称
+    DesPath:string;         //文件在服务端的路径和名称
 }
 
 table FileDigest        //生成文件摘要
 {
-    Path:FilePath;          //文件路径和名称
+    SrcPath:string;         //文件在客户端的路径和名称
+    DesPath:string;         //文件在服务端的路径和名称
     //TaskID:uint;            //任务编号（每个任务对应一个文件的同步任务）（在包头中已经给出）
     Splitsize:uint;         //分块大小
-    Infos:[BlockInfo];      //块信息
+    Infos:[ChunkInfo];      //块信息
 }
 
-table FileRebuildInfo   //重建文件的基本信息
+table RebuildInfo   //重建文件的基本信息
 {
-    TaskID:uint;
-    Length:ulong;           //重建文件总长度
+    //TaskID:uint;
+    Size:long;           //重建文件总长度
     //可能需要添加重建文件的权限，修改时间等其它需要保持的信息
 }
 
-table FileRebuildChunk       //生成文件重建块信息
+table RebuildChunk       //生成文件重建块信息
 {
-    TaskID:uint;            //任务编号（通过任务编号可以查到该任务编号对应的文件摘要信息）
-    Offset:long;            //本块偏移
-    Length:int;             //本块长度
-    IsMd5:bool;             //数据是Md5还是具体数据
-    Data:string;            //本块数据
+    //TaskID:uint;            //任务编号（通过任务编号可以查到该任务编号对应的文件摘要信息）
+    Offset:ulong;               //本块偏移
+    Length:ulong;               //本块长度
+    IsMd5:bool;                 //数据是Md5还是具体数据
+    Data:string;                //本块数据
 }

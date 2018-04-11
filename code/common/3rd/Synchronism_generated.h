@@ -8,81 +8,17 @@
 
 namespace Protocol {
 
-struct FilePath;
+struct ChunkInfo;
 
-struct BlockInfo;
-
-struct SyncFileList;
+struct SyncFile;
 
 struct FileDigest;
 
-struct FileRebuildInfo;
+struct RebuildInfo;
 
-struct FileRebuildChunk;
+struct RebuildChunk;
 
-struct FilePath FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_SRCPATH = 4,
-    VT_DESPATH = 6
-  };
-  const flatbuffers::String *SrcPath() const {
-    return GetPointer<const flatbuffers::String *>(VT_SRCPATH);
-  }
-  const flatbuffers::String *DesPath() const {
-    return GetPointer<const flatbuffers::String *>(VT_DESPATH);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_SRCPATH) &&
-           verifier.Verify(SrcPath()) &&
-           VerifyOffset(verifier, VT_DESPATH) &&
-           verifier.Verify(DesPath()) &&
-           verifier.EndTable();
-  }
-};
-
-struct FilePathBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_SrcPath(flatbuffers::Offset<flatbuffers::String> SrcPath) {
-    fbb_.AddOffset(FilePath::VT_SRCPATH, SrcPath);
-  }
-  void add_DesPath(flatbuffers::Offset<flatbuffers::String> DesPath) {
-    fbb_.AddOffset(FilePath::VT_DESPATH, DesPath);
-  }
-  explicit FilePathBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  FilePathBuilder &operator=(const FilePathBuilder &);
-  flatbuffers::Offset<FilePath> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<FilePath>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<FilePath> CreateFilePath(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> SrcPath = 0,
-    flatbuffers::Offset<flatbuffers::String> DesPath = 0) {
-  FilePathBuilder builder_(_fbb);
-  builder_.add_DesPath(DesPath);
-  builder_.add_SrcPath(SrcPath);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<FilePath> CreateFilePathDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    const char *SrcPath = nullptr,
-    const char *DesPath = nullptr) {
-  return Protocol::CreateFilePath(
-      _fbb,
-      SrcPath ? _fbb.CreateString(SrcPath) : 0,
-      DesPath ? _fbb.CreateString(DesPath) : 0);
-}
-
-struct BlockInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct ChunkInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_OFFSET = 4,
     VT_LENGTH = 6,
@@ -112,40 +48,40 @@ struct BlockInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct BlockInfoBuilder {
+struct ChunkInfoBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_Offset(int64_t Offset) {
-    fbb_.AddElement<int64_t>(BlockInfo::VT_OFFSET, Offset, 0);
+    fbb_.AddElement<int64_t>(ChunkInfo::VT_OFFSET, Offset, 0);
   }
   void add_Length(int32_t Length) {
-    fbb_.AddElement<int32_t>(BlockInfo::VT_LENGTH, Length, 0);
+    fbb_.AddElement<int32_t>(ChunkInfo::VT_LENGTH, Length, 0);
   }
   void add_Checksum(uint32_t Checksum) {
-    fbb_.AddElement<uint32_t>(BlockInfo::VT_CHECKSUM, Checksum, 0);
+    fbb_.AddElement<uint32_t>(ChunkInfo::VT_CHECKSUM, Checksum, 0);
   }
   void add_Md5(flatbuffers::Offset<flatbuffers::String> Md5) {
-    fbb_.AddOffset(BlockInfo::VT_MD5, Md5);
+    fbb_.AddOffset(ChunkInfo::VT_MD5, Md5);
   }
-  explicit BlockInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit ChunkInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  BlockInfoBuilder &operator=(const BlockInfoBuilder &);
-  flatbuffers::Offset<BlockInfo> Finish() {
+  ChunkInfoBuilder &operator=(const ChunkInfoBuilder &);
+  flatbuffers::Offset<ChunkInfo> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<BlockInfo>(end);
+    auto o = flatbuffers::Offset<ChunkInfo>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<BlockInfo> CreateBlockInfo(
+inline flatbuffers::Offset<ChunkInfo> CreateChunkInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
     int64_t Offset = 0,
     int32_t Length = 0,
     uint32_t Checksum = 0,
     flatbuffers::Offset<flatbuffers::String> Md5 = 0) {
-  BlockInfoBuilder builder_(_fbb);
+  ChunkInfoBuilder builder_(_fbb);
   builder_.add_Offset(Offset);
   builder_.add_Md5(Md5);
   builder_.add_Checksum(Checksum);
@@ -153,13 +89,13 @@ inline flatbuffers::Offset<BlockInfo> CreateBlockInfo(
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<BlockInfo> CreateBlockInfoDirect(
+inline flatbuffers::Offset<ChunkInfo> CreateChunkInfoDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     int64_t Offset = 0,
     int32_t Length = 0,
     uint32_t Checksum = 0,
     const char *Md5 = nullptr) {
-  return Protocol::CreateBlockInfo(
+  return Protocol::CreateChunkInfo(
       _fbb,
       Offset,
       Length,
@@ -167,75 +103,93 @@ inline flatbuffers::Offset<BlockInfo> CreateBlockInfoDirect(
       Md5 ? _fbb.CreateString(Md5) : 0);
 }
 
-struct SyncFileList FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct SyncFile FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_LIST = 4
+    VT_SRCPATH = 4,
+    VT_DESPATH = 6
   };
-  const flatbuffers::Vector<flatbuffers::Offset<FilePath>> *List() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<FilePath>> *>(VT_LIST);
+  const flatbuffers::String *SrcPath() const {
+    return GetPointer<const flatbuffers::String *>(VT_SRCPATH);
+  }
+  const flatbuffers::String *DesPath() const {
+    return GetPointer<const flatbuffers::String *>(VT_DESPATH);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_LIST) &&
-           verifier.Verify(List()) &&
-           verifier.VerifyVectorOfTables(List()) &&
+           VerifyOffset(verifier, VT_SRCPATH) &&
+           verifier.Verify(SrcPath()) &&
+           VerifyOffset(verifier, VT_DESPATH) &&
+           verifier.Verify(DesPath()) &&
            verifier.EndTable();
   }
 };
 
-struct SyncFileListBuilder {
+struct SyncFileBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_List(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<FilePath>>> List) {
-    fbb_.AddOffset(SyncFileList::VT_LIST, List);
+  void add_SrcPath(flatbuffers::Offset<flatbuffers::String> SrcPath) {
+    fbb_.AddOffset(SyncFile::VT_SRCPATH, SrcPath);
   }
-  explicit SyncFileListBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  void add_DesPath(flatbuffers::Offset<flatbuffers::String> DesPath) {
+    fbb_.AddOffset(SyncFile::VT_DESPATH, DesPath);
+  }
+  explicit SyncFileBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  SyncFileListBuilder &operator=(const SyncFileListBuilder &);
-  flatbuffers::Offset<SyncFileList> Finish() {
+  SyncFileBuilder &operator=(const SyncFileBuilder &);
+  flatbuffers::Offset<SyncFile> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<SyncFileList>(end);
+    auto o = flatbuffers::Offset<SyncFile>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<SyncFileList> CreateSyncFileList(
+inline flatbuffers::Offset<SyncFile> CreateSyncFile(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<FilePath>>> List = 0) {
-  SyncFileListBuilder builder_(_fbb);
-  builder_.add_List(List);
+    flatbuffers::Offset<flatbuffers::String> SrcPath = 0,
+    flatbuffers::Offset<flatbuffers::String> DesPath = 0) {
+  SyncFileBuilder builder_(_fbb);
+  builder_.add_DesPath(DesPath);
+  builder_.add_SrcPath(SrcPath);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<SyncFileList> CreateSyncFileListDirect(
+inline flatbuffers::Offset<SyncFile> CreateSyncFileDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<flatbuffers::Offset<FilePath>> *List = nullptr) {
-  return Protocol::CreateSyncFileList(
+    const char *SrcPath = nullptr,
+    const char *DesPath = nullptr) {
+  return Protocol::CreateSyncFile(
       _fbb,
-      List ? _fbb.CreateVector<flatbuffers::Offset<FilePath>>(*List) : 0);
+      SrcPath ? _fbb.CreateString(SrcPath) : 0,
+      DesPath ? _fbb.CreateString(DesPath) : 0);
 }
 
 struct FileDigest FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_PATH = 4,
-    VT_SPLITSIZE = 6,
-    VT_INFOS = 8
+    VT_SRCPATH = 4,
+    VT_DESPATH = 6,
+    VT_SPLITSIZE = 8,
+    VT_INFOS = 10
   };
-  const FilePath *Path() const {
-    return GetPointer<const FilePath *>(VT_PATH);
+  const flatbuffers::String *SrcPath() const {
+    return GetPointer<const flatbuffers::String *>(VT_SRCPATH);
+  }
+  const flatbuffers::String *DesPath() const {
+    return GetPointer<const flatbuffers::String *>(VT_DESPATH);
   }
   uint32_t Splitsize() const {
     return GetField<uint32_t>(VT_SPLITSIZE, 0);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<BlockInfo>> *Infos() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<BlockInfo>> *>(VT_INFOS);
+  const flatbuffers::Vector<flatbuffers::Offset<ChunkInfo>> *Infos() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<ChunkInfo>> *>(VT_INFOS);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_PATH) &&
-           verifier.VerifyTable(Path()) &&
+           VerifyOffset(verifier, VT_SRCPATH) &&
+           verifier.Verify(SrcPath()) &&
+           VerifyOffset(verifier, VT_DESPATH) &&
+           verifier.Verify(DesPath()) &&
            VerifyField<uint32_t>(verifier, VT_SPLITSIZE) &&
            VerifyOffset(verifier, VT_INFOS) &&
            verifier.Verify(Infos()) &&
@@ -247,13 +201,16 @@ struct FileDigest FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct FileDigestBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_Path(flatbuffers::Offset<FilePath> Path) {
-    fbb_.AddOffset(FileDigest::VT_PATH, Path);
+  void add_SrcPath(flatbuffers::Offset<flatbuffers::String> SrcPath) {
+    fbb_.AddOffset(FileDigest::VT_SRCPATH, SrcPath);
+  }
+  void add_DesPath(flatbuffers::Offset<flatbuffers::String> DesPath) {
+    fbb_.AddOffset(FileDigest::VT_DESPATH, DesPath);
   }
   void add_Splitsize(uint32_t Splitsize) {
     fbb_.AddElement<uint32_t>(FileDigest::VT_SPLITSIZE, Splitsize, 0);
   }
-  void add_Infos(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<BlockInfo>>> Infos) {
+  void add_Infos(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ChunkInfo>>> Infos) {
     fbb_.AddOffset(FileDigest::VT_INFOS, Infos);
   }
   explicit FileDigestBuilder(flatbuffers::FlatBufferBuilder &_fbb)
@@ -270,94 +227,84 @@ struct FileDigestBuilder {
 
 inline flatbuffers::Offset<FileDigest> CreateFileDigest(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<FilePath> Path = 0,
+    flatbuffers::Offset<flatbuffers::String> SrcPath = 0,
+    flatbuffers::Offset<flatbuffers::String> DesPath = 0,
     uint32_t Splitsize = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<BlockInfo>>> Infos = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ChunkInfo>>> Infos = 0) {
   FileDigestBuilder builder_(_fbb);
   builder_.add_Infos(Infos);
   builder_.add_Splitsize(Splitsize);
-  builder_.add_Path(Path);
+  builder_.add_DesPath(DesPath);
+  builder_.add_SrcPath(SrcPath);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<FileDigest> CreateFileDigestDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<FilePath> Path = 0,
+    const char *SrcPath = nullptr,
+    const char *DesPath = nullptr,
     uint32_t Splitsize = 0,
-    const std::vector<flatbuffers::Offset<BlockInfo>> *Infos = nullptr) {
+    const std::vector<flatbuffers::Offset<ChunkInfo>> *Infos = nullptr) {
   return Protocol::CreateFileDigest(
       _fbb,
-      Path,
+      SrcPath ? _fbb.CreateString(SrcPath) : 0,
+      DesPath ? _fbb.CreateString(DesPath) : 0,
       Splitsize,
-      Infos ? _fbb.CreateVector<flatbuffers::Offset<BlockInfo>>(*Infos) : 0);
+      Infos ? _fbb.CreateVector<flatbuffers::Offset<ChunkInfo>>(*Infos) : 0);
 }
 
-struct FileRebuildInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct RebuildInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_TASKID = 4,
-    VT_LENGTH = 6
+    VT_SIZE = 4
   };
-  uint32_t TaskID() const {
-    return GetField<uint32_t>(VT_TASKID, 0);
-  }
-  uint64_t Length() const {
-    return GetField<uint64_t>(VT_LENGTH, 0);
+  int64_t Size() const {
+    return GetField<int64_t>(VT_SIZE, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_TASKID) &&
-           VerifyField<uint64_t>(verifier, VT_LENGTH) &&
+           VerifyField<int64_t>(verifier, VT_SIZE) &&
            verifier.EndTable();
   }
 };
 
-struct FileRebuildInfoBuilder {
+struct RebuildInfoBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_TaskID(uint32_t TaskID) {
-    fbb_.AddElement<uint32_t>(FileRebuildInfo::VT_TASKID, TaskID, 0);
+  void add_Size(int64_t Size) {
+    fbb_.AddElement<int64_t>(RebuildInfo::VT_SIZE, Size, 0);
   }
-  void add_Length(uint64_t Length) {
-    fbb_.AddElement<uint64_t>(FileRebuildInfo::VT_LENGTH, Length, 0);
-  }
-  explicit FileRebuildInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit RebuildInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  FileRebuildInfoBuilder &operator=(const FileRebuildInfoBuilder &);
-  flatbuffers::Offset<FileRebuildInfo> Finish() {
+  RebuildInfoBuilder &operator=(const RebuildInfoBuilder &);
+  flatbuffers::Offset<RebuildInfo> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<FileRebuildInfo>(end);
+    auto o = flatbuffers::Offset<RebuildInfo>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<FileRebuildInfo> CreateFileRebuildInfo(
+inline flatbuffers::Offset<RebuildInfo> CreateRebuildInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t TaskID = 0,
-    uint64_t Length = 0) {
-  FileRebuildInfoBuilder builder_(_fbb);
-  builder_.add_Length(Length);
-  builder_.add_TaskID(TaskID);
+    int64_t Size = 0) {
+  RebuildInfoBuilder builder_(_fbb);
+  builder_.add_Size(Size);
   return builder_.Finish();
 }
 
-struct FileRebuildChunk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct RebuildChunk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_TASKID = 4,
-    VT_OFFSET = 6,
-    VT_LENGTH = 8,
-    VT_ISMD5 = 10,
-    VT_DATA = 12
+    VT_OFFSET = 4,
+    VT_LENGTH = 6,
+    VT_ISMD5 = 8,
+    VT_DATA = 10
   };
-  uint32_t TaskID() const {
-    return GetField<uint32_t>(VT_TASKID, 0);
+  uint64_t Offset() const {
+    return GetField<uint64_t>(VT_OFFSET, 0);
   }
-  int64_t Offset() const {
-    return GetField<int64_t>(VT_OFFSET, 0);
-  }
-  int32_t Length() const {
-    return GetField<int32_t>(VT_LENGTH, 0);
+  uint64_t Length() const {
+    return GetField<uint64_t>(VT_LENGTH, 0);
   }
   bool IsMd5() const {
     return GetField<uint8_t>(VT_ISMD5, 0) != 0;
@@ -367,9 +314,8 @@ struct FileRebuildChunk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_TASKID) &&
-           VerifyField<int64_t>(verifier, VT_OFFSET) &&
-           VerifyField<int32_t>(verifier, VT_LENGTH) &&
+           VerifyField<uint64_t>(verifier, VT_OFFSET) &&
+           VerifyField<uint64_t>(verifier, VT_LENGTH) &&
            VerifyField<uint8_t>(verifier, VT_ISMD5) &&
            VerifyOffset(verifier, VT_DATA) &&
            verifier.Verify(Data()) &&
@@ -377,62 +323,55 @@ struct FileRebuildChunk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct FileRebuildChunkBuilder {
+struct RebuildChunkBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_TaskID(uint32_t TaskID) {
-    fbb_.AddElement<uint32_t>(FileRebuildChunk::VT_TASKID, TaskID, 0);
+  void add_Offset(uint64_t Offset) {
+    fbb_.AddElement<uint64_t>(RebuildChunk::VT_OFFSET, Offset, 0);
   }
-  void add_Offset(int64_t Offset) {
-    fbb_.AddElement<int64_t>(FileRebuildChunk::VT_OFFSET, Offset, 0);
-  }
-  void add_Length(int32_t Length) {
-    fbb_.AddElement<int32_t>(FileRebuildChunk::VT_LENGTH, Length, 0);
+  void add_Length(uint64_t Length) {
+    fbb_.AddElement<uint64_t>(RebuildChunk::VT_LENGTH, Length, 0);
   }
   void add_IsMd5(bool IsMd5) {
-    fbb_.AddElement<uint8_t>(FileRebuildChunk::VT_ISMD5, static_cast<uint8_t>(IsMd5), 0);
+    fbb_.AddElement<uint8_t>(RebuildChunk::VT_ISMD5, static_cast<uint8_t>(IsMd5), 0);
   }
   void add_Data(flatbuffers::Offset<flatbuffers::String> Data) {
-    fbb_.AddOffset(FileRebuildChunk::VT_DATA, Data);
+    fbb_.AddOffset(RebuildChunk::VT_DATA, Data);
   }
-  explicit FileRebuildChunkBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit RebuildChunkBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  FileRebuildChunkBuilder &operator=(const FileRebuildChunkBuilder &);
-  flatbuffers::Offset<FileRebuildChunk> Finish() {
+  RebuildChunkBuilder &operator=(const RebuildChunkBuilder &);
+  flatbuffers::Offset<RebuildChunk> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<FileRebuildChunk>(end);
+    auto o = flatbuffers::Offset<RebuildChunk>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<FileRebuildChunk> CreateFileRebuildChunk(
+inline flatbuffers::Offset<RebuildChunk> CreateRebuildChunk(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t TaskID = 0,
-    int64_t Offset = 0,
-    int32_t Length = 0,
+    uint64_t Offset = 0,
+    uint64_t Length = 0,
     bool IsMd5 = false,
     flatbuffers::Offset<flatbuffers::String> Data = 0) {
-  FileRebuildChunkBuilder builder_(_fbb);
+  RebuildChunkBuilder builder_(_fbb);
+  builder_.add_Length(Length);
   builder_.add_Offset(Offset);
   builder_.add_Data(Data);
-  builder_.add_Length(Length);
-  builder_.add_TaskID(TaskID);
   builder_.add_IsMd5(IsMd5);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<FileRebuildChunk> CreateFileRebuildChunkDirect(
+inline flatbuffers::Offset<RebuildChunk> CreateRebuildChunkDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t TaskID = 0,
-    int64_t Offset = 0,
-    int32_t Length = 0,
+    uint64_t Offset = 0,
+    uint64_t Length = 0,
     bool IsMd5 = false,
     const char *Data = nullptr) {
-  return Protocol::CreateFileRebuildChunk(
+  return Protocol::CreateRebuildChunk(
       _fbb,
-      TaskID,
       Offset,
       Length,
       IsMd5,

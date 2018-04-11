@@ -42,7 +42,7 @@ namespace RsyncServer
         void onRecvReverseSyncReq(uint32_t taskID, BytesPtr data); //接收到反向同步请求
 
         //每当Inspector生成一块后执行
-        void onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo, const string &filename, size_t filesize);
+        void onInspectBlockInfo(uint32_t taskID, const ST_BlockInformation &blockInfo, const string &filename, size_t filesize);
 
         MsgHelper m_msgHelper;
 
@@ -51,6 +51,16 @@ namespace RsyncServer
         RTMap<uint32_t, RTMap<string, const Protocol::FileBlockInfos *> > m_tasks; // task ==> filename ==> BlockInfos ptr
 
         void onRecvViewDirReq(uint32_t taskID, BytesPtr data);  //接收到浏览文件请求
+
+        void onRecvSyncFile(uint32_t taskID, BytesPtr data);    //接收到文件正向同步请求
+
+        void onRecvRebuildInfo(uint32_t taskID, BytesPtr data); //接收到重建文件信息
+
+        void onRecvRebuildChunk(uint32_t taskID, BytesPtr data); //接收到重建块信息
+
+        RTMap<uint32_t, ST_TaskInfo> m_tasks1;
+
+        pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;

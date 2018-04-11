@@ -50,7 +50,7 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
     g_LogHelper->Init(logLevel, appName, g_Configuration->m_log_file);
 
     //加载配置文件
-    RT_ASSERT(g_Configuration->LoadXml() == 0, "Configuration init failed!");
+    g_Configuration->LoadXml();
 
     bool ret = true;
     while ((opt = getopt_long(argc, argv, "-hDL:p:P:f:v:", longopts, nullptr)) != -1)
@@ -161,6 +161,7 @@ bool MainMod::cmd_push(string src, string des) //local_dir(file) des_dir@des_ip:
             string ip = ipPort.substr(0, pos);
             uint16_t port = static_cast<uint16_t>(std::stoi(ipPort.substr(pos + 1)));
             printf("set src path: %s des dir: %s, ip: %s port: %u\n", src.c_str(), desDir.c_str(), ip.c_str(), port);
+            g_NetMod->AddTask(TaskType::Push, &src, &desDir, ip, port);
             return true;
         }
     }
@@ -197,7 +198,7 @@ bool MainMod::cmd_pull(string src, string des) //local_dir des_dir(file)@des_ip:
     return false;
 }
 
-bool MainMod::cmd_v(string des) //
+bool MainMod::cmd_v(string des) //des_dir(file)@des_ip:port
 {
     auto pos = des.find_last_of('@');
     if (pos != string::npos)
@@ -270,7 +271,7 @@ int Configuration::LoadXml(char const *xmlPath)
 
 int Configuration::SaveAsXml(char const *xmlPath)
 {
-    auto fp = FileHelper::OpenFile(xmlPath, "w+"); //Tinyxml2必须先手动创建文件
+    auto fp = FileHelper::OpenFile(xmlPath, "w"); //tiny xml2必须先手动创建不存在的文件
 
     fp = nullptr;
 

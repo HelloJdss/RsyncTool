@@ -5,11 +5,13 @@
 #include <fcntl.h>
 #include "NetMod.h"
 #include "MainMod.h"
+#include "Inspector.h"
 #include "BlockInfos_generated.h"
 #include "ErrorCode_generated.h"
 #include "NewBlockInfo_generated.h"
 
 #include "ViewDir_generated.h"
+#include "Synchronism_generated.h"
 #include "tinyxml2.h"
 
 using namespace Protocol;
@@ -26,6 +28,9 @@ void NetMod::Run()
         {
             case TaskType::ViewDir:
                 launchViewDirTask(it->second.m_taskID);
+                break;
+            case TaskType::Push:
+                launchPushTask(it->second.m_taskID);
                 break;
             default:
                 break;
@@ -82,6 +87,9 @@ void NetMod::Dispatch()
                 break;
             case Opcode::VIEW_DIR_ACK :
                 onRecvViewDirAck(header.getTaskId(), data);
+                break;
+            case Opcode::FILE_DIGEST :
+                onRecvFileDigest(header.getTaskId(), data);
                 break;
             default:
                 LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_serverSocket->GetEndPoint().c_str());
@@ -195,7 +203,7 @@ void NetMod::createReverseSyncTask(uint32_t taskID, const string &src, const str
     m_task2generator[taskID]->Generate(src, blocksize);
 
 
-    auto infos = m_task2generator[taskID]->GetBlockInfoVec();
+    auto infos = m_task2generator[taskID]->GetChunkDigestVec();
 
     flatbuffers::FlatBufferBuilder builder;
 
@@ -269,13 +277,16 @@ NetMod::AddTask(TaskType taskType, string const *src, string const *des, const s
 
     switch (taskType)
     {
-        case TaskType::ClientToServer:
+        case TaskType::Push:
+            LogCheckConditionVoid(src, "src Path is <null>");
+            LogCheckConditionVoid(des, "des Path is <null>");
+            createPushTask(*src, *des);
             break;
         case TaskType::ServerToClient:
             break;
 
         case TaskType::ViewDir:
-            LogCheckConditionVoid(des, "des Path is<null>");
+            LogCheckConditionVoid(des, "des Path is <null>");
             createViewDirTask(*des);
             break;
         default:
@@ -284,12 +295,12 @@ NetMod::AddTask(TaskType taskType, string const *src, string const *des, const s
     }
 }
 
-void NetMod::createViewDirTask(const string &des)
+void NetMod::createViewDirTask(const string &desDir)
 {
     ST_TaskInfo newTask;
     newTask.m_taskID = ++m_taskIndex;
     newTask.m_type = TaskType::ViewDir;
-    newTask.m_des = des;
+    newTask.m_des = desDir;
 
     m_tasks[newTask.m_taskID] = newTask;
     LOG_INFO("Add Task: [%lu] Type: [View Dir] Des: [%s]", newTask.m_taskID, newTask.m_des.c_str());
@@ -303,10 +314,8 @@ void NetMod::launchViewDirTask(uint32_t taskID)
     auto fbb = Protocol::CreateViewDirReq(builder, builder.CreateString(m_tasks[taskID].m_des));
     builder.Finish(fbb);
 
-    ST_PackageHeader header(Opcode::VIEW_DIR_REQ, taskID);
-    auto bytes = MsgHelper::PackageData(header,
-                                        MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
-    m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+    this->SendToServer(Opcode::VIEW_DIR_REQ, taskID, builder.GetBufferPointer(), builder.GetSize());
+
     LOG_INFO("Launch Task: [%lu] Type: [View Dir] Des: [%s]", m_tasks[taskID].m_taskID, m_tasks[taskID].m_des.c_str());
 }
 
@@ -361,7 +370,7 @@ void NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
 
         //save as xml:
         XMLElement *pInfo = document.NewElement("File");
-        pInfo->SetAttribute("Name", item->FilePath()->c_str());
+        pInfo->SetAttribute("Path", item->FilePath()->c_str());
         pInfo->SetAttribute("Size", item->FileSize());
         des->InsertEndChild(pInfo);
     }
@@ -376,5 +385,138 @@ void NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
     }
 
     m_tasks[taskID].m_type = TaskType::Finished;
+}
+
+void NetMod::createPushTask(const string &srcPath, const string &desDir) // src可能是文件或目录，des一定是目录
+{
+    if (srcPath.back() == '/') //目录
+    {
+        auto dp = FileHelper::OpenDir(srcPath);
+        LogCheckConditionVoid(dp, "Open Dir Failed!");
+        auto vec = dp->AllFiles();
+        for (auto &item : vec)
+        {
+            ST_TaskInfo newTask;
+            newTask.m_taskID = ++m_taskIndex;
+            newTask.m_type = TaskType::Push;
+            newTask.m_src = item;
+            newTask.m_des = desDir + item.substr(srcPath.size());
+            m_tasks[newTask.m_taskID] = newTask;
+            LOG_INFO("Add Task: [%lu] Type: [Push] Src: [%s] Des: [%s]", newTask.m_taskID, newTask.m_src.c_str(),
+                     newTask.m_des.c_str());
+        }
+    }
+    else
+    {
+        auto fp = FileHelper::OpenFile(srcPath, "r");
+        LogCheckConditionVoid(fp, "Open File Failed!");
+        ST_TaskInfo newTask;
+        newTask.m_taskID = ++m_taskIndex;
+        newTask.m_type = TaskType::Push;
+        newTask.m_src = srcPath;
+        newTask.m_des = desDir + fp->BaseName();
+        m_tasks[newTask.m_taskID] = newTask;
+        LOG_INFO("Add Task: [%lu] Type: [Push] Src: [%s] Des: [%s]", newTask.m_taskID, newTask.m_src.c_str(),
+                 newTask.m_des.c_str());
+    }
+}
+
+void NetMod::launchPushTask(uint32_t taskID)
+{
+    LogCheckConditionVoid(m_tasks[taskID].m_type == TaskType::Push, "Launch Task Failed!");
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto fbb = Protocol::CreateSyncFile(builder, builder.CreateString(m_tasks[taskID].m_src),
+                                        builder.CreateString(m_tasks[taskID].m_des));
+    builder.Finish(fbb);
+
+    this->SendToServer(Opcode::SYNC_FILE, taskID, builder.GetBufferPointer(), builder.GetSize());
+
+    LOG_INFO("Launch Task: [%lu] Type: [Push] Src: [%s] Des: [%s]", m_tasks[taskID].m_taskID,
+             m_tasks[taskID].m_src.c_str(), m_tasks[taskID].m_des.c_str());
+}
+
+void NetMod::SendToServer(Protocol::Opcode op, uint32_t taskID, uint8_t *buf, uint32_t size)
+{
+    ST_PackageHeader header(op, taskID);
+    auto bytes = MsgHelper::PackageData(header,
+                                        MsgHelper::CreateBytes(buf, size));
+    m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+}
+
+void NetMod::onRecvFileDigest(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Receive File Digest");
+
+    auto pFileDigest = flatbuffers::GetRoot<FileDigest>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pFileDigest->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    if (m_tasks[taskID].m_taskID == taskID) //先行创建过的任务，需要校验
+    {
+        LogCheckConditionVoid(m_tasks[taskID].m_des == pFileDigest->DesPath()->str(), "Task[%lu] Conflict!", taskID);
+        LogCheckConditionVoid(m_tasks[taskID].m_src == pFileDigest->SrcPath()->str(), "Task[%lu] Conflict!", taskID);
+    }
+
+    m_tasks[taskID].m_des = pFileDigest->DesPath()->str();
+    m_tasks[taskID].m_src = pFileDigest->SrcPath()->str();
+
+    auto fp = FileHelper::OpenFile(m_tasks[taskID].m_src);
+    LogCheckConditionVoid(fp, "fp is <null>");
+
+    //先发送文件信息
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto fbb = Protocol::CreateRebuildInfo(builder, fp->Size());
+    builder.Finish(fbb);
+
+    this->SendToServer(Opcode::REBUILD_INFO, taskID, builder.GetBufferPointer(), builder.GetSize());
+
+    fp = nullptr;
+
+    if (pFileDigest->Splitsize() == 0) //对方不存在该文件，则直接传输整个文件
+    {
+        auto pInspector = Inspector::NewInspector(taskID, m_tasks[taskID].m_src, 1024);
+        pInspector->BeginInspect(INSPECTOR_CALLBACK_FUNC(&NetMod::onInspectCallBack, this));
+    }
+    else
+    {
+        //TODO: 根据摘要重建
+        auto pInspector = Inspector::NewInspector(taskID, m_tasks[taskID].m_src, pFileDigest->Splitsize());
+
+        //添加摘要信息
+
+        for (const auto& item : *pFileDigest->Infos())
+        {
+            ST_BlockInformation information;
+            information.offset = item->Offset();
+            information.length = item->Length();
+            information.checksum = item->Checksum();
+            information.md5 = item->Md5()->str();
+            pInspector->AddDigestInfo(information);
+        }
+
+        pInspector->BeginInspect(INSPECTOR_CALLBACK_FUNC(&NetMod::onInspectCallBack, this));
+    }
+}
+
+void NetMod::onInspectCallBack(uint32_t taskID, const ST_BlockInformation &info)
+{
+    flatbuffers::FlatBufferBuilder builder;
+
+    flatbuffers::Offset<RebuildChunk> fbb;
+    if (info.md5 == "-")
+    {
+        fbb = Protocol::CreateRebuildChunk(builder, info.offset, info.length, false, builder.CreateString(info.data));
+    }
+    else
+    {
+        fbb = Protocol::CreateRebuildChunk(builder, info.offset, info.length, true, builder.CreateString(info.md5));
+    }
+    builder.Finish(fbb);
+
+    this->SendToServer(Opcode::REBUILD_CHUNK, taskID, builder.GetBufferPointer(), builder.GetSize());
 }
 

@@ -3,6 +3,7 @@
     <words>
       <w>cmds</w>
       <w>errno</w>
+      <w>recv</w>
       <w>rsync</w>
     </words>
   </dictionary>

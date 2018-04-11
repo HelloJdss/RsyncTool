@@ -64,14 +64,26 @@ namespace RsyncClient
 
         void Dispatch();
 
+        void SendToServer(Protocol::Opcode op, uint32_t taskID, uint8_t* buf, uint32_t size);
+
     private:
 
-        void createViewDirTask(const string& des);  //创建文件浏览任务
+        friend class Inspector;
+
+        void createViewDirTask(const string& desDir);  //创建文件浏览任务
 
         void launchViewDirTask(uint32_t taskID);    //启动文件浏览任务
 
         void onRecvViewDirAck(uint32_t taskID, BytesPtr data);
 
+
+        void createPushTask(const string& srcPath, const string& desDir);
+
+        void launchPushTask(uint32_t taskID);
+
+        void onRecvFileDigest(uint32_t taskID, BytesPtr data);
+
+        void onInspectCallBack(uint32_t taskID, const ST_BlockInformation& info);
 
 
         void createReverseSyncTask(uint32_t taskID, const string &src, const string &des, uint32_t blocksize = 1024);  //创建反向同步任务

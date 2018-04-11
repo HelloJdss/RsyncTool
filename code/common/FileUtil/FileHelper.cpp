@@ -20,14 +20,13 @@ File::~File()
 
 bool File::Open(const string &filename, char const *mode)
 {
-    string dir;
-    if(FileHelper::SplitDirAndFile(filename, &dir)) //存在目录需要先创建目录
+    if(strcmp(mode, "w") == 0 || strcmp(mode, "wb") == 0)
     {
-        mkdir(dir.c_str(), 0777);
-        //查看是否存在此目录、目录下是否允许创建文件
-        if (-1 == access(dir.c_str(), F_OK | W_OK))
+        string dir;
+        if(FileHelper::SplitDirAndFile(filename, &dir) && -1 == access(dir.c_str(), F_OK | W_OK)) //存在目录需要先创建目录
         {
-            fprintf(stderr, "mkdir: %s error: %s\n", dir.c_str(), strerror(errno));
+            mkdir(dir.c_str(), 0777);
+            LOG_WARN("mkdir: %s", dir.c_str());
         }
     }
 
@@ -72,11 +71,13 @@ size_t File::Write(const void *buffer, size_t size, size_t nitems, bool flush)
     size_t ret = 0;
     if (m_fp)
     {
+        pthread_mutex_lock(&m_mutex);
         ret = fwrite(buffer, size, nitems, m_fp);
         if (flush)
         {
             fflush(m_fp);
         }
+        pthread_mutex_unlock(&m_mutex);
     }
     return ret;
 }
@@ -91,7 +92,7 @@ bool File::Flush()
     return false;
 }
 
-string File::Name()
+string File::Path()
 {
     return m_name;
 }
@@ -149,8 +150,15 @@ size_t File::WriteBytes(const char *buffer, size_t nitems, size_t offset, bool f
 {
     if (m_fp)
     {
+        pthread_mutex_lock(&m_mutex);
         fseek(m_fp, offset, SEEK_SET);
-        return WriteBytes(buffer, nitems, flush);
+        auto ret = fwrite(buffer, 1, nitems, m_fp);
+        if (flush)
+        {
+            fflush(m_fp);
+        }
+        pthread_mutex_unlock(&m_mutex);
+        return ret;
     }
     return 0;
 }
@@ -159,8 +167,15 @@ size_t File::Write(const void *buffer, size_t size, size_t nitems, size_t offset
 {
     if (m_fp)
     {
+        pthread_mutex_lock(&m_mutex);
         fseek(m_fp, offset, SEEK_SET);
-        return Write(buffer, size, nitems, flush);
+        auto ret = fwrite(buffer, size, nitems, m_fp);
+        if (flush)
+        {
+            fflush(m_fp);
+        }
+        pthread_mutex_unlock(&m_mutex);
+        return ret;
     }
     return 0;
 }
@@ -183,6 +198,11 @@ struct stat File::Stat()
 FILE *File::GetPointer()
 {
     return m_fp;
+}
+
+string File::BaseName()
+{
+    return basename(m_name.c_str());
 }
 
 FilePtr FileHelper::OpenFile(const string &file_name, char const *mode)

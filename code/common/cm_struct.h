@@ -8,22 +8,25 @@
 #include <strings.h>
 #include <cstdint>
 #include <netinet/in.h>
-#include "Protocol/Protocol_define.h"
 
-struct ST_BlockInfo
+#include "Protocol_define.h"
+#include "Generator.h"
+#include "FileHelper.h"
+
+struct ST_BlockInformation //块信息
 {
-    //std::string     filename;
-    //int64_t         order;
     int64_t         offset;
     int32_t         length;
     uint32_t        checksum;
     std::string     md5;
+
     std::string     data;
 
-    ST_BlockInfo()
+    //std::string     path; //文件名
+    //int64_t         size; //总大小
+
+    ST_BlockInformation()
     {
-        //filename.clear();
-        //order = 0;
         offset = 0;
         length = 0;
         checksum = 0;
@@ -63,9 +66,9 @@ private:
 enum TaskType
 {
     NONE                =   0,
-    ClientToServer      =   1,  //客户端同步至服务器
+    Push      =   1,  //客户端同步至服务器
     ServerToClient      =   2,  //服务器同步至客户端
-    ViewDir             =   3,   //查看文件
+    ViewDir             =   3,   //查看目录
 
     Error               =  97,  //有错误
     Abort               =  98,  //终止
@@ -80,13 +83,23 @@ struct ST_TaskInfo  //任务信息
     std::string      m_des;    //服务器文件或目录路径
     std::string      m_err;    //错误提示
 
+    int64_t          m_rebuild_size;   //文件重建总大小
+    GeneratorPtr     m_generatorPtr;
+    uint64_t         m_processLen; //已经处理的文件长度
+    FilePtr          m_pf;   //重建的文件指针
+
     ST_TaskInfo()
     {
         m_taskID = 0;
+        m_rebuild_size = 0;
         m_type = NONE;
         m_src.clear();
         m_des.clear();
         m_err.clear();
+        m_generatorPtr = nullptr;
+        m_rebuild_size = -1;
+        m_processLen = 0;
+        m_pf = nullptr;
     }
 };
 

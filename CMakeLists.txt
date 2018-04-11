@@ -2,7 +2,15 @@ cmake_minimum_required(VERSION 3.09)
 
 project(RsyncTool)
 
-include_directories(code code/common)
+include_directories(code/common/3rd)
+include_directories(code/common/FileUtil)
+include_directories(code/common/LogModule)
+include_directories(code/common/NetUtil)
+include_directories(code/common/Protocol)
+include_directories(code/common/RsyncKernel)
+include_directories(code/common/ThreadModule)
+include_directories(code/common)
+
 set(CMAKE_CXX_STANDARD 11)
 
 message(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})

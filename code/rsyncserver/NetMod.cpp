@@ -8,6 +8,7 @@
 #include "NewBlockInfo_generated.h"
 
 #include "ViewDir_generated.h"
+#include "Synchronism_generated.h"
 
 
 using namespace Protocol;
@@ -147,6 +148,8 @@ using namespace Protocol;
 
 void TCPClient::Dispatch()
 {
+    pthread_mutex_lock(&m_mutex); //同一时间只允许一个线程处理调度
+
     ST_PackageHeader header;
     BytesPtr data;
     while (m_msgHelper.ReadMessage(header, &data))
@@ -164,12 +167,27 @@ void TCPClient::Dispatch()
             case Opcode::VIEW_DIR_REQ:
                 onRecvViewDirReq(header.getTaskId(), data);
                 break;
+
+            case Opcode::SYNC_FILE:
+                onRecvSyncFile(header.getTaskId(), data);
+                break;
+
+            case Opcode::REBUILD_INFO:
+                onRecvRebuildInfo(header.getTaskId(), data);
+                break;
+
+            case Opcode::REBUILD_CHUNK:
+                onRecvRebuildChunk(header.getTaskId(), data);
+                break;
+
             default:
                 LOG_WARN("Receive UnKnown Opcode, [%s] will close connection!", m_socket->GetEndPoint().c_str());
                 m_socket->Close();
                 break;
         }
     }
+
+    pthread_mutex_unlock(&m_mutex);
 }
 
 void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
@@ -240,17 +258,17 @@ void TCPClient::onRecvReverseSyncReq(uint32_t taskID, BytesPtr data)
         InspectorPtr p = InspectorPtr(new Inspector(taskID, pFilename->str(), blocksize));
         for (auto it : *blocksInfo->Infos())
         {
-            ST_BlockInfo info;
+            ST_BlockInformation info;
             //info.filename = it->Filename()->str();
             //info.order = it->Order();
             info.offset = it->Offset();
             info.length = it->Length();
             info.checksum = it->Checksum();
             info.md5 = it->Md5()->str();
-            p->AddInfos(info);
+            p->AddDigestInfo(info);
         }
         //p->StartGetBlocks(nullptr);
-        p->StartGetBlocks(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectBlockInfo, this));
+//        p->StartGetBlocks(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectBlockInfo, this));
 
         m_tasks[taskID][pFilename->str()] = nullptr;
     }
@@ -266,7 +284,8 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
 }
 
 void
-TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo, const string &filename, size_t filesize)
+TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInformation &blockInfo, const string &filename,
+                              size_t filesize)
 {
     LogCheckConditionVoid(m_tasks[taskID][filename] != nullptr, "m_tasks map failed!");
     //char buff[100] = "abcdefg";
@@ -290,14 +309,15 @@ TCPClient::onInspectBlockInfo(uint32_t taskID, const ST_BlockInfo &blockInfo, co
                        MsgHelper::CreateBytes(builder.GetBufferPointer(), builder.GetSize()));
 }
 
+/**
+ * 1.拆包
+ * 2.检查目标文件(本机)是否存在，若不存在则返回错误码
+ * 3.读取文件列表，打包返回
+ */
 void TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
 {
     LOG_TRACE("Receive View Dir Req!");
-    /*
-     * 1.拆包
-     * 2.检查目标文件(本机)是否存在，若不存在则返回错误码
-     * 3.读取文件列表，打包返回
-     */
+
 
     auto pViewDirReq = flatbuffers::GetRoot<ViewDirReq>(data->ToChars());
 
@@ -329,7 +349,7 @@ void TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
         if (fp)
         {
             vector1.push_back(Protocol::CreateFileInfo(builder,
-                                                       builder.CreateString(FileHelper::GetRealPath(fp->Name())),
+                                                       builder.CreateString(FileHelper::GetRealPath(fp->Path())),
                                                        fp->Size()));
         }
     }
@@ -337,6 +357,128 @@ void TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
     builder.Finish(fbb);
 
     this->SendToClient(Opcode::VIEW_DIR_ACK, taskID, builder.GetBufferPointer(), builder.GetSize());
+}
+
+/**
+ * 1.拆包
+ * 2.根据Des所示的文件生成文件摘要信息，若文件不存在，则块信息填空
+ */
+
+void TCPClient::onRecvSyncFile(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Receive Sync File Req!");
+
+    auto pSyncFile = flatbuffers::GetRoot<SyncFile>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pSyncFile->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    m_tasks1[taskID].m_type = TaskType::Push;
+    m_tasks1[taskID].m_taskID = taskID;
+    m_tasks1[taskID].m_src = pSyncFile->SrcPath()->str();
+    m_tasks1[taskID].m_des = pSyncFile->DesPath()->str();
+
+
+    m_tasks1[taskID].m_generatorPtr = Generator::NewGenerator(pSyncFile->DesPath()->str());
+
+    flatbuffers::FlatBufferBuilder builder;
+
+    if (m_tasks1[taskID].m_generatorPtr) //文件存在
+    {
+        std::vector<flatbuffers::Offset<ChunkInfo> > vector1;
+
+        auto &DigestVec = m_tasks1[taskID].m_generatorPtr->GetChunkDigestVec();
+        for (const auto &item : DigestVec)
+        {
+            vector1.push_back(Protocol::CreateChunkInfo(builder, item.offset, item.length, item.checksum,
+                                                        builder.CreateString(item.md5)));
+        }
+
+        auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(m_tasks1[taskID].m_src),
+                                              builder.CreateString(m_tasks1[taskID].m_des),
+                                              m_tasks1[taskID].m_generatorPtr->GetSplit(),
+                                              builder.CreateVector(vector1));
+        builder.Finish(fbb);
+        this->SendToClient(Opcode::FILE_DIGEST, taskID, builder.GetBufferPointer(), builder.GetSize());
+        return;
+    }
+
+    //文件不存在,分块大小为0
+    auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(m_tasks1[taskID].m_src),
+                                          builder.CreateString(m_tasks1[taskID].m_des),
+                                          0);
+    builder.Finish(fbb);
+    this->SendToClient(Opcode::FILE_DIGEST, taskID, builder.GetBufferPointer(), builder.GetSize());
+}
+
+void TCPClient::onRecvRebuildInfo(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Receive Rebuild Info!");
+
+    auto pRebuildInfo = flatbuffers::GetRoot<RebuildInfo>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pRebuildInfo->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    m_tasks1[taskID].m_rebuild_size = pRebuildInfo->Size();
+}
+
+void TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
+{
+    LOG_TRACE("Receive Rebuild Chunk!");
+
+    auto pRebuildChunk = flatbuffers::GetRoot<RebuildChunk>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pRebuildChunk->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+
+    if (m_tasks1[taskID].m_pf == nullptr)
+    {
+        m_tasks1[taskID].m_pf = FileHelper::OpenFile(m_tasks1[taskID].m_des + ".tmp", "w"); //读取服务端名称
+        LogCheckConditionVoid(m_tasks1[taskID].m_pf, "file Ptr is <null>");
+    }
+
+    if (pRebuildChunk->IsMd5())
+    {
+        LogCheckConditionVoid(m_tasks1[taskID].m_generatorPtr, "generator Ptr is <null>");
+        auto pData = m_tasks1[taskID].m_generatorPtr->GetChunkDataByMd5(pRebuildChunk->Data()->str());
+        LogCheckConditionVoid(pData.length() == pRebuildChunk->Length(), "Err!");
+        auto count = m_tasks1[taskID].m_pf->WriteBytes(pData.data(), pData.length(), pRebuildChunk->Offset(), false);
+        if (count != pData.length())
+        {
+            LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
+                     m_tasks1[taskID].m_des.c_str(), count, pData.length());
+        }
+        m_tasks1[taskID].m_processLen += pData.length();
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld => %ld] success!", taskID,
+                 m_tasks1[taskID].m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+    }
+    else
+    {
+        auto count = m_tasks1[taskID].m_pf->WriteBytes(pRebuildChunk->Data()->data(), pRebuildChunk->Length(), pRebuildChunk->Offset(),
+                                                       false);
+        if (count != pRebuildChunk->Length())
+        {
+            LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
+                     m_tasks1[taskID].m_des.c_str(), count, pRebuildChunk->Length());
+        }
+        m_tasks1[taskID].m_processLen += pRebuildChunk->Length();
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct(data) block[%lld => %ld] success!", taskID,
+                 m_tasks1[taskID].m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+    }
+
+    if (m_tasks1[taskID].m_processLen == m_tasks1[taskID].m_rebuild_size)
+    {
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, m_tasks1[taskID].m_des.c_str());
+
+        m_tasks1[taskID].m_pf = nullptr; //关闭文件读写指针，使缓冲区写入到文件完成
+        //TODO: 重建完成，重命名替换
+    }
+
 }
 
 void TCPClient::SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t *buff, uint32_t size)
