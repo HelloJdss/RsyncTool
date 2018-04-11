@@ -142,6 +142,12 @@ int MainMod::Run()
 
 bool MainMod::cmd_push(string src, string des) //local_dir(file) des_dir@des_ip:port;
 {
+    if(des.front() != '/')
+    {
+        printf("目标目录格式有误!远程端请使用绝对路径");
+        return false;
+    }
+
     auto pos = des.find_last_of('@');
     if (pos != string::npos)
     {
@@ -171,6 +177,12 @@ bool MainMod::cmd_push(string src, string des) //local_dir(file) des_dir@des_ip:
 
 bool MainMod::cmd_pull(string src, string des) //local_dir des_dir(file)@des_ip:port;
 {
+    if(des.front() != '/')
+    {
+        printf("目标目录格式有误!远程端请使用绝对路径");
+        return false;
+    }
+
     string srcDir;
     if (!FileHelper::SplitDirAndFile(src, &srcDir))
     {
@@ -190,6 +202,7 @@ bool MainMod::cmd_pull(string src, string des) //local_dir des_dir(file)@des_ip:
             string ip = ipPort.substr(0, pos);
             uint16_t port = static_cast<uint16_t>(std::stoi(ipPort.substr(pos + 1)));
             printf("src Dir: %s des path: %s, ip: %s port: %u\n", srcDir.c_str(), desPath.c_str(), ip.c_str(), port);
+            g_NetMod->AddTask(TaskType::Pull_File, &srcDir, &desPath, ip, port);
             return true;
         }
     }

@@ -2,10 +2,8 @@ namespace Protocol;
 
 //所有的协议指令码
 
-enum Opcode:int
+enum Op:int
 {
-   MIN = 0,
-
    C_S_VIEW_DIR_REQ,            //浏览文件夹文件
    S_C_VIEW_DIR_ACK,
 
@@ -18,12 +16,12 @@ enum Opcode:int
    S_C_PULL_ACK,                //反向同步回复
 
    ERROR_CODE,                  //错误码
-   MAX,
 }
 
 enum Err:short
 {
     UNKNOWN,            //未知错误
+    SUCCESS,            //成功
     NO_SUCH_FILE,       //没有该文件
     NO_SUCH_DIR,        //没有该目录
 }

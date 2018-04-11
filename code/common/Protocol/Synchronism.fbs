@@ -17,8 +17,8 @@ namespace Protocol;
 
 table ChunkInfo
 {
-    Offset:long;         //块偏移
-    Length:int;          //块长度
+    Offset:ulong;         //块偏移
+    Length:uint;          //块长度
     Checksum:uint;       //一级签名
     Md5:string;          //二级签名
 }
@@ -49,7 +49,7 @@ table RebuildChunk       //生成文件重建块信息
 {
     //TaskID:uint;            //任务编号（通过任务编号可以查到该任务编号对应的文件摘要信息）
     Offset:ulong;               //本块偏移
-    Length:ulong;               //本块长度
+    Length:uint;               //本块长度
     IsMd5:bool;                 //数据是Md5还是具体数据
     Data:string;                //本块数据
 }

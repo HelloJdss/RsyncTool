@@ -47,6 +47,8 @@ namespace Protocol
                     return "VIEW_DIR_ACK";
                 case SYNC_FILE:
                     return "SYNC_FILE";
+                case FILE_DIGEST:
+                    return "FILE_DIGEST";
                 case REBUILD_INFO:
                     return "REBUILD_INFO";
                 case REBUILD_CHUNK:

@@ -25,11 +25,11 @@ struct ChunkInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_CHECKSUM = 8,
     VT_MD5 = 10
   };
-  int64_t Offset() const {
-    return GetField<int64_t>(VT_OFFSET, 0);
+  uint64_t Offset() const {
+    return GetField<uint64_t>(VT_OFFSET, 0);
   }
-  int32_t Length() const {
-    return GetField<int32_t>(VT_LENGTH, 0);
+  uint32_t Length() const {
+    return GetField<uint32_t>(VT_LENGTH, 0);
   }
   uint32_t Checksum() const {
     return GetField<uint32_t>(VT_CHECKSUM, 0);
@@ -39,8 +39,8 @@ struct ChunkInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int64_t>(verifier, VT_OFFSET) &&
-           VerifyField<int32_t>(verifier, VT_LENGTH) &&
+           VerifyField<uint64_t>(verifier, VT_OFFSET) &&
+           VerifyField<uint32_t>(verifier, VT_LENGTH) &&
            VerifyField<uint32_t>(verifier, VT_CHECKSUM) &&
            VerifyOffset(verifier, VT_MD5) &&
            verifier.Verify(Md5()) &&
@@ -51,11 +51,11 @@ struct ChunkInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct ChunkInfoBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_Offset(int64_t Offset) {
-    fbb_.AddElement<int64_t>(ChunkInfo::VT_OFFSET, Offset, 0);
+  void add_Offset(uint64_t Offset) {
+    fbb_.AddElement<uint64_t>(ChunkInfo::VT_OFFSET, Offset, 0);
   }
-  void add_Length(int32_t Length) {
-    fbb_.AddElement<int32_t>(ChunkInfo::VT_LENGTH, Length, 0);
+  void add_Length(uint32_t Length) {
+    fbb_.AddElement<uint32_t>(ChunkInfo::VT_LENGTH, Length, 0);
   }
   void add_Checksum(uint32_t Checksum) {
     fbb_.AddElement<uint32_t>(ChunkInfo::VT_CHECKSUM, Checksum, 0);
@@ -77,8 +77,8 @@ struct ChunkInfoBuilder {
 
 inline flatbuffers::Offset<ChunkInfo> CreateChunkInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int64_t Offset = 0,
-    int32_t Length = 0,
+    uint64_t Offset = 0,
+    uint32_t Length = 0,
     uint32_t Checksum = 0,
     flatbuffers::Offset<flatbuffers::String> Md5 = 0) {
   ChunkInfoBuilder builder_(_fbb);
@@ -91,8 +91,8 @@ inline flatbuffers::Offset<ChunkInfo> CreateChunkInfo(
 
 inline flatbuffers::Offset<ChunkInfo> CreateChunkInfoDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int64_t Offset = 0,
-    int32_t Length = 0,
+    uint64_t Offset = 0,
+    uint32_t Length = 0,
     uint32_t Checksum = 0,
     const char *Md5 = nullptr) {
   return Protocol::CreateChunkInfo(
@@ -303,8 +303,8 @@ struct RebuildChunk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint64_t Offset() const {
     return GetField<uint64_t>(VT_OFFSET, 0);
   }
-  uint64_t Length() const {
-    return GetField<uint64_t>(VT_LENGTH, 0);
+  uint32_t Length() const {
+    return GetField<uint32_t>(VT_LENGTH, 0);
   }
   bool IsMd5() const {
     return GetField<uint8_t>(VT_ISMD5, 0) != 0;
@@ -315,7 +315,7 @@ struct RebuildChunk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_OFFSET) &&
-           VerifyField<uint64_t>(verifier, VT_LENGTH) &&
+           VerifyField<uint32_t>(verifier, VT_LENGTH) &&
            VerifyField<uint8_t>(verifier, VT_ISMD5) &&
            VerifyOffset(verifier, VT_DATA) &&
            verifier.Verify(Data()) &&
@@ -329,8 +329,8 @@ struct RebuildChunkBuilder {
   void add_Offset(uint64_t Offset) {
     fbb_.AddElement<uint64_t>(RebuildChunk::VT_OFFSET, Offset, 0);
   }
-  void add_Length(uint64_t Length) {
-    fbb_.AddElement<uint64_t>(RebuildChunk::VT_LENGTH, Length, 0);
+  void add_Length(uint32_t Length) {
+    fbb_.AddElement<uint32_t>(RebuildChunk::VT_LENGTH, Length, 0);
   }
   void add_IsMd5(bool IsMd5) {
     fbb_.AddElement<uint8_t>(RebuildChunk::VT_ISMD5, static_cast<uint8_t>(IsMd5), 0);
@@ -353,13 +353,13 @@ struct RebuildChunkBuilder {
 inline flatbuffers::Offset<RebuildChunk> CreateRebuildChunk(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t Offset = 0,
-    uint64_t Length = 0,
+    uint32_t Length = 0,
     bool IsMd5 = false,
     flatbuffers::Offset<flatbuffers::String> Data = 0) {
   RebuildChunkBuilder builder_(_fbb);
-  builder_.add_Length(Length);
   builder_.add_Offset(Offset);
   builder_.add_Data(Data);
+  builder_.add_Length(Length);
   builder_.add_IsMd5(IsMd5);
   return builder_.Finish();
 }
@@ -367,7 +367,7 @@ inline flatbuffers::Offset<RebuildChunk> CreateRebuildChunk(
 inline flatbuffers::Offset<RebuildChunk> CreateRebuildChunkDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t Offset = 0,
-    uint64_t Length = 0,
+    uint32_t Length = 0,
     bool IsMd5 = false,
     const char *Data = nullptr) {
   return Protocol::CreateRebuildChunk(

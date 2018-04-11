@@ -154,8 +154,12 @@ bool Inspector::checkMatched(ST_BlockInformation &ret)
 void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
 {
     //根据本地文件流，生成新建块流
-    m_fp = FileHelper::OpenFile(m_filename, "r");
-    LogCheckConditionVoid(m_fp != nullptr, "m_fp is null! filename:[%s]", m_filename.c_str());
+    if(m_fp == nullptr)
+    {
+        m_fp = FileHelper::OpenFile(m_filename, "rb");
+        LogCheckConditionVoid(m_fp != nullptr, "m_fp is null! filename:[%s]", m_filename.c_str());
+    }
+
     char buff[m_split];
 
     auto size = m_fp->Size();
@@ -170,13 +174,19 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
     m_end = count;
 
     m_checksum = RollingChecksum::adler32_checksum(buff, count);
-    m_buffer = string().assign(buff, 0, count);
+
+    m_buffer.clear();
+    for (int i = 0; i < count; ++i)
+    {
+       m_buffer.push_back(buff[i]);
+    }
+
 
     while (true)
     {
         ST_BlockInformation info;
         bzero(buff, m_split);
-        LOG_DEBUG("checksum[%lu]", m_checksum);
+        //LOG_DEBUG("checksum[%lu]", m_checksum);
         if (checkMatched(info)) //找到块匹配
         {
             if (m_start > 0)
@@ -221,7 +231,12 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
             m_end = count;
 
             m_checksum = RollingChecksum::adler32_checksum(buff, count);
-            m_buffer = string().assign(buff, 0, count);
+
+            m_buffer.clear();
+            for (int i = 0; i < count; ++i)
+            {
+                m_buffer.push_back(buff[i]);
+            }
         }
         else //未发现匹配项
         {
@@ -244,8 +259,9 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
             }
 
             LogCheckConditionVoid(count == 1, "count != 1!");
-
-            m_buffer.append(buff, 0, 1);
+            //LOG_TRACE("m_buff.size() = [%llu], m_start [%d] m_end [%d]", m_buffer.size(), m_start, m_end);
+            m_buffer.push_back(buff[0]);
+            LOG_TRACE("m_buff.size() = [%llu], m_start [%d] m_end [%d]", m_buffer.size(), m_start, m_end);
             char c1 = m_buffer.at(m_start);
             char c2 = m_buffer.at(m_end);
             m_start += 1;
@@ -274,5 +290,10 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
 std::shared_ptr<Inspector> Inspector::NewInspector(uint32_t cb_taskID, const string &filename, uint32_t split)
 {
     return std::make_shared<Inspector>(cb_taskID, filename, split);
+}
+
+std::shared_ptr<Inspector> Inspector::NewInspector(uint32_t cb_taskID, FilePtr fp, uint32_t split)
+{
+    return std::make_shared<Inspector>(cb_taskID, fp, split);
 }
 

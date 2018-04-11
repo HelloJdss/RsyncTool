@@ -256,6 +256,11 @@ int FileHelper::Access(const string &path, int mode)
     return access(path.c_str(), mode);
 }
 
+string FileHelper::BaseName(const string &path)
+{
+    return basename(path.c_str());
+}
+
 Dir::~Dir()
 {
     if(!m_dp)

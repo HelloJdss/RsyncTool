@@ -2,9 +2,9 @@
 // Created by carrot on 18-3-15.
 //
 
+#include <Cmd_generated.h>
 #include "cm_define.h"
 #include "NetMod.h"
-#include "ErrorCode_generated.h"
 #include "NewBlockInfo_generated.h"
 
 #include "ViewDir_generated.h"
@@ -164,12 +164,20 @@ void TCPClient::Dispatch()
                 onRecvReverseSyncReq(header.getTaskId(), data);
                 break;
 
+            case Opcode::ERROR_CODE:
+                onRecvErrorCode(header.getTaskId(), data);
+                break;
+
             case Opcode::VIEW_DIR_REQ:
                 onRecvViewDirReq(header.getTaskId(), data);
                 break;
 
             case Opcode::SYNC_FILE:
                 onRecvSyncFile(header.getTaskId(), data);
+                break;
+
+            case Opcode::FILE_DIGEST :
+                onRecvFileDigest(header.getTaskId(), data);
                 break;
 
             case Opcode::REBUILD_INFO:
@@ -281,6 +289,21 @@ void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
     auto bytes = MsgHelper::PackageData(header,
                                         MsgHelper::CreateBytes(data->ToChars(), data->Size()));
     m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+}
+
+void TCPClient::SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t *buff, uint32_t size)
+{
+    this->SendToClient(op, taskID, MsgHelper::CreateBytes(buff, size));
+}
+
+void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)
+{
+    m_ptr = tcpClientPtr;
+}
+
+void MsgThread::Runnable()
+{
+    m_ptr->Dispatch();
 }
 
 void
@@ -454,7 +477,7 @@ void TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
                      m_tasks1[taskID].m_des.c_str(), count, pData.length());
         }
         m_tasks1[taskID].m_processLen += pData.length();
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld => %ld] success!", taskID,
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
                  m_tasks1[taskID].m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
     else
@@ -467,7 +490,7 @@ void TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
                      m_tasks1[taskID].m_des.c_str(), count, pRebuildChunk->Length());
         }
         m_tasks1[taskID].m_processLen += pRebuildChunk->Length();
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct(data) block[%lld => %ld] success!", taskID,
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
                  m_tasks1[taskID].m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
@@ -477,21 +500,109 @@ void TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
 
         m_tasks1[taskID].m_pf = nullptr; //关闭文件读写指针，使缓冲区写入到文件完成
         //TODO: 重建完成，重命名替换
+
+        m_tasks1[taskID].m_type = TaskType::Finished;
+
+        //发送成功的回包
+        flatbuffers::FlatBufferBuilder builder;
+        auto fbb = Protocol::CreateErrorCode(builder, Err_SUCCESS);
+        builder.Finish(fbb);
+        this->SendToClient(Opcode::ERROR_CODE, taskID, builder.GetBufferPointer(), builder.GetSize());
+        return;
     }
 
 }
 
-void TCPClient::SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t *buff, uint32_t size)
+void TCPClient::onRecvFileDigest(uint32_t taskID, BytesPtr data)
 {
-    this->SendToClient(op, taskID, MsgHelper::CreateBytes(buff, size));
+    LOG_TRACE("Receive File Digest");
+
+    auto pFileDigest = flatbuffers::GetRoot<FileDigest>(data->ToChars());
+
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = pFileDigest->Verify(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    if (m_tasks1[taskID].m_taskID == taskID) //先行创建过的任务，需要校验
+    {
+        LogCheckConditionVoid(m_tasks1[taskID].m_des == pFileDigest->DesPath()->str(), "Task[%lu] Conflict!", taskID);
+        LogCheckConditionVoid(m_tasks1[taskID].m_src == pFileDigest->SrcPath()->str(), "Task[%lu] Conflict!", taskID);
+    }
+
+    m_tasks1[taskID].m_des = pFileDigest->DesPath()->str();
+    m_tasks1[taskID].m_src = pFileDigest->SrcPath()->str();
+
+    auto fp = FileHelper::OpenFile(m_tasks1[taskID].m_des, "rb");
+    LogCheckConditionVoid(fp, "fp is <null>");
+
+    //先发送文件信息
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto fbb = Protocol::CreateRebuildInfo(builder, fp->Size());
+    builder.Finish(fbb);
+
+    this->SendToClient(Opcode::REBUILD_INFO, taskID, builder.GetBufferPointer(), builder.GetSize());
+
+    if (pFileDigest->Splitsize() == 0) //对方不存在该文件，则直接传输整个文件
+    {
+        auto pInspector = Inspector::NewInspector(taskID, fp, 1024);
+        pInspector->BeginInspect(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectCallBack, this));
+    }
+    else
+    {
+        //TODO: 根据摘要重建
+        auto pInspector = Inspector::NewInspector(taskID, fp, pFileDigest->Splitsize());
+
+        //添加摘要信息
+
+        for (const auto &item : *pFileDigest->Infos())
+        {
+            ST_BlockInformation information;
+            information.offset = item->Offset();
+            information.length = item->Length();
+            information.checksum = item->Checksum();
+            information.md5 = item->Md5()->str();
+            pInspector->AddDigestInfo(information);
+        }
+
+        pInspector->BeginInspect(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectCallBack, this));
+    }
 }
 
-void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)
+void TCPClient::onInspectCallBack(uint32_t taskID, const ST_BlockInformation &info)
 {
-    m_ptr = tcpClientPtr;
+    flatbuffers::FlatBufferBuilder builder;
+
+    flatbuffers::Offset<RebuildChunk> fbb;
+    if (info.md5 == "-")
+    {
+        fbb = Protocol::CreateRebuildChunk(builder, info.offset, info.length, false, builder.CreateString(info.data));
+    }
+    else
+    {
+        fbb = Protocol::CreateRebuildChunk(builder, info.offset, info.length, true, builder.CreateString(info.md5));
+    }
+    builder.Finish(fbb);
+
+    this->SendToClient(Opcode::REBUILD_CHUNK, taskID, builder.GetBufferPointer(), builder.GetSize());
 }
 
-void MsgThread::Runnable()
+void TCPClient::onRecvErrorCode(uint32_t taskID, BytesPtr data)
 {
-    m_ptr->Dispatch();
+    flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
+    auto ok = Protocol::VerifyErrorCodeBuffer(V);
+    LogCheckConditionVoid(ok, "Verify Failed!");
+
+    auto err = Protocol::GetErrorCode(data->ToChars());
+
+    if(err->Code() == Err_SUCCESS)
+    {
+        m_tasks1[taskID].m_type = TaskType::Finished;
+        LOG_INFO("Task[%lu] Finished!", taskID);
+    }
+
+    LOG_WARN("Receive Error Code: Task[%lu] : [%s] [%s]", taskID, Protocol::EnumNameErr(err->Code()),
+             err->TIP() == nullptr ? "<null>" : err->TIP()->c_str());
 }
+
+

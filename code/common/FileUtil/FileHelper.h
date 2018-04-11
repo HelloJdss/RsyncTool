@@ -113,6 +113,8 @@ public:
 
     static int Access(const string &path, int mode); //对目录或文件做测试
 
+    static string BaseName(const string &path);
+
 private:
 };
 

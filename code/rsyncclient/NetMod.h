@@ -56,6 +56,8 @@ namespace RsyncClient
 
         void AddTask(TaskType taskType, string const *src, string const *des, const string &desIP, uint16_t desPort);
 
+        int LaunchTask(); //返回成功启动的任务数
+
         bool Init();
 
         void Run();
@@ -84,6 +86,15 @@ namespace RsyncClient
         void onRecvFileDigest(uint32_t taskID, BytesPtr data);
 
         void onInspectCallBack(uint32_t taskID, const ST_BlockInformation& info);
+
+
+        void createPullTask(const string& srcDir, const string& desPath);
+
+        void launchPullTask(uint32_t taskID);
+
+        void onRecvRebuildInfo(uint32_t taskID, BytesPtr data); //接收到重建文件信息
+
+        void onRecvRebuildChunk(uint32_t taskID, BytesPtr data); //接收到重建块信息
 
 
         void createReverseSyncTask(uint32_t taskID, const string &src, const string &des, uint32_t blocksize = 1024);  //创建反向同步任务

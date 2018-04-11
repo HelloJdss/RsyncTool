@@ -33,10 +33,19 @@ class Inspector
 public:
     static std::shared_ptr<Inspector> NewInspector(uint32_t cb_taskID, const string& filename, uint32_t split);
 
+    static std::shared_ptr<Inspector> NewInspector(uint32_t cb_taskID, FilePtr fp, uint32_t split);
+
     Inspector(uint32_t taskID, const string& filename, uint32_t split)
     {
         m_taskID = taskID;
         m_filename = filename;
+        m_split = split;
+    }
+
+    Inspector(uint32_t taskID, FilePtr fp, uint32_t split)
+    {
+        m_taskID = taskID;
+        m_fp = fp;
         m_split = split;
     }
 

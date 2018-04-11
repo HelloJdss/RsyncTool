@@ -15,8 +15,8 @@
 
 struct ST_BlockInformation //块信息
 {
-    int64_t         offset;
-    int32_t         length;
+    uint64_t         offset;
+    uint32_t         length;
     uint32_t        checksum;
     std::string     md5;
 
@@ -66,9 +66,10 @@ private:
 enum TaskType
 {
     NONE                =   0,
-    Push      =   1,  //客户端同步至服务器
-    ServerToClient      =   2,  //服务器同步至客户端
-    ViewDir             =   3,   //查看目录
+    Push                =   1,  //客户端同步至服务器
+    Pull_File           =   2,  //服务器同步文件至客户端
+    Pull_Dir            =   3,  //服务器同步目录至客户端，此状态下需要先创建ViewDir任务来获取服务器目录下的文件列表，然后添加每个文件对应的Pull_File任务
+    ViewDir             =   4,  //查看目录
 
     Error               =  97,  //有错误
     Abort               =  98,  //终止
@@ -78,6 +79,7 @@ enum TaskType
 struct ST_TaskInfo  //任务信息
 {
     uint32_t         m_taskID;
+    uint32_t         m_launch_count;    //执行次数，超过一定次数(3次)放弃执行，直接转入Abort状态
     TaskType         m_type;
     std::string      m_src;    //客户端文件或目录路径
     std::string      m_des;    //服务器文件或目录路径
@@ -96,6 +98,7 @@ struct ST_TaskInfo  //任务信息
         m_src.clear();
         m_des.clear();
         m_err.clear();
+        m_launch_count = 0;
         m_generatorPtr = nullptr;
         m_rebuild_size = -1;
         m_processLen = 0;

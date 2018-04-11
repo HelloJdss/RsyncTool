@@ -240,6 +240,7 @@ TCPSocket::~TCPSocket()
 
 void TCPSocket::Connect(const SocketAddress &inAddr)
 {
+    LogCheckConditionVoid(m_socket != -1, "m_socket = -1! Socket may be closed!");
     int err = connect(m_socket, &inAddr.m_sockaddr, inAddr.GetSize());
     if (err < 0)
     {
@@ -272,6 +273,7 @@ int TCPSocket::Bind(SocketAddress &inSrcAddr)
 
 void TCPSocket::Listen(int inBackLog)
 {
+    LogCheckConditionVoid(m_socket != -1, "m_socket = -1! Socket may be closed!");
     int err = listen(m_socket, inBackLog);
     if (err < 0)
     {
@@ -302,6 +304,7 @@ std::shared_ptr<TCPSocket> TCPSocket::Accept(SocketAddress &inFromAddr)
 
 int TCPSocket::Send(const void *inData, int inLen)
 {
+    LogCheckCondition(m_socket != -1, 0, "m_socket = -1! Socket may be closed!");
     auto bytes = send(m_socket, inData, inLen, 0);
     if (bytes < 0)
     {
@@ -316,6 +319,7 @@ int TCPSocket::Send(const void *inData, int inLen)
 
 int TCPSocket::Receive(void *inBuffer, int inLen)
 {
+    LogCheckCondition(m_socket != -1, 0, "m_socket = -1! Socket may be closed!");
     auto bytes = recv(m_socket, inBuffer, inLen, 0);
     if (bytes >= 0)
     {
@@ -336,7 +340,7 @@ string TCPSocket::GetEndPoint() const
     return s.append(m_ip).append(":").append(stream.str());
 }
 
-inline void TCPSocket::Close()
+void TCPSocket::Close()
 {
     if (m_socket != -1)
     {

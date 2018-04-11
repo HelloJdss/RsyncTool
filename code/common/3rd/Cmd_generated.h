@@ -10,40 +10,35 @@ namespace Protocol {
 
 struct ErrorCode;
 
-enum Opcode {
-  Opcode_MIN = 0,
-  Opcode_C_S_VIEW_DIR_REQ = 1,
-  Opcode_S_C_VIEW_DIR_ACK = 2,
-  Opcode_C_S_PUSH_REQ = 3,
-  Opcode_FILE_DIGEST_INFO = 4,
-  Opcode_FILE_REBUILD_INFO = 5,
-  Opcode_C_S_PULL_REQ = 6,
-  Opcode_S_C_PULL_ACK = 7,
-  Opcode_ERROR_CODE = 8,
-  Opcode_MAX = 9,
-  Opcode_MIN = Opcode_MIN,
-  Opcode_MAX = Opcode_MAX
+enum Op {
+  Op_C_S_VIEW_DIR_REQ = 0,
+  Op_S_C_VIEW_DIR_ACK = 1,
+  Op_C_S_PUSH_REQ = 2,
+  Op_FILE_DIGEST_INFO = 3,
+  Op_FILE_REBUILD_INFO = 4,
+  Op_C_S_PULL_REQ = 5,
+  Op_S_C_PULL_ACK = 6,
+  Op_ERROR_CODE = 7,
+  Op_MIN = Op_C_S_VIEW_DIR_REQ,
+  Op_MAX = Op_ERROR_CODE
 };
 
-inline const Opcode (&EnumValuesOpcode())[10] {
-  static const Opcode values[] = {
-    Opcode_MIN,
-    Opcode_C_S_VIEW_DIR_REQ,
-    Opcode_S_C_VIEW_DIR_ACK,
-    Opcode_C_S_PUSH_REQ,
-    Opcode_FILE_DIGEST_INFO,
-    Opcode_FILE_REBUILD_INFO,
-    Opcode_C_S_PULL_REQ,
-    Opcode_S_C_PULL_ACK,
-    Opcode_ERROR_CODE,
-    Opcode_MAX
+inline const Op (&EnumValuesOp())[8] {
+  static const Op values[] = {
+    Op_C_S_VIEW_DIR_REQ,
+    Op_S_C_VIEW_DIR_ACK,
+    Op_C_S_PUSH_REQ,
+    Op_FILE_DIGEST_INFO,
+    Op_FILE_REBUILD_INFO,
+    Op_C_S_PULL_REQ,
+    Op_S_C_PULL_ACK,
+    Op_ERROR_CODE
   };
   return values;
 }
 
-inline const char * const *EnumNamesOpcode() {
+inline const char * const *EnumNamesOp() {
   static const char * const names[] = {
-    "MIN",
     "C_S_VIEW_DIR_REQ",
     "S_C_VIEW_DIR_ACK",
     "C_S_PUSH_REQ",
@@ -52,28 +47,29 @@ inline const char * const *EnumNamesOpcode() {
     "C_S_PULL_REQ",
     "S_C_PULL_ACK",
     "ERROR_CODE",
-    "MAX",
     nullptr
   };
   return names;
 }
 
-inline const char *EnumNameOpcode(Opcode e) {
+inline const char *EnumNameOp(Op e) {
   const size_t index = static_cast<int>(e);
-  return EnumNamesOpcode()[index];
+  return EnumNamesOp()[index];
 }
 
 enum Err {
   Err_UNKNOWN = 0,
-  Err_NO_SUCH_FILE = 1,
-  Err_NO_SUCH_DIR = 2,
+  Err_SUCCESS = 1,
+  Err_NO_SUCH_FILE = 2,
+  Err_NO_SUCH_DIR = 3,
   Err_MIN = Err_UNKNOWN,
   Err_MAX = Err_NO_SUCH_DIR
 };
 
-inline const Err (&EnumValuesErr())[3] {
+inline const Err (&EnumValuesErr())[4] {
   static const Err values[] = {
     Err_UNKNOWN,
+    Err_SUCCESS,
     Err_NO_SUCH_FILE,
     Err_NO_SUCH_DIR
   };
@@ -83,6 +79,7 @@ inline const Err (&EnumValuesErr())[3] {
 inline const char * const *EnumNamesErr() {
   static const char * const names[] = {
     "UNKNOWN",
+    "SUCCESS",
     "NO_SUCH_FILE",
     "NO_SUCH_DIR",
     nullptr
