@@ -65,8 +65,10 @@ enum TaskType
     NONE                =   0,
     ClientToServer      =   1,  //客户端同步至服务器
     ServerToClient      =   2,  //服务器同步至客户端
+    ViewDir             =   3,   //查看文件
 
-    ViewDir                =  98,  //查看文件
+    Error               =  97,  //有错误
+    Abort               =  98,  //终止
     Finished            =  99,  //已完成的任务
 };
 
@@ -76,6 +78,7 @@ struct ST_TaskInfo  //任务信息
     TaskType         m_type;
     std::string      m_src;    //客户端文件或目录路径
     std::string      m_des;    //服务器文件或目录路径
+    std::string      m_err;    //错误提示
 
     ST_TaskInfo()
     {
@@ -83,6 +86,7 @@ struct ST_TaskInfo  //任务信息
         m_type = NONE;
         m_src.clear();
         m_des.clear();
+        m_err.clear();
     }
 };
 

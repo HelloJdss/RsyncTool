@@ -2,15 +2,19 @@
 // Created by carrot on 18-3-26.
 //
 
+#include <fcntl.h>
 #include "NetMod.h"
+#include "MainMod.h"
 #include "BlockInfos_generated.h"
 #include "ErrorCode_generated.h"
 #include "NewBlockInfo_generated.h"
 
 #include "ViewDir_generated.h"
+#include "tinyxml2.h"
 
 using namespace Protocol;
 using namespace RsyncClient;
+using namespace tinyxml2;
 
 void NetMod::Run()
 {
@@ -316,10 +320,59 @@ void NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
     auto ok = pViewDirAck->Verify(V);
     LogCheckConditionVoid(ok, "Verify Failed!");
 
+    FilePtr fp;
+    XMLDocument document;
+    XMLElement *root;
+
+
+    if ((FileHelper::Access(g_Configuration->m_view_output, F_OK) == 0) &&  //文件已经存在，则添加
+        ((fp = FileHelper::OpenFile(g_Configuration->m_view_output, "r+")) &&   //必须使用r，可读可写，
+         fp->Size() <= g_Configuration->m_view_output_max_size)) //若超过大小，则重置
+    {
+        if (document.LoadFile(fp->GetPointer()) != 0)
+        {
+            LOG_ERROR("task[%lu] Abort, Err: %s", taskID, document.ErrorStr());
+            m_tasks[taskID].m_type = TaskType::Abort;
+            m_tasks[taskID].m_err = document.ErrorStr();
+            return;
+        }
+        root = document.RootElement();
+    }
+    else
+    {
+        fp = FileHelper::OpenFile(g_Configuration->m_view_output, "w+");
+        document.InsertFirstChild(document.NewDeclaration()); //添加声明
+        root = document.NewElement("View");
+        document.InsertEndChild(root);
+    }
+
+
+    XMLElement *des = document.NewElement("Destination");
+    des->SetAttribute("IP", m_serverIp.c_str());
+    des->SetAttribute("Path", m_tasks[taskID].m_des.c_str());
+    des->SetAttribute("Time", utc_timer().utc_fmt);
+    root->InsertEndChild(des);
+
+
     int i = 1;
     for (auto item : *pViewDirAck->FileList())
     {
         LOG_INFO("%d: Path: [%s] Size: [%lld]", i++, item->FilePath()->c_str(), item->FileSize());
+
+        //save as xml:
+        XMLElement *pInfo = document.NewElement("File");
+        pInfo->SetAttribute("Name", item->FilePath()->c_str());
+        pInfo->SetAttribute("Size", item->FileSize());
+        des->InsertEndChild(pInfo);
+    }
+
+    fp = nullptr; //关闭已打开的文件指针
+
+    if (document.SaveFile(g_Configuration->m_view_output.c_str()) != 0)
+    {
+        m_tasks[taskID].m_type = TaskType::Error;
+        m_tasks[taskID].m_err = document.ErrorStr();
+        return;
     }
 
     m_tasks[taskID].m_type = TaskType::Finished;

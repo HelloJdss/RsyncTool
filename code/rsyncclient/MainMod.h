@@ -38,6 +38,7 @@ namespace RsyncClient
         LOG_LEVEL m_log_lv = LOG_LEVEL_DEFALT;
         string m_log_file = LOG_FILE_PATH;
         string m_view_output = "./view_output.xml";
+        int64_t m_view_output_max_size = 10 * 1024 * 1024; //输出文件的最大大小，超过此大小下一次执行任务时将会清空文件
     };
 
 #define g_Configuration Configuration::Instance()

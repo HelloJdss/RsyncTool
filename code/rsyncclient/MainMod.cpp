@@ -260,6 +260,11 @@ int Configuration::LoadXml(char const *xmlPath)
 
     m_view_output = string(view_path->GetText());
 
+    XMLElement *view_path_size = view->FirstChildElement("max_size");
+    LogCheckCondition(view_path, -1, "Explain Xml Failed!");
+
+    m_view_output_max_size = std::stoi(string(view_path_size->GetText()));
+
     return 0;
 }
 
@@ -298,6 +303,10 @@ int Configuration::SaveAsXml(char const *xmlPath)
     XMLElement *view_output = doc.NewElement("output");
     view_output->InsertEndChild(doc.NewText(m_view_output.c_str()));
     view->InsertEndChild(view_output);
+
+    XMLElement *view_output_size = doc.NewElement("max_size");
+    view_output_size->InsertEndChild(doc.NewText(std::to_string(m_view_output_max_size).c_str()));
+    view->InsertEndChild(view_output_size);
 
     root->InsertEndChild(view);
 

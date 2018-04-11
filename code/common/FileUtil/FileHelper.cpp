@@ -180,6 +180,11 @@ struct stat File::Stat()
     return m_stat;
 }
 
+FILE *File::GetPointer()
+{
+    return m_fp;
+}
+
 FilePtr FileHelper::OpenFile(const string &file_name, char const *mode)
 {
     auto fp = std::shared_ptr<File>(new File(file_name, mode));
@@ -224,6 +229,11 @@ DirPtr FileHelper::OpenDir(const string &dir_name)
         return dp;
     }
     return nullptr;
+}
+
+int FileHelper::Access(const string &path, int mode)
+{
+    return access(path.c_str(), mode);
 }
 
 Dir::~Dir()

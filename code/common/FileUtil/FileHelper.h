@@ -53,6 +53,8 @@ public:
 
     struct stat Stat();
 
+    FILE* GetPointer();
+
 private:
     friend class FileHelper;
 
@@ -99,6 +101,8 @@ public:
     static string GetRealPath(const string &path); //获取完整的绝对路径
 
     static bool SplitDirAndFile(const string &path, string *outDir, string* outBasename = nullptr); //分离文件所在目录以及文件名
+
+    static int Access(const string &path, int mode); //对目录或文件做测试
 
 private:
 };
