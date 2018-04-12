@@ -87,9 +87,9 @@ public:
 
     std::shared_ptr<TCPSocket> Accept(SocketAddress &inFromAddr);
 
-    int Send(const void *inData, int inLen);//Exception: errno
+    long Send(const void *inData, int inLen);//Exception: errno
 
-    int Receive(void *inBuffer, int inLen);//Exception: errno
+    long Receive(void *inBuffer, int inLen);//Exception: errno
 
     void SetRecvTimeOut(uint64_t sec, uint64_t usec);
 
@@ -100,15 +100,40 @@ public:
     bool IsAvailable() const
     { return m_socket != -1; }
 
+    //以下数据用于统计
+
+    int64_t GetSendBytes();
+
+    int64_t GetRecvBytes();
+
+    double GetSendSpeed(); //获取发送速率（byte per m_second）
+
+    double GetRecvSpeed();
+
+    void StopStatistics() //关闭统计
+    { m_statistics = false;}
+
 private:
     friend class NetHelper;
 
-    TCPSocket(int inSocket) : m_socket(inSocket)
-    {}
+    TCPSocket(int inSocket);
 
     int m_socket = -1;
     char *m_ip = const_cast<char *>("unknown");
     uint16_t m_port = 0;
+
+    //以下变量用于统计
+    bool        m_statistics = true;  //是否开始统计
+    utc_timer   m_timer;
+    int64_t     m_sendBytes = 0;  //已经发送的字节数
+    uint64_t    m_sendLasttime = 0; //上次成功发送的时间,单位，秒
+    int64_t     m_sendLastBytes = 0; //上次成功发送的字节总数
+    double     m_sendSpeed = 0;
+
+    int64_t     m_recvBytes = 0;  //已经接受的字节数
+    uint64_t    m_recvLasttime = 0; //上次成功接受的时间,单位，秒
+    int64_t     m_recvLastBytes = 0; //上次成功发送的字节总数
+    double     m_recvSpeed = 0;
 };
 
 typedef std::shared_ptr<TCPSocket> TCPSocketPtr;
@@ -128,7 +153,7 @@ public:
 
     static UDPSocketPtr CreateUDPSocket(SocketAddressFamily addressFamily);
 
-    static TCPSocketPtr CreateTCPSocket(SocketAddressFamily addressFamily);
+    static TCPSocketPtr CreateTCPSocket(SocketAddressFamily addressFamily, bool statistics = true); //默认开启统计
 
     static fd_set *FillSetFromVector(fd_set &outSet, const vector<TCPSocketPtr> *inSockets);    //inSockets ==> outSet
 

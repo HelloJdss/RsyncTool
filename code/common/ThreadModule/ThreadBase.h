@@ -50,6 +50,8 @@ private:
     //内部执行方法
     void *run1();
 
+    static void onRecvSignal(int sig);
+
 public:
     //构造函数
     Thread();

@@ -12,7 +12,7 @@
 #include "MsgHelper.h"
 #include "Inspector.h"
 #include "ThreadBase.h"
-#include "BlockInfos_generated.h"
+#include "Cmd_generated.h"
 
 namespace RsyncServer
 {
@@ -20,7 +20,9 @@ namespace RsyncServer
     {
     public:
         TCPClient(TCPSocketPtr socket) : m_socket(socket)
-        {}
+        {
+            m_socket->StopStatistics(); //服务端不用统计数据
+        }
 
         ~TCPClient()
         { LOG_TRACE("~TCPClient"); }
@@ -32,6 +34,8 @@ namespace RsyncServer
         void SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t * buff, uint32_t size);
 
 
+        void SendErrToClient(uint32_t taskID, Protocol::Err err, string tip = "");
+
     private:
         friend class NetMod;
 
@@ -39,39 +43,32 @@ namespace RsyncServer
 
         friend class MsgThread;
 
-        void onRecvReverseSyncReq(uint32_t taskID, BytesPtr data); //接收到反向同步请求
+        Protocol::Err onRecvViewDirReq(uint32_t taskID, BytesPtr data);  //接收到浏览文件请求
 
-        //每当Inspector生成一块后执行
-        void onInspectBlockInfo(uint32_t taskID, const ST_BlockInformation &blockInfo, const string &filename, size_t filesize);
+        Protocol::Err onRecvSyncFile(uint32_t taskID, BytesPtr data);    //接收到文件正向同步请求
 
-        MsgHelper m_msgHelper;
+        Protocol::Err onRecvRebuildInfo(uint32_t taskID, BytesPtr data); //接收到重建文件信息
 
-        TCPSocketPtr m_socket;
+        Protocol::Err onRecvRebuildChunk(uint32_t taskID, BytesPtr data); //接收到重建块信息，失败会自动发送Err
 
-        RTMap<uint32_t, RTMap<string, const Protocol::FileBlockInfos *> > m_tasks; // task ==> filename ==> BlockInfos ptr
-
-        void onRecvViewDirReq(uint32_t taskID, BytesPtr data);  //接收到浏览文件请求
-
-        void onRecvSyncFile(uint32_t taskID, BytesPtr data);    //接收到文件正向同步请求
-
-        void onRecvRebuildInfo(uint32_t taskID, BytesPtr data); //接收到重建文件信息
-
-        void onRecvRebuildChunk(uint32_t taskID, BytesPtr data); //接收到重建块信息
-
-        void onRecvFileDigest(uint32_t taskID, BytesPtr data);  //接收到反向同步请求
+        Protocol::Err onRecvFileDigest(uint32_t taskID, BytesPtr data);  //接收到反向同步请求
 
         void onInspectCallBack(uint32_t taskID, const ST_BlockInformation& info);
 
         void onRecvErrorCode(uint32_t taskID, BytesPtr data);
 
-        RTMap<uint32_t, ST_TaskInfo> m_tasks1;
+        MsgHelper m_msgHelper;
+
+        TCPSocketPtr m_socket;
+
+        RTMap<uint32_t, TaskInfo> m_tasks;
 
         pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;
 
-    class MsgThread : public Thread
+    /*class MsgThread : public Thread
     {
     public:
         void SetArgs(const TCPClientPtr tcpClientPtr);
@@ -83,7 +80,7 @@ namespace RsyncServer
     };
 
     typedef std::shared_ptr<MsgThread> MsgThreadPtr;
-
+*/
     class NetMod
     {
     DECLARE_SINGLETON_EX(NetMod)
@@ -97,8 +94,6 @@ namespace RsyncServer
 
         void Stop();
 
-        //void RunThread(void *);
-        //void onThreadCreated(void* args);
     private:
         void removeUnavailableSockets();
 
@@ -110,7 +105,7 @@ namespace RsyncServer
 
         unordered_map<TCPSocketPtr, TCPClientPtr> m_clientMap;
 
-        vector<MsgThreadPtr> m_threads;
+       // vector<MsgThreadPtr> m_threads;
 
         bool m_inited = false;
         volatile bool m_running = false;

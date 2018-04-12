@@ -115,6 +115,8 @@ public:
 
     static string BaseName(const string &path);
 
+    static int Rename(const string& src, const string& des);
+
 private:
 };
 

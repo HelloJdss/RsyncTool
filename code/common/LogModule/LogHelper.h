@@ -39,7 +39,9 @@ class utc_timer
 public:
     utc_timer();
 
-    uint64_t get_curr_time(int *p_msec = nullptr); //return sec, arg return 0.msec
+    uint64_t get_curr_sec(int *p_msec = nullptr); //return sec, arg return 0.msec
+
+    uint64_t get_curr_msec();   //获取现在的总毫秒数
 
     int year, mon, day, hour, min, sec;
     char utc_fmt[20];

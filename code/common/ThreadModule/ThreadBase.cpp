@@ -3,6 +3,7 @@
 //
 
 #include <unistd.h>
+#include <csignal>
 #include "ThreadBase.h"
 
 /*void Thread::RunThread(void* (*t_thread)(void*), void *args, bool async)
@@ -66,12 +67,20 @@ void Thread::RunThread(void* _this, void *_args, bool async)
 
 void *Thread::run1()
 {
+    struct sigaction acct;
+
+    acct.sa_handler = Thread::onRecvSignal;
+    sigemptyset(&acct.sa_mask);
+    acct.sa_flags = 0;
+    sigaction(SIGUSR1, &acct, nullptr);
+
     LOG_TRACE("Thread Start!");
     m_tid = pthread_self();
     Runnable();
     m_tid = 0;
     m_threadStatus = THREAD_STATUS_EXIT;
     LOG_TRACE("Thread Stop!");
+    pthread_exit(nullptr);
 }
 
 Thread::Thread()
@@ -149,7 +158,19 @@ void Thread::Detach()
 
 void Thread::Abort()
 {
-    m_tid = 0;
-    m_threadStatus = THREAD_STATUS_EXIT;
-    pthread_exit(nullptr);
+    if(m_tid > 0)
+    {
+        pthread_kill(m_tid, SIGUSR1);
+        m_tid = 0;
+        m_threadStatus = THREAD_STATUS_EXIT;
+    }
+}
+
+void Thread::onRecvSignal(int sig)
+{
+    if(sig == SIGUSR1)
+    {
+        LOG_TRACE("Thread[%d] Exit ", pthread_self());
+        pthread_exit(nullptr);
+    }
 }

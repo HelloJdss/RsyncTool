@@ -7,45 +7,51 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include "Cmd_generated.h"
 #include "cm_define.h"
 #include "NetHelper.h"
-#include "MsgHelper.h"
 #include "Generator.h"
 #include "FileHelper.h"
 #include "LogHelper.h"
 #include "Protocol_define.h"
+#include "ThreadBase.h"
+#include "cm_struct.h"
+#include "MsgHelper.h"
 
 namespace RsyncClient
 {
-
-    class FileBaseData
+    class TaskMgr //封装mutex，保持线程访问安全
     {
     public:
-        //uint32_t        m_taskID;
-        string          m_filePath;   //记录本地文件名及其路径
-        //GeneratorPtr    m_generator;  //记录本地已有的文件信息
-        uint64_t        m_newSize;    //同步后的文件总长度
-        uint64_t        m_processLen; //已经处理的文件长度
-        FilePtr         m_pnewfile;   //重建的文件指针
+        void AddTask(TaskInfo &task);
 
-        FileBaseData(/*uint32_t taskID, GeneratorPtr generator*/)
-        {
-            //m_generator = generator;
-            //m_taskID = taskID;
-            m_newSize = 0;
-            m_processLen = 0;
-        }
-        ~FileBaseData()
-        {
-            if(m_processLen != m_newSize)
-            {
-                LOG_WARN("Task[%lu] File: [%s] Synchronize Abort!");    //未完成的任务，给予警告
-            }
-            LOG_TRACE("~FileBaseData");
-        }
+        int GetTaskCount();
+        int GetTaskCount(TaskState state); //获取任务数量
+
+        void Ready(uint32_t taskID);  //设定任务就绪
+
+        void Launch(uint32_t taskID); //启动任务
+
+        void Abort(uint32_t taskID, string err);  //终止任务
+
+        void Warn(uint32_t taskID, string err);  //任务有警告
+
+        void Finish(uint32_t taskID);  //完成任务
+
+        RTVector<uint32_t> GetReadyTasks(int count);  //获取处于就绪状态的count个任务
+
+        TaskInfo &GetTask(uint32_t taskID);
+
+        bool TaskEnd(); //检查任务是否全部结束
+
+        int64_t
+        Find_First(TaskState state, TaskType type, string const *src, string const *des);//寻找第一个符合条件的taskID
+
+    private:
+        RTMap<uint32_t, TaskInfo> m_tasks;                  //taskID ==> taskInfo 任务列表
+
+        pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
     };
-
-    typedef std::shared_ptr<FileBaseData> FileBaseDataPtr;
 
     class NetMod
     {
@@ -56,70 +62,81 @@ namespace RsyncClient
 
         void AddTask(TaskType taskType, string const *src, string const *des, const string &desIP, uint16_t desPort);
 
-        int LaunchTask(); //返回成功启动的任务数
+        //返回成功启动的任务数
 
         bool Init();
 
         void Run();
 
-        void CreateNewTask(Protocol::Opcode op, const string& src, const string& des);  //创建新的同步任务
-
         void Dispatch();
 
-        void SendToServer(Protocol::Opcode op, uint32_t taskID, uint8_t* buf, uint32_t size);
+        void SendToServer(Protocol::Opcode op, uint32_t taskID, uint8_t *buf, uint32_t size);
+
+        void SendErrToServer(uint32_t taskID, Protocol::Err err, string tip = "");
+
 
     private:
 
         friend class Inspector;
 
-        void createViewDirTask(const string& desDir);  //创建文件浏览任务
+        friend class MsgThread;
+
+        void createViewDirTask(const string &desDir);  //创建文件浏览任务
 
         void launchViewDirTask(uint32_t taskID);    //启动文件浏览任务
 
-        void onRecvViewDirAck(uint32_t taskID, BytesPtr data);
+        Protocol::Err onRecvViewDirAck(uint32_t taskID, BytesPtr data);
 
 
-        void createPushTask(const string& srcPath, const string& desDir);
+        void createPushTask(const string &srcPath, const string &desDir);
 
         void launchPushTask(uint32_t taskID);
 
-        void onRecvFileDigest(uint32_t taskID, BytesPtr data);
+        Protocol::Err onRecvFileDigest(uint32_t taskID, BytesPtr data);
 
-        void onInspectCallBack(uint32_t taskID, const ST_BlockInformation& info);
+        void onInspectCallBack(uint32_t taskID, const ST_BlockInformation &info);
 
 
-        void createPullTask(const string& srcDir, const string& desPath);
+        void createPullTask(const string &srcDir, const string &desPath);
 
         void launchPullTask(uint32_t taskID);
 
-        void onRecvRebuildInfo(uint32_t taskID, BytesPtr data); //接收到重建文件信息
+        Protocol::Err onRecvRebuildInfo(uint32_t taskID, BytesPtr data); //接收到重建文件信息
 
-        void onRecvRebuildChunk(uint32_t taskID, BytesPtr data); //接收到重建块信息
+        Protocol::Err onRecvRebuildChunk(uint32_t taskID, BytesPtr data); //接收到重建块信息
 
-
-        void createReverseSyncTask(uint32_t taskID, const string &src, const string &des, uint32_t blocksize = 1024);  //创建反向同步任务
-
-        void onRecvErrorCode(uint32_t taskID, BytesPtr data);
-
-        void onRecvReverseSyncAck(uint32_t taskID, BytesPtr data);
+        void onRecvErrorCode(uint32_t taskID, BytesPtr data); //不再回复，必定结束一个任务
 
         volatile bool m_running = false;
 
         MsgHelper m_msgHelper;
         TCPSocketPtr m_serverSocket;
 
-        RTMap<uint32_t, RTVector<FileBaseDataPtr>> m_task2data;            // task ID   ===> [basedata]
-        RTMap<uint32_t, GeneratorPtr> m_task2generator;          // task ID   ===> generator
+        TaskMgr m_taskMgr;
 
         string m_serverIp;
         uint16_t m_serverPort = 48888;
-        RTMap<uint32_t ,ST_TaskInfo> m_tasks;                  //taskID ==> taskInfo 任务列表
 
         uint32_t m_taskIndex = 10000;
 
+        uint32_t m_taskRunningCount = 0;                       //正在执行的任务数目
+
+        pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;   //确保多线程读写安全
     };
 
 #define g_NetMod NetMod::Instance()
+
+    class MsgThread : public Thread
+    {
+    public:
+
+        void Runnable();
+
+    private:
+
+    };
+
+    typedef std::shared_ptr<MsgThread> MsgThreadPtr;
 }
 
 

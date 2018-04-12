@@ -25,8 +25,20 @@ bool File::Open(const string &filename, char const *mode)
         string dir;
         if(FileHelper::SplitDirAndFile(filename, &dir) && -1 == access(dir.c_str(), F_OK | W_OK)) //存在目录需要先创建目录
         {
-            mkdir(dir.c_str(), 0777);
-            LOG_WARN("mkdir: %s", dir.c_str());
+          //  mkdir(dir.c_str(), 0777); //一次只能创建一级目录
+          //  LOG_WARN("mkdir: %s", dir.c_str());
+            size_t pos = 0;
+            while((pos = dir.find_first_of('/', pos)) != string::npos)
+            {
+                if(access(dir.substr(0, pos).c_str(), F_OK) == -1) //此级目录不存在，则创建
+                {
+                    if(mkdir(dir.substr(0, pos).c_str(), 0777) != -1) //一次只能创建一级目录
+                    {
+                        LOG_WARN("mkdir: %s", dir.substr(0, pos).c_str());
+                    }
+                }
+                pos++;
+            }
         }
     }
 
@@ -259,6 +271,11 @@ int FileHelper::Access(const string &path, int mode)
 string FileHelper::BaseName(const string &path)
 {
     return basename(path.c_str());
+}
+
+int FileHelper::Rename(const string &src, const string &des)
+{
+    return rename(src.c_str(), des.c_str());
 }
 
 Dir::~Dir()

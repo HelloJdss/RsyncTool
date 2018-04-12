@@ -46,11 +46,12 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
             {nullptr, 0, nullptr, 0},
     };
 
-    LOG_LEVEL logLevel = g_Configuration->m_log_lv;
-    g_LogHelper->Init(logLevel, appName, g_Configuration->m_log_file);
+
 
     //加载配置文件
     g_Configuration->LoadXml();
+    g_LogHelper->Init(g_Configuration->m_log_lv, appName, g_Configuration->m_log_file);
+    LOG_LEVEL logLevel = g_Configuration->m_log_lv;
 
     bool ret = true;
     while ((opt = getopt_long(argc, argv, "-hDL:p:P:f:v:", longopts, nullptr)) != -1)
@@ -166,7 +167,7 @@ bool MainMod::cmd_push(string src, string des) //local_dir(file) des_dir@des_ip:
         {
             string ip = ipPort.substr(0, pos);
             uint16_t port = static_cast<uint16_t>(std::stoi(ipPort.substr(pos + 1)));
-            printf("set src path: %s des dir: %s, ip: %s port: %u\n", src.c_str(), desDir.c_str(), ip.c_str(), port);
+            //printf("set src path: %s des dir: %s, ip: %s port: %u\n", src.c_str(), desDir.c_str(), ip.c_str(), port);
             g_NetMod->AddTask(TaskType::Push, &src, &desDir, ip, port);
             return true;
         }
@@ -201,7 +202,7 @@ bool MainMod::cmd_pull(string src, string des) //local_dir des_dir(file)@des_ip:
         {
             string ip = ipPort.substr(0, pos);
             uint16_t port = static_cast<uint16_t>(std::stoi(ipPort.substr(pos + 1)));
-            printf("src Dir: %s des path: %s, ip: %s port: %u\n", srcDir.c_str(), desPath.c_str(), ip.c_str(), port);
+            //printf("src Dir: %s des path: %s, ip: %s port: %u\n", srcDir.c_str(), desPath.c_str(), ip.c_str(), port);
             g_NetMod->AddTask(TaskType::Pull_File, &srcDir, &desPath, ip, port);
             return true;
         }
@@ -231,7 +232,7 @@ bool MainMod::cmd_v(string des) //des_dir(file)@des_ip:port
         {
             string ip = ipPort.substr(0, pos);
             uint16_t port = static_cast<uint16_t>(std::stoi(ipPort.substr(pos + 1)));
-            printf("set dir: %s, ip: %s port: %u\n", desDir.c_str(), ip.c_str(), port);
+            //printf("set dir: %s, ip: %s port: %u\n", desDir.c_str(), ip.c_str(), port);
             g_NetMod->AddTask(TaskType::ViewDir, nullptr, &desDir, ip, port);
             return true;
         }
@@ -251,31 +252,37 @@ int Configuration::LoadXml(char const *xmlPath)
 
     XMLElement *root = doc.RootElement();
 
-    LogCheckCondition(root, -1, "Explain Xml Failed!");
+    RT_ASSERT(root, "Explain root Failed!");
 
     XMLElement *log = root->FirstChildElement("log");
-    LogCheckCondition(log, -1, "Explain Xml Failed!");
+    RT_ASSERT(log, "Explain log Failed!");
 
     XMLElement *log_lv = log->FirstChildElement("level");
-    LogCheckCondition(log_lv, -1, "Explain Xml Failed!");
+    RT_ASSERT(log_lv, "Explain log lv Failed!");
+    //LogCheckCondition(log_lv, -1, "Explain Xml Failed!");
 
     m_log_lv = static_cast<LOG_LEVEL>(std::stoi(string(log_lv->GetText())));
+    //printf("lv: %d\n", m_log_lv);
 
     XMLElement *log_path = log->FirstChildElement("path");
-    LogCheckCondition(log_path, -1, "Explain Xml Failed!");
+    RT_ASSERT(log_path, "Explain log path Failed!");
+    //LogCheckCondition(log_path, -1, "Explain Xml Failed!");
 
     m_log_file = string(log_path->GetText());
 
     XMLElement *view = root->FirstChildElement("view");
-    LogCheckCondition(view, -1, "Explain Xml Failed!");
+    RT_ASSERT(view, "Explain view Failed!");
+    //LogCheckCondition(view, -1, "Explain Xml Failed!");
 
     XMLElement *view_path = view->FirstChildElement("output");
-    LogCheckCondition(view_path, -1, "Explain Xml Failed!");
+    RT_ASSERT(view_path, "Explain view path Failed!");
+    //LogCheckCondition(view_path, -1, "Explain Xml Failed!");
 
     m_view_output = string(view_path->GetText());
 
     XMLElement *view_path_size = view->FirstChildElement("max_size");
-    LogCheckCondition(view_path, -1, "Explain Xml Failed!");
+    RT_ASSERT(view_path_size, "Explain view path size Failed!");
+    //LogCheckCondition(view_path, -1, "Explain Xml Failed!");
 
     m_view_output_max_size = std::stoi(string(view_path_size->GetText()));
 

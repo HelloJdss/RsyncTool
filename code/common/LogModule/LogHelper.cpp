@@ -25,7 +25,7 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     int ms;
     //char* log_line = new char[LOG_LEN_LIMIT];
     char log_line[LOG_LEN_LIMIT];
-    m_tm.get_curr_time(&ms);
+    m_tm.get_curr_sec(&ms);
     int prev_len = snprintf(log_line, LOG_LEN_LIMIT, "[%s.%03d]%s", m_tm.utc_fmt, ms, lvl);
 
     va_list arg_ptr;
@@ -38,32 +38,35 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
 
     if (this->m_isdebug)
     {
-        char *pre;
-        switch (lv)
+        if(lv < m_lv)
         {
-            case FATAL:
-                pre = const_cast<char *>("\33[1;35m");
-                printf("%s%s\33[0m", pre, log_line);
-                break;
-            case ERROR:
-                pre = const_cast<char *>("\33[1;31m");
-                printf("%s%s\33[0m", pre, log_line);
-                break;
-            case WARN:
-                pre = const_cast<char *>("\33[1;33m");
-                printf("%s%s\33[0m", pre, log_line);
-                break;
-            case INFO:
-                printf("%s", log_line);
-                break;
-            case DEBUG:
-                pre = const_cast<char *>("\33[1;34m");
-                printf("%s%s\33[0m", pre, log_line);
-                break;
-            case TRACE:
-                pre = const_cast<char *>("\33[1;32m");
-                printf("%s%s\33[0m", pre, log_line);
-                break;
+            char *pre;
+            switch (lv)
+            {
+                case FATAL:
+                    pre = const_cast<char *>("\33[1;35m");
+                    printf("%s%s\33[0m", pre, log_line);
+                    break;
+                case ERROR:
+                    pre = const_cast<char *>("\33[1;31m");
+                    printf("%s%s\33[0m", pre, log_line);
+                    break;
+                case WARN:
+                    pre = const_cast<char *>("\33[1;33m");
+                    printf("%s%s\33[0m", pre, log_line);
+                    break;
+                case INFO:
+                    printf("%s", log_line);
+                    break;
+                case DEBUG:
+                    pre = const_cast<char *>("\33[1;34m");
+                    printf("%s%s\33[0m", pre, log_line);
+                    break;
+                case TRACE:
+                    pre = const_cast<char *>("\33[1;32m");
+                    printf("%s%s\33[0m", pre, log_line);
+                    break;
+            }
         }
     }
 
@@ -95,7 +98,7 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path)
         m_fp = nullptr;
     }
 
-    m_tm.get_curr_time();
+    m_tm.get_curr_sec();
     char log_path[1024] = {};
     sprintf(log_path, "%s/%s_%d_%02d_%02d_%02d_%02d_%02d.log", Path.c_str(), m_name.c_str(), m_tm.year, m_tm.mon,
             m_tm.day, m_tm.hour, m_tm.min, m_tm.sec);
@@ -132,7 +135,7 @@ utc_timer::utc_timer()
     reset_utc_fmt();
 }
 
-uint64_t utc_timer::get_curr_time(int *p_msec)
+uint64_t utc_timer::get_curr_sec(int *p_msec)
 {
     struct timeval tv;
     //get current ts
@@ -168,4 +171,11 @@ uint64_t utc_timer::get_curr_time(int *p_msec)
         }
     }
     return static_cast<uint64_t>(tv.tv_sec);
+}
+
+uint64_t utc_timer::get_curr_msec()
+{
+    int msec = 0;
+    uint64_t now = get_curr_sec(&msec);
+    return now * 1000 + msec;
 }

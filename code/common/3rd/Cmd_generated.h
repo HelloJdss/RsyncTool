@@ -58,30 +58,42 @@ inline const char *EnumNameOp(Op e) {
 }
 
 enum Err {
-  Err_UNKNOWN = 0,
-  Err_SUCCESS = 1,
-  Err_NO_SUCH_FILE = 2,
-  Err_NO_SUCH_DIR = 3,
-  Err_MIN = Err_UNKNOWN,
-  Err_MAX = Err_NO_SUCH_DIR
+  Err_DO_NOT_REPLY = 0,
+  Err_UNKNOWN = 1,
+  Err_SUCCESS = 2,
+  Err_VERIFY_FAILED = 3,
+  Err_NO_SUCH_FILE = 4,
+  Err_NO_SUCH_DIR = 5,
+  Err_TASK_CONFLICT = 6,
+  Err_TASK_INFO_INCOMPLETE = 7,
+  Err_MIN = Err_DO_NOT_REPLY,
+  Err_MAX = Err_TASK_INFO_INCOMPLETE
 };
 
-inline const Err (&EnumValuesErr())[4] {
+inline const Err (&EnumValuesErr())[8] {
   static const Err values[] = {
+    Err_DO_NOT_REPLY,
     Err_UNKNOWN,
     Err_SUCCESS,
+    Err_VERIFY_FAILED,
     Err_NO_SUCH_FILE,
-    Err_NO_SUCH_DIR
+    Err_NO_SUCH_DIR,
+    Err_TASK_CONFLICT,
+    Err_TASK_INFO_INCOMPLETE
   };
   return values;
 }
 
 inline const char * const *EnumNamesErr() {
   static const char * const names[] = {
+    "DO_NOT_REPLY",
     "UNKNOWN",
     "SUCCESS",
+    "VERIFY_FAILED",
     "NO_SUCH_FILE",
     "NO_SUCH_DIR",
+    "TASK_CONFLICT",
+    "TASK_INFO_INCOMPLETE",
     nullptr
   };
   return names;
@@ -135,7 +147,7 @@ struct ErrorCodeBuilder {
 
 inline flatbuffers::Offset<ErrorCode> CreateErrorCode(
     flatbuffers::FlatBufferBuilder &_fbb,
-    Err Code = Err_UNKNOWN,
+    Err Code = Err_DO_NOT_REPLY,
     flatbuffers::Offset<flatbuffers::String> TIP = 0) {
   ErrorCodeBuilder builder_(_fbb);
   builder_.add_TIP(TIP);
@@ -145,7 +157,7 @@ inline flatbuffers::Offset<ErrorCode> CreateErrorCode(
 
 inline flatbuffers::Offset<ErrorCode> CreateErrorCodeDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    Err Code = Err_UNKNOWN,
+    Err Code = Err_DO_NOT_REPLY,
     const char *TIP = nullptr) {
   return Protocol::CreateErrorCode(
       _fbb,

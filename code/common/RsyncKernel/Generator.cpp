@@ -20,7 +20,7 @@ bool Generator::Generate(const string &filename, uint32_t split)
     m_split = split;
 
     auto fp = FileHelper::OpenFile(filename, "rb");
-    LogCheckCondition(fp!= nullptr, false, "open file [%s] failed! errno: %s", filename.c_str(), strerror(errno));
+    LogCheckCondition(fp!= nullptr, false, "Open file [%s] failed! errno: %s", filename.c_str(), strerror(errno));
 
     int64_t n = fp->Size();
     if (n == -1)
@@ -64,7 +64,7 @@ bool Generator::Generate(const string &filename, uint32_t split)
 
         m_Md5ToData[info.md5] = m_blockInfoVec.back().data;   //这种赋值方式是为了利用string的写时复制特性，避免不必要的拷贝
 
-        LOG_INFO("[%3lld\%] Finish Block: Offset: %lld Length: %d CheckSum: %u MD5: %s", i * 100 / n,
+        LOG_DEBUG("[%3lld\%] Finish Block: Offset: %lld Length: %d CheckSum: %u MD5: %s", i * 100 / n,
                   info.offset, info.length, info.checksum, info.md5.c_str());
     }
 
