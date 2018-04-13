@@ -27,7 +27,7 @@ bool File::Open(const string &filename, char const *mode)
         {
           //  mkdir(dir.c_str(), 0777); //一次只能创建一级目录
           //  LOG_WARN("mkdir: %s", dir.c_str());
-            size_t pos = 0;
+          /*  size_t pos = 0;
             while((pos = dir.find_first_of('/', pos)) != string::npos)
             {
                 if(access(dir.substr(0, pos).c_str(), F_OK) == -1) //此级目录不存在，则创建
@@ -39,6 +39,8 @@ bool File::Open(const string &filename, char const *mode)
                 }
                 pos++;
             }
+            */
+          FileHelper::MakeDir(dir);
         }
     }
 
@@ -278,6 +280,22 @@ int FileHelper::Rename(const string &src, const string &des)
     return rename(src.c_str(), des.c_str());
 }
 
+void FileHelper::MakeDir(const string &dir)
+{
+    size_t pos = 0;
+    while((pos = dir.find_first_of('/', pos)) != string::npos)
+    {
+        if(access(dir.substr(0, pos).c_str(), F_OK) == -1) //此级目录不存在，则创建
+        {
+            if(mkdir(dir.substr(0, pos).c_str(), 0777) != -1) //一次只能创建一级目录
+            {
+                LOG_WARN("mkdir: %s", dir.substr(0, pos).c_str());
+            }
+        }
+        pos++;
+    }
+}
+
 Dir::~Dir()
 {
     if(!m_dp)
@@ -329,11 +347,14 @@ void Dir::traverse(char *dir, string prefix, std::vector<string>& list)
             }
 
             //进入下层目录中
+            string str = prefix + entry->d_name + "/";
+            list.push_back(str); //写入目录名
+            LOG_TRACE("Add Dir[%s]", str.c_str());
             traverse(entry->d_name, prefix, list);
         }
         else
         {
-            LOG_TRACE("Add File %s", (prefix + entry->d_name).c_str());
+            LOG_TRACE("Add File[%s]", (prefix + entry->d_name).c_str());
 
             list.push_back(prefix + entry->d_name);
         }

@@ -332,16 +332,25 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
         pInfo->SetAttribute("Size", item->FileSize());
         des->InsertEndChild(pInfo);
 
-
         if (PullDirTaskID != -1)
         {
             auto pPullDirTaskInfo = m_taskMgr.GetTask(PullDirTaskID);
             if (pPullDirTaskInfo)
             {
-                createPullTask(
-                        pPullDirTaskInfo->m_src +
-                        item->FilePath()->str().substr(pPullDirTaskInfo->m_des.size()),
-                        item->FilePath()->str());
+                if(item->FilePath()->str().back() == '/')
+                {
+                    //如果是目录，则创建目录
+                    FileHelper::MakeDir(pPullDirTaskInfo->m_src +
+                                        item->FilePath()->str().substr(pPullDirTaskInfo->m_des.size())); //转换成本地路径
+                    continue;
+                }
+                else
+                {
+                    createPullTask(
+                            pPullDirTaskInfo->m_src +
+                            item->FilePath()->str().substr(pPullDirTaskInfo->m_des.size()),
+                            item->FilePath()->str());
+                }
             }
         }
     }

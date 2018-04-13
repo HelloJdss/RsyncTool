@@ -16,8 +16,8 @@ using namespace RsyncServer;
 void NetMod::Init(uint16_t port)
 {
     m_listenSocket = NetHelper::CreateTCPSocket(INET, false);
-    m_receivingAddr = SocketAddressPtr(new SocketAddress("127.0.0.1", port));
-    //m_receivingAddr = SocketAddressPtr(new SocketAddress(INADDR_ANY, port));
+    //m_receivingAddr = SocketAddressPtr(new SocketAddress("127.0.0.1", port));
+    m_receivingAddr = SocketAddressPtr(new SocketAddress(INADDR_ANY, port));
     auto err = m_listenSocket->Bind(*m_receivingAddr);
     if (err != NO_ERROR)
     {
@@ -288,6 +288,15 @@ Err TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
 
     for (auto &name:List)
     {
+        if(name.back() == '/')
+        {
+            //如果是目录
+            vector1.push_back(Protocol::CreateFileInfo(builder,
+                                                       builder.CreateString(FileHelper::GetRealPath(name) + "/"),
+                                                       0));
+            continue;
+        }
+
         auto fp = FileHelper::OpenFile(name, "r");
         if (fp)
         {
@@ -325,6 +334,12 @@ Protocol::Err TCPClient::onRecvSyncFile(uint32_t taskID, BytesPtr data)
     m_tasks[taskID].m_des = pSyncFile->DesPath()->str();
     m_tasks[taskID].Launch();
 
+    if(pSyncFile->DesPath()->str().back() == '/')
+    {
+        //如果是目录则创建目录，并返回成功
+        FileHelper::MakeDir(pSyncFile->DesPath()->str());
+        return Err_SUCCESS;
+    }
 
     m_tasks[taskID].m_generatorPtr = Generator::NewGenerator(pSyncFile->DesPath()->str());
 

@@ -117,6 +117,8 @@ public:
 
     static int Rename(const string& src, const string& des);
 
+    static void MakeDir(const string &dir);//创建目录，支持创建多级目录
+
 private:
 };
 
