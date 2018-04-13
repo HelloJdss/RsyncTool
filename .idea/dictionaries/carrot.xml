@@ -5,6 +5,7 @@
       <w>errno</w>
       <w>recv</w>
       <w>rsync</w>
+      <w>rsyncserver</w>
     </words>
   </dictionary>
 </component>

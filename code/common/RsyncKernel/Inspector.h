@@ -31,9 +31,9 @@ typedef std::function<void (uint32_t, const ST_BlockInformation&)> INSPECTOR_CAL
 class Inspector
 {
 public:
-    static std::shared_ptr<Inspector> NewInspector(uint32_t cb_taskID, const string& filename, uint32_t split);
+    static std::shared_ptr<Inspector> NewInspector(uint32_t cb_taskID, const string& filename, uint32_t split = 4096);
 
-    static std::shared_ptr<Inspector> NewInspector(uint32_t cb_taskID, FilePtr fp, uint32_t split);
+    static std::shared_ptr<Inspector> NewInspector(uint32_t cb_taskID, FilePtr fp, uint32_t split = 4096);
 
     Inspector(uint32_t taskID, const string& filename, uint32_t split)
     {
@@ -51,6 +51,8 @@ public:
 
     ~Inspector()
     {
+        m_buffer.clear();
+        m_fp = nullptr;
         LOG_TRACE("~Inspector");
     }
 

@@ -30,13 +30,29 @@ void NetMod::Run()
         ptr->Detach();
     }
 
+    int waitCount = 0;
+
     while (m_running && !m_taskMgr.TaskEnd()) //主线程不断检查任务情况
     {
-        auto readyTasks = m_taskMgr.GetReadyTasks(100 - m_taskMgr.GetTaskCount(TaskState::Run));
+        auto readyTasks = m_taskMgr.GetTasksByState(Ready, 100 - m_taskMgr.GetTaskCount(TaskState::Run));
 
-        for (auto i : readyTasks)   //逐个启动任务
+        if (readyTasks.size() == 0)
         {
-            switch (m_taskMgr.GetTask(i).m_type)
+            waitCount++;
+        }
+        else
+        {
+            waitCount = 0;
+        }
+
+        for (const auto &i : readyTasks)   //逐个启动任务
+        {
+            auto pTaskInfo = m_taskMgr.GetTask(i);
+            if (pTaskInfo == nullptr)
+            {
+                continue;
+            }
+            switch (pTaskInfo->m_type)
             {
                 case TaskType::ViewDir:
                     launchViewDirTask(i);
@@ -55,11 +71,29 @@ void NetMod::Run()
                     break;
             }
         }
-        LOG_TRACE("Task Sum: [%d] Ready: [%d] Runing: [%d] Warn: [%d] Abort: [%d] Finished: [%d]", m_taskMgr.GetTaskCount(),
+        LOG_TRACE("Task Sum: [%d] UnInit: [%d] Ready: [%d] Running: [%d] Warn: [%d] Abort: [%d] Finished: [%d]",
+                  m_taskMgr.GetTaskCount(), m_taskMgr.GetTaskCount(UnInit),
                   m_taskMgr.GetTaskCount(Ready), m_taskMgr.GetTaskCount(TaskState::Run),
                   m_taskMgr.GetTaskCount(Warn), m_taskMgr.GetTaskCount(Abort),
                   m_taskMgr.GetTaskCount(Finished));
+
+        /*if(waitCount > 30)
+        {
+            auto vec = m_taskMgr.GetTasksByState(TaskState::Run);
+            for(auto item : vec)
+            {
+                LOG_WARN("Running TaskID: [%lu]", item);
+            }
+            return; //直接return会崩溃，因为另一个线程并未终止，应使用exit(0)
+        }*/
+
         usleep(250 * 1000);
+    }
+
+    auto vec = m_taskMgr.GetTasksByState(TaskState::Run);
+    for (const auto &item : vec)
+    {
+        LOG_WARN("Running TaskID: [%lu]", item);
     }
 }
 
@@ -106,8 +140,8 @@ void NetMod::Dispatch()
         }
     }
 
-    LOG_TRACE("Recv Speed: %lf KB/s, Send Speed: %lf KB/s", m_serverSocket->GetRecvSpeed() * 1000 / 1024,
-              m_serverSocket->GetSendSpeed() * 1000 / 1024);
+    LOG_TRACE("Send Speed: %lf KB/s, Recv Speed: %lf KB/s", m_serverSocket->GetSendSpeed() * 1000 / 1024,
+              m_serverSocket->GetRecvSpeed() * 1000 / 1024);
     pthread_mutex_unlock(&m_mutex);
 }
 
@@ -204,16 +238,19 @@ void NetMod::createViewDirTask(const string &desDir)
     newTask.m_des = desDir;
     //newTask.Ready();
     m_taskMgr.AddTask(newTask);
-    m_taskMgr.Ready(newTask.m_taskID);
+    //m_taskMgr.Ready(newTask.m_taskID);
     //LOG_INFO("Add Task: [%lu] Type: [View Dir] Des: [%s]", newTask.m_taskID, newTask.m_des.c_str());
 }
 
 void NetMod::launchViewDirTask(uint32_t taskID)
 {
-    LogCheckConditionVoid(m_taskMgr.GetTask(taskID).m_type == TaskType::ViewDir, "Launch Task[%lu] Failed!", taskID);
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckConditionVoid(pTaskInfo != nullptr, "pTaskInfo is <null>");
+
+    LogCheckConditionVoid(pTaskInfo->m_type == TaskType::ViewDir, "Launch Task[%lu] Failed!", taskID);
 
     flatbuffers::FlatBufferBuilder builder;
-    auto fbb = Protocol::CreateViewDirReq(builder, builder.CreateString(m_taskMgr.GetTask(taskID).m_des));
+    auto fbb = Protocol::CreateViewDirReq(builder, builder.CreateString(pTaskInfo->m_des));
     builder.Finish(fbb);
 
     this->SendToServer(Opcode::VIEW_DIR_REQ, taskID, builder.GetBufferPointer(), builder.GetSize());
@@ -231,6 +268,9 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
     flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
     auto ok = pViewDirAck->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
+
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckCondition(pTaskInfo != nullptr, Err_TASK_INFO_INCOMPLETE, "pTaskInfo is <null>");
 
     FilePtr fp;
     XMLDocument document;
@@ -261,7 +301,7 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
 
     XMLElement *des = document.NewElement("Destination");
     des->SetAttribute("IP", m_serverIp.c_str());
-    des->SetAttribute("Path", m_taskMgr.GetTask(taskID).m_des.c_str());
+    des->SetAttribute("Path", pTaskInfo->m_des.c_str());
     des->SetAttribute("Time", utc_timer().utc_fmt);
     root->InsertEndChild(des);
 
@@ -277,7 +317,7 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
         }
     }*/
 
-    int64_t PullDirTaskID = m_taskMgr.Find_First(Ready, Pull_Dir, nullptr, &m_taskMgr.GetTask(taskID).m_des);
+    int64_t PullDirTaskID = m_taskMgr.Find_First(Ready, Pull_Dir, nullptr, &pTaskInfo->m_des);
 
     LOG_DEBUG("Pull_Dir_ID: %lu", PullDirTaskID);
 
@@ -292,12 +332,17 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
         pInfo->SetAttribute("Size", item->FileSize());
         des->InsertEndChild(pInfo);
 
+
         if (PullDirTaskID != -1)
         {
-            createPullTask(
-                    m_taskMgr.GetTask(PullDirTaskID).m_src +
-                    item->FilePath()->str().substr(m_taskMgr.GetTask(PullDirTaskID).m_des.size()),
-                    item->FilePath()->str());
+            auto pPullDirTaskInfo = m_taskMgr.GetTask(PullDirTaskID);
+            if (pPullDirTaskInfo)
+            {
+                createPullTask(
+                        pPullDirTaskInfo->m_src +
+                        item->FilePath()->str().substr(pPullDirTaskInfo->m_des.size()),
+                        item->FilePath()->str());
+            }
         }
     }
 
@@ -305,7 +350,7 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
 
     if (document.SaveFile(g_Configuration->m_view_output.c_str()) != 0)
     {
-        m_taskMgr.GetTask(taskID).Warn(document.ErrorStr());
+        m_taskMgr.Warn(taskID, document.ErrorStr());
         //--m_taskRunningCount;
 
         return Err_SUCCESS; //告诉服务端任务已成功完成
@@ -337,7 +382,7 @@ void NetMod::createPushTask(const string &srcPath, const string &desDir) // src�
             //newTask.Ready();
             //m_tasks[newTask.m_taskID] = newTask;
             m_taskMgr.AddTask(newTask);
-            m_taskMgr.Ready(newTask.m_taskID);
+            //m_taskMgr.Ready(newTask.m_taskID);
         }
     }
     else
@@ -350,17 +395,20 @@ void NetMod::createPushTask(const string &srcPath, const string &desDir) // src�
         //newTask.Ready();
         //m_tasks[newTask.m_taskID] = newTask;
         m_taskMgr.AddTask(newTask);
-        m_taskMgr.Ready(newTask.m_taskID);
+        //m_taskMgr.Ready(newTask.m_taskID);
     }
 }
 
 void NetMod::launchPushTask(uint32_t taskID)
 {
-    LogCheckConditionVoid(m_taskMgr.GetTask(taskID).m_type == TaskType::Push, "Launch Task[%lu] Failed!", taskID);
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckConditionVoid(pTaskInfo != nullptr, "pTaskInfo is <null>");
+
+    LogCheckConditionVoid(pTaskInfo->m_type == TaskType::Push, "Launch Task[%lu] Failed!", taskID);
 
     flatbuffers::FlatBufferBuilder builder;
-    auto fbb = Protocol::CreateSyncFile(builder, builder.CreateString(m_taskMgr.GetTask(taskID).m_src),
-                                        builder.CreateString(m_taskMgr.GetTask(taskID).m_des));
+    auto fbb = Protocol::CreateSyncFile(builder, builder.CreateString(pTaskInfo->m_src),
+                                        builder.CreateString(pTaskInfo->m_des));
     builder.Finish(fbb);
 
     this->SendToServer(Opcode::SYNC_FILE, taskID, builder.GetBufferPointer(), builder.GetSize());
@@ -378,18 +426,21 @@ Err NetMod::onRecvFileDigest(uint32_t taskID, BytesPtr data)
     auto ok = pFileDigest->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
-    if (m_taskMgr.GetTask(taskID).m_taskID == taskID) //先行创建过的任务，需要校验
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckCondition(pTaskInfo != nullptr, Err_TASK_INFO_INCOMPLETE, "pTaskInfo is <null>");
+
+    if (pTaskInfo->m_taskID == taskID) //先行创建过的任务，需要校验
     {
-        LogCheckCondition(m_taskMgr.GetTask(taskID).m_des == pFileDigest->DesPath()->str(), Err_TASK_CONFLICT,
+        LogCheckCondition(pTaskInfo->m_des == pFileDigest->DesPath()->str(), Err_TASK_CONFLICT,
                           "Task[%lu] Conflict!", taskID);
-        LogCheckCondition(m_taskMgr.GetTask(taskID).m_src == pFileDigest->SrcPath()->str(), Err_TASK_CONFLICT,
+        LogCheckCondition(pTaskInfo->m_src == pFileDigest->SrcPath()->str(), Err_TASK_CONFLICT,
                           "Task[%lu] Conflict!", taskID);
     }
 
-    m_taskMgr.GetTask(taskID).m_des = pFileDigest->DesPath()->str();
-    m_taskMgr.GetTask(taskID).m_src = pFileDigest->SrcPath()->str();
+    pTaskInfo->m_des = pFileDigest->DesPath()->str();
+    pTaskInfo->m_src = pFileDigest->SrcPath()->str();
 
-    auto fp = FileHelper::OpenFile(m_taskMgr.GetTask(taskID).m_src, "rb");
+    auto fp = FileHelper::OpenFile(pTaskInfo->m_src, "rb");
     LogCheckCondition(fp, Err_NO_SUCH_FILE, "fp is <null>");
 
     //先发送文件信息
@@ -402,7 +453,7 @@ Err NetMod::onRecvFileDigest(uint32_t taskID, BytesPtr data)
 
     if (pFileDigest->Splitsize() == 0) //对方不存在该文件，则直接传输整个文件
     {
-        auto pInspector = Inspector::NewInspector(taskID, fp, 1024);
+        auto pInspector = Inspector::NewInspector(taskID, fp);
         pInspector->BeginInspect(INSPECTOR_CALLBACK_FUNC(&NetMod::onInspectCallBack, this));
     }
     else
@@ -456,7 +507,7 @@ void NetMod::createPullTask(const string &srcDir, const string &desPath)
         //newTask.Ready();
         //m_tasks[newTask.m_taskID] = newTask;
         m_taskMgr.AddTask(newTask);
-        m_taskMgr.Ready(newTask.m_taskID);
+        //m_taskMgr.Ready(newTask.m_taskID);
 
         //再创建Pull_Dir任务
         TaskInfo newTask1(++m_taskIndex, TaskType::Pull_Dir);
@@ -465,7 +516,7 @@ void NetMod::createPullTask(const string &srcDir, const string &desPath)
         //newTask1.Ready();
         //m_tasks[newTask1.m_taskID] = newTask1;
         m_taskMgr.AddTask(newTask1);
-        m_taskMgr.Ready(newTask1.m_taskID);
+        //m_taskMgr.Ready(newTask1.m_taskID);
     }
     else if (srcDir.back() == '/') //目标主机下的文件，先检查本地是否有该文件
     {
@@ -475,7 +526,7 @@ void NetMod::createPullTask(const string &srcDir, const string &desPath)
         //newTask.Ready();
         //m_tasks[newTask.m_taskID] = newTask;
         m_taskMgr.AddTask(newTask);
-        m_taskMgr.Ready(newTask.m_taskID);
+        //m_taskMgr.Ready(newTask.m_taskID);
     }
     else
     {
@@ -485,41 +536,44 @@ void NetMod::createPullTask(const string &srcDir, const string &desPath)
         //newTask.Ready();
         //m_tasks[newTask.m_taskID] = newTask;
         m_taskMgr.AddTask(newTask);
-        m_taskMgr.Ready(newTask.m_taskID);
+        // m_taskMgr.Ready(newTask.m_taskID);
     }
 }
 
 void NetMod::launchPullTask(uint32_t taskID)
 {
-    if (m_taskMgr.GetTask(taskID).m_type == TaskType::Pull_Dir)
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckConditionVoid(pTaskInfo != nullptr, "pTaskInfo is <null>");
+
+    if (pTaskInfo->m_type == TaskType::Pull_Dir)
     {
         //等待ViewDir进行处理
         return;
     }
 
-    LogCheckConditionVoid(m_taskMgr.GetTask(taskID).m_type == TaskType::Pull_File, "Launch Task[%lu] Failed!", taskID);
+    LogCheckConditionVoid(pTaskInfo->m_type == TaskType::Pull_File, "Launch Task[%lu] Failed!", taskID);
 
 
-    m_taskMgr.GetTask(taskID).Launch();
+    pTaskInfo->Launch();
 
-    m_taskMgr.GetTask(taskID).m_generatorPtr = Generator::NewGenerator(m_taskMgr.GetTask(taskID).m_src);
+    pTaskInfo->m_generatorPtr = Generator::NewGenerator(pTaskInfo->m_src);
 
     flatbuffers::FlatBufferBuilder builder;
 
-    if (m_taskMgr.GetTask(taskID).m_generatorPtr) //文件存在
+    if (pTaskInfo->m_generatorPtr) //文件存在
     {
         std::vector<flatbuffers::Offset<ChunkInfo> > vector1;
 
-        auto &DigestVec = m_taskMgr.GetTask(taskID).m_generatorPtr->GetChunkDigestVec();
+        auto &DigestVec = pTaskInfo->m_generatorPtr->GetChunkDigestVec();
         for (const auto &item : DigestVec)
         {
             vector1.push_back(Protocol::CreateChunkInfo(builder, item.offset, item.length, item.checksum,
                                                         builder.CreateString(item.md5)));
         }
 
-        auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(m_taskMgr.GetTask(taskID).m_src),
-                                              builder.CreateString(m_taskMgr.GetTask(taskID).m_des),
-                                              m_taskMgr.GetTask(taskID).m_generatorPtr->GetSplit(),
+        auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(pTaskInfo->m_src),
+                                              builder.CreateString(pTaskInfo->m_des),
+                                              pTaskInfo->m_generatorPtr->GetSplit(),
                                               builder.CreateVector(vector1));
         builder.Finish(fbb);
         this->SendToServer(Opcode::FILE_DIGEST, taskID, builder.GetBufferPointer(), builder.GetSize());
@@ -527,8 +581,8 @@ void NetMod::launchPullTask(uint32_t taskID)
     }
 
     //文件不存在,分块大小为0
-    auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(m_taskMgr.GetTask(taskID).m_src),
-                                          builder.CreateString(m_taskMgr.GetTask(taskID).m_des),
+    auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(pTaskInfo->m_src),
+                                          builder.CreateString(pTaskInfo->m_des),
                                           0);
     builder.Finish(fbb);
     this->SendToServer(Opcode::FILE_DIGEST, taskID, builder.GetBufferPointer(), builder.GetSize());
@@ -544,7 +598,10 @@ Err NetMod::onRecvRebuildInfo(uint32_t taskID, BytesPtr data)
     auto ok = pRebuildInfo->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
-    m_taskMgr.GetTask(taskID).m_rebuild_size = pRebuildInfo->Size();
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckCondition(pTaskInfo != nullptr, Err_TASK_INFO_INCOMPLETE, "pTaskInfo is <null>");
+
+    pTaskInfo->m_rebuild_size = pRebuildInfo->Size();
     return Err_DO_NOT_REPLY;
 }
 
@@ -558,53 +615,55 @@ Err NetMod::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
     auto ok = pRebuildChunk->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
+    auto pTaskInfo = m_taskMgr.GetTask(taskID);
+    LogCheckCondition(pTaskInfo != nullptr, Err_TASK_INFO_INCOMPLETE, "pTaskInfo is <null>");
 
-    if (m_taskMgr.GetTask(taskID).m_pf == nullptr)
+    if (pTaskInfo->m_pf == nullptr)
     {
-        m_taskMgr.GetTask(taskID).m_pf = FileHelper::OpenFile(m_taskMgr.GetTask(taskID).m_src + ".tmp", "w"); //读取客户端名称
-        LogCheckCondition(m_taskMgr.GetTask(taskID).m_pf, Err_NO_SUCH_FILE, "file Ptr is <null>");
+        pTaskInfo->m_pf = FileHelper::OpenFile(pTaskInfo->m_src + ".tmp", "w"); //读取客户端名称
+        LogCheckCondition(pTaskInfo->m_pf, Err_NO_SUCH_FILE, "file Ptr is <null>");
     }
 
     if (pRebuildChunk->IsMd5())
     {
-        LogCheckCondition(m_taskMgr.GetTask(taskID).m_generatorPtr, Err_TASK_INFO_INCOMPLETE,
+        LogCheckCondition(pTaskInfo->m_generatorPtr, Err_TASK_INFO_INCOMPLETE,
                           "generator Ptr is <null>");
-        auto pData = m_taskMgr.GetTask(taskID).m_generatorPtr->GetChunkDataByMd5(pRebuildChunk->Data()->str());
+        auto pData = pTaskInfo->m_generatorPtr->GetChunkDataByMd5(pRebuildChunk->Data()->str());
         LogCheckCondition(pData.length() == pRebuildChunk->Length(), Err_UNKNOWN, "Err!");
-        auto count = m_taskMgr.GetTask(taskID).m_pf
+        auto count = pTaskInfo->m_pf
                 ->WriteBytes(pData.data(), pData.length(), pRebuildChunk->Offset(), false);
         if (count != pData.length())
         {
             LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
-                     m_taskMgr.GetTask(taskID).m_src.c_str(), count, pData.length());
+                     pTaskInfo->m_src.c_str(), count, pData.length());
         }
-        m_taskMgr.GetTask(taskID).m_processLen += pData.length();
+        pTaskInfo->m_processLen += pData.length();
         LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
-                 m_taskMgr.GetTask(taskID).m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+                 pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
     else
     {
-        auto count = m_taskMgr.GetTask(taskID).m_pf
+        auto count = pTaskInfo->m_pf
                 ->WriteBytes(pRebuildChunk->Data()->data(), pRebuildChunk->Length(), pRebuildChunk->Offset(),
                              false);
         if (count != pRebuildChunk->Length())
         {
             LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
-                     m_taskMgr.GetTask(taskID).m_src.c_str(), count, pRebuildChunk->Length());
+                     pTaskInfo->m_src.c_str(), count, pRebuildChunk->Length());
         }
-        m_taskMgr.GetTask(taskID).m_processLen += pRebuildChunk->Length();
+        pTaskInfo->m_processLen += pRebuildChunk->Length();
         LOG_INFO("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
-                 m_taskMgr.GetTask(taskID).m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+                 pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
-    if (m_taskMgr.GetTask(taskID).m_processLen == m_taskMgr.GetTask(taskID).m_rebuild_size)
+    if (pTaskInfo->m_processLen == pTaskInfo->m_rebuild_size)
     {
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, m_taskMgr.GetTask(taskID).m_src.c_str());
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, pTaskInfo->m_src.c_str());
 
-        m_taskMgr.GetTask(taskID).m_pf = nullptr; //关闭文件读写指针，使缓冲区写入到文件完成
+        pTaskInfo->m_pf = nullptr; //关闭文件读写指针，使缓冲区写入到文件完成
         //重建完成，重命名替换
 
-        FileHelper::Rename(m_taskMgr.GetTask(taskID).m_src + ".tmp", m_taskMgr.GetTask(taskID).m_src);
+        FileHelper::Rename(pTaskInfo->m_src + ".tmp", pTaskInfo->m_src);
 
         m_taskMgr.Finish(taskID);
         //--m_taskRunningCount;
@@ -625,6 +684,11 @@ void NetMod::SendErrToServer(uint32_t taskID, Protocol::Err err, string tip)
     auto fbb = Protocol::CreateErrorCode(builder, err, builder.CreateString(tip));
     builder.Finish(fbb);
     this->SendToServer(Opcode::ERROR_CODE, taskID, builder.GetBufferPointer(), builder.GetSize());
+}
+
+void NetMod::Stop()
+{
+    m_running = false;
 }
 
 void MsgThread::Runnable() //不断阻塞接受消息和处理消息
@@ -653,7 +717,7 @@ void MsgThread::Runnable() //不断阻塞接受消息和处理消息
         {
             LOG_FATAL("Catch Exception: [%s]", strerror(err));
             m_running = false;
-            g_NetMod->m_running = false;
+            g_NetMod->Stop();
         }
     }
 }
@@ -661,6 +725,7 @@ void MsgThread::Runnable() //不断阻塞接受消息和处理消息
 void TaskMgr::AddTask(TaskInfo &task)
 {
     m_tasks[task.m_taskID] = task;
+    m_tasks[task.m_taskID].Ready();
 }
 
 int TaskMgr::GetTaskCount(TaskState state)
@@ -683,30 +748,35 @@ int TaskMgr::GetTaskCount(TaskState state)
 
 void TaskMgr::Ready(uint32_t taskID)
 {
+    LogCheckConditionVoid(nullptr != GetTask(taskID), "Task [%lu] not Init!");
     m_tasks[taskID].Ready();
 }
 
 void TaskMgr::Launch(uint32_t taskID)
 {
+    LogCheckConditionVoid(nullptr != GetTask(taskID), "Task [%lu] not Init!");
     m_tasks[taskID].Launch();
 }
 
 void TaskMgr::Abort(uint32_t taskID, string err)
 {
+    LogCheckConditionVoid(nullptr != GetTask(taskID), "Task [%lu] not Init!");
     m_tasks[taskID].Abort(err);
 }
 
 void TaskMgr::Warn(uint32_t taskID, string err)
 {
+    LogCheckConditionVoid(nullptr != GetTask(taskID), "Task [%lu] not Init!");
     m_tasks[taskID].Warn(err);
 }
 
 void TaskMgr::Finish(uint32_t taskID)
 {
+    LogCheckConditionVoid(nullptr != GetTask(taskID), "Task [%lu] not Init!");
     m_tasks[taskID].Finish();
 }
 
-vector<uint32_t> TaskMgr::GetReadyTasks(int count)
+RTVector<uint32_t> TaskMgr::GetTasksByType(TaskType type, uint32_t count)
 {
     pthread_mutex_lock(&m_mutex);
 
@@ -715,7 +785,7 @@ vector<uint32_t> TaskMgr::GetReadyTasks(int count)
 
     for (auto it = m_tasks.begin(); it != m_tasks.end() && n < count; ++it)
     {
-        if (it->second.m_stat == TaskState::Ready)
+        if (it->second.m_type == type)
         {
             ret.push_back(it->second.m_taskID);
             n++;
@@ -726,9 +796,15 @@ vector<uint32_t> TaskMgr::GetReadyTasks(int count)
     return ret;
 }
 
-TaskInfo &TaskMgr::GetTask(uint32_t taskID)
+TaskInfo *TaskMgr::GetTask(uint32_t taskID)
 {
-    return m_tasks[taskID];
+    LogCheckCondition(m_tasks.find(taskID) != m_tasks.end(), nullptr, "No Such Task [%lu]", taskID);
+
+    if (m_tasks[taskID].m_taskID != taskID)
+    {
+        LOG_WARN("m_tasks[%lu] Not Complete with [%lu]!", m_tasks[taskID].m_taskID, taskID);
+    }
+    return &m_tasks[taskID];
 }
 
 bool TaskMgr::TaskEnd()
@@ -783,4 +859,24 @@ TaskMgr::Find_First(TaskState state, TaskType type, string const *src, string co
 int TaskMgr::GetTaskCount()
 {
     return m_tasks.size();
+}
+
+RTVector<uint32_t> TaskMgr::GetTasksByState(TaskState state, uint32_t count)
+{
+    pthread_mutex_lock(&m_mutex);
+
+    vector<uint32_t> ret;
+    int n = 0;
+
+    for (auto it = m_tasks.begin(); it != m_tasks.end() && n < count; ++it)
+    {
+        if (it->second.m_stat == state)
+        {
+            ret.push_back(it->second.m_taskID);
+            n++;
+        }
+    }
+
+    pthread_mutex_unlock(&m_mutex);
+    return ret;
 }

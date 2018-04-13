@@ -97,6 +97,8 @@ public:
 
     TaskInfo();
 
+    ~TaskInfo();
+
     void Ready();  //设定任务就绪
 
     void Launch(); //启动任务
@@ -156,7 +158,9 @@ inline void TaskInfo::Abort(string err)
 {
     m_stat = TaskState::Abort;
     m_err = err;
-    LOG_ERROR("Abort Task: [%lu] Type: [%d] Src: [%s] Des: [%s] Err: [%s] Use: %lld(ms)", m_taskID, m_type,
+    m_generatorPtr = nullptr; //释放资源
+    m_pf = nullptr;
+    LOG_ERROR("Abort Task: [%lu] Type: [%d] Src: [%s] Des: [%s] Err: [%s] Use: [%lld] ms", m_taskID, m_type,
              m_src.c_str(), m_des.c_str(), m_err.c_str(), utc_timer().get_curr_msec() - m_launch_time);
 }
 
@@ -164,14 +168,18 @@ inline void TaskInfo::Warn(string err)
 {
     m_stat = TaskState::Warn;
     m_err = err;
-    LOG_WARN("Warn Task: [%lu] Type: [%d] Src: [%s] Des: [%s] Err: [%s] Use: %lld(ms)", m_taskID, m_type,
+    m_generatorPtr = nullptr; //释放资源
+    m_pf = nullptr;
+    LOG_WARN("Warn Task: [%lu] Type: [%d] Src: [%s] Des: [%s] Err: [%s] Use: [%lld] ms", m_taskID, m_type,
              m_src.c_str(), m_des.c_str(), m_err.c_str(), utc_timer().get_curr_msec() - m_launch_time);
 }
 
 inline void TaskInfo::Finish()
 {
     m_stat = TaskState::Finished;
-    LOG_INFO("Finish Task: [%lu] Type: [%d] Src: [%s] Des: [%s] Use: %lld(ms)", m_taskID, m_type,
+    m_generatorPtr = nullptr; //释放资源
+    m_pf = nullptr;
+    LOG_INFO("Finish Task: [%lu] Type: [%d] Src: [%s] Des: [%s] Use: [%lld] ms", m_taskID, m_type,
              m_src.c_str(), m_des.c_str(), utc_timer().get_curr_msec() - m_launch_time);
 }
 
@@ -195,6 +203,12 @@ inline TaskInfo::TaskInfo()
     m_generatorPtr = nullptr;
     m_rebuild_size = -1;
     m_processLen = 0;
+    m_pf = nullptr;
+}
+
+inline TaskInfo::~TaskInfo()
+{
+    m_generatorPtr = nullptr; //释放资源
     m_pf = nullptr;
 }
 

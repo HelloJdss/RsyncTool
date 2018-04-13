@@ -38,7 +38,7 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
 
     if (this->m_isdebug)
     {
-        if(lv < m_lv)
+        if(lv <= m_lv)
         {
             char *pre;
             switch (lv)

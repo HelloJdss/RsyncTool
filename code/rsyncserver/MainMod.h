@@ -28,6 +28,12 @@ namespace RsyncServer
 
         static int Run();
 
+        static string m_log_path;
+
+        static uint16_t m_port;
+
+        static LOG_LEVEL m_log_lv;
+
 
     private:
         static void* runNetMod(void* port);
@@ -35,6 +41,8 @@ namespace RsyncServer
         static ST_command m_cmds[];
 
         static void cmd_h();
+
+        static void cmd_D();
 
         static void cmd_d();
 

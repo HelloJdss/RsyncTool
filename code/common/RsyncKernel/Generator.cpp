@@ -91,3 +91,10 @@ std::shared_ptr<Generator> Generator::NewGenerator(const std::string &filename, 
     }
     return nullptr;
 }
+
+Generator::~Generator()
+{
+    m_Md5ToData.clear();
+    m_blockInfoVec.clear();
+    LOG_TRACE("~Generator");
+}

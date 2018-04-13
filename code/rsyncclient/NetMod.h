@@ -38,9 +38,11 @@ namespace RsyncClient
 
         void Finish(uint32_t taskID);  //完成任务
 
-        RTVector<uint32_t> GetReadyTasks(int count);  //获取处于就绪状态的count个任务
+        RTVector<uint32_t> GetTasksByType(TaskType type, uint32_t count = -1);  //获取处于状态的count个任务
 
-        TaskInfo &GetTask(uint32_t taskID);
+        RTVector<uint32_t> GetTasksByState(TaskState state, uint32_t count = -1);  //获取处于状态的count个任务
+
+        TaskInfo* GetTask(uint32_t taskID);
 
         bool TaskEnd(); //检查任务是否全部结束
 
@@ -67,6 +69,8 @@ namespace RsyncClient
         bool Init();
 
         void Run();
+
+        void Stop();
 
         void Dispatch();
 

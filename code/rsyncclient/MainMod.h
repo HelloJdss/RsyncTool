@@ -50,6 +50,8 @@ namespace RsyncClient
 
         static int Run();
 
+        static void onRecvSignal(int signal);
+
     private:
         static ST_command m_cmds[];
 

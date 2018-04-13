@@ -36,6 +36,8 @@ namespace RsyncServer
 
         void SendErrToClient(uint32_t taskID, Protocol::Err err, string tip = "");
 
+        bool IsAvaliable();
+
     private:
         friend class NetMod;
 
@@ -64,14 +66,18 @@ namespace RsyncServer
         RTMap<uint32_t, TaskInfo> m_tasks;
 
         pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+        //std::shared_ptr<SocketThread> m_thread;
+
+        //volatile bool m_avaliable = true;
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;
 
-    /*class MsgThread : public Thread
+    class MsgThread : public Thread
     {
     public:
-        void SetArgs(const TCPClientPtr tcpClientPtr);
+        void SetArgs(const TCPClientPtr& tcpClientPtr);
 
         void Runnable();
 
@@ -80,7 +86,7 @@ namespace RsyncServer
     };
 
     typedef std::shared_ptr<MsgThread> MsgThreadPtr;
-*/
+
     class NetMod
     {
     DECLARE_SINGLETON_EX(NetMod)
@@ -88,7 +94,7 @@ namespace RsyncServer
     public:
         ~NetMod();
 
-        void Init(uint16_t port = 52077);
+        void Init(uint16_t port = 48888);
 
         void Run();
 
@@ -105,7 +111,7 @@ namespace RsyncServer
 
         unordered_map<TCPSocketPtr, TCPClientPtr> m_clientMap;
 
-       // vector<MsgThreadPtr> m_threads;
+        vector<MsgThreadPtr> m_threads;
 
         bool m_inited = false;
         volatile bool m_running = false;

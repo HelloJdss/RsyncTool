@@ -134,6 +134,9 @@ private:
     uint64_t    m_recvLasttime = 0; //上次成功接受的时间,单位，秒
     int64_t     m_recvLastBytes = 0; //上次成功发送的字节总数
     double     m_recvSpeed = 0;
+
+    uint64_t    m_BeginTime = 0;//创建的时间
+    uint64_t    m_EndTime = 0;//销毁的时间
 };
 
 typedef std::shared_ptr<TCPSocket> TCPSocketPtr;

@@ -234,10 +234,10 @@ inline void UDPSocket::Close()
 
 TCPSocket::~TCPSocket()
 {
+    Close();
 #ifdef LOG_TRACE
     LOG_TRACE("~TCPSocket");
 #endif
-    Close();
 }
 
 void TCPSocket::Connect(const SocketAddress &inAddr)
@@ -251,7 +251,7 @@ void TCPSocket::Connect(const SocketAddress &inAddr)
     if (inAddr.m_sockaddr.sa_family == INET)
     {
         sockaddr addr = inAddr.m_sockaddr;
-        sockaddr_in* addr_in = reinterpret_cast<sockaddr_in *>(&addr);
+        sockaddr_in *addr_in = reinterpret_cast<sockaddr_in *>(&addr);
         m_ip = inet_ntoa(addr_in->sin_addr);
         m_port = ntohs(addr_in->sin_port);
     }
@@ -270,6 +270,7 @@ int TCPSocket::Bind(SocketAddress &inSrcAddr)
         m_ip = inet_ntoa(inSrcAddr.GetAsSockAddrIn()->sin_addr);
         m_port = ntohs(inSrcAddr.GetAsSockAddrIn()->sin_port);
     }
+
     return NO_ERROR;
 }
 
@@ -315,14 +316,14 @@ long TCPSocket::Send(const void *inData, int inLen)
     else
     {
         //LOG_TRACE("Send bytes[%ld]", bytes);
-        if(m_statistics) //计算统计量
+        if (m_statistics) //计算统计量
         {
             m_sendBytes += bytes;
             auto now = m_timer.get_curr_msec();
             auto delta = now - m_sendLasttime;
-            if(delta > 1000) //1000ms更新一次
+            if (delta > 500) //500ms更新一次
             {
-                m_sendSpeed = (double)(m_sendBytes - m_sendLastBytes) / delta ;
+                m_sendSpeed = ((double) m_sendBytes - (double) m_sendLastBytes) / delta;
                 m_sendLasttime = now;
                 m_sendLastBytes = m_sendBytes;
                 //LOG_TRACE("Send speed: %lf Bytes/ms", m_sendSpeed);
@@ -339,17 +340,17 @@ long TCPSocket::Receive(void *inBuffer, int inLen)
     if (bytes >= 0)
     {
         //LOG_TRACE("Recv bytes[%ld]", bytes);
-        if(m_statistics) //计算统计量
+        if (m_statistics) //计算统计量
         {
             m_recvBytes += bytes;
             auto now = m_timer.get_curr_msec();
             auto delta = now - m_recvLasttime;
-            if(delta > 1000)
+            if (delta > 500)
             {
-                m_recvSpeed = (double)(m_recvBytes - m_recvLastBytes) / delta ;
+                m_recvSpeed = ((double) m_recvBytes - (double) m_recvLastBytes) / delta;
                 m_recvLasttime = now;
                 m_recvLastBytes = m_recvBytes;
-               // LOG_TRACE("Recv speed: %lf Bytes/ms", m_recvSpeed);
+                // LOG_TRACE("Recv speed: %lf Bytes/ms", m_recvSpeed);
             }
         }
         return bytes;
@@ -374,6 +375,19 @@ void TCPSocket::Close()
     {
         close(m_socket);
         m_socket = -1;
+        m_EndTime = m_timer.get_curr_msec();
+    }
+
+    if (m_statistics)
+    {
+        auto delta = m_EndTime - m_BeginTime;
+        if (delta > 0)
+        {
+            LOG_TRACE("TCP socket closed! "
+                      "Continued time: [%llu] ms, Send: [%ld] bytes, Recv: [%ld] bytes, "
+                      "Average speed: Send: [%lf] KB/s Recv: [%lf] KB/s", delta, m_sendBytes, m_recvBytes,
+                      ((double) m_sendBytes * 1000 / 1024) / delta, ((double) m_recvBytes * 1000 / 1024) / delta);
+        }
     }
 }
 
@@ -391,7 +405,7 @@ void TCPSocket::SetRecvTimeOut(uint64_t sec, uint64_t usec)
 
 int64_t TCPSocket::GetSendBytes()
 {
-    if(!m_statistics)
+    if (!m_statistics)
     {
         m_statistics = true;
         m_sendLasttime = m_timer.get_curr_msec();
@@ -401,7 +415,7 @@ int64_t TCPSocket::GetSendBytes()
 
 int64_t TCPSocket::GetRecvBytes()
 {
-    if(!m_statistics)
+    if (!m_statistics)
     {
         m_statistics = true;
         m_recvLasttime = m_timer.get_curr_msec();
@@ -411,7 +425,7 @@ int64_t TCPSocket::GetRecvBytes()
 
 double TCPSocket::GetSendSpeed()
 {
-    if(!m_statistics)
+    if (!m_statistics)
     {
         m_statistics = true;
         m_sendLasttime = m_timer.get_curr_msec();
@@ -421,15 +435,15 @@ double TCPSocket::GetSendSpeed()
 
 double TCPSocket::GetRecvSpeed()
 {
-    if(!m_statistics)
+    if (!m_statistics)
     {
         m_statistics = true;
         m_recvLasttime = m_timer.get_curr_msec();
     }
-    return m_sendSpeed;
+    return m_recvSpeed;
 }
 
-TCPSocket::TCPSocket(int inSocket): m_socket(inSocket)
+TCPSocket::TCPSocket(int inSocket) : m_socket(inSocket)
 {
-    m_recvLasttime = m_sendLasttime = m_timer.get_curr_msec();
+    m_BeginTime = m_recvLasttime = m_sendLasttime = m_timer.get_curr_msec();
 }

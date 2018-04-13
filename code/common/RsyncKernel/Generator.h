@@ -32,6 +32,8 @@ public:
 
     Generator();
 
+    ~Generator();
+
     bool Generate(const std::string &filename, uint32_t split = 0);
 
     const RTVector<ST_BlockInformation> &GetChunkDigestVec(); //获取生成的块签名信息

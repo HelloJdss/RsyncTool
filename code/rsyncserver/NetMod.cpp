@@ -1,13 +1,13 @@
 //
 // Created by carrot on 18-3-15.
 //
-
-#include <Cmd_generated.h>
+#include <unistd.h>
 #include "cm_define.h"
 #include "NetMod.h"
 
 #include "ViewDir_generated.h"
 #include "Synchronism_generated.h"
+#include "Cmd_generated.h"
 
 
 using namespace Protocol;
@@ -44,11 +44,16 @@ void NetMod::Run()
     while (m_running)
     {
         removeUnavailableSockets();
-        LOG_DEBUG("%d", m_readBlockSockets.size());
         readableSockets.clear();
 
-        if (NetHelper::Select(&m_readBlockSockets, &readableSockets, nullptr, nullptr, nullptr, nullptr, nullptr) > 0)
+        timeval tm;
+        tm.tv_sec = 1;
+        tm.tv_usec = 0; //设定延时，及时清理内存
+
+        if (NetHelper::Select(&m_readBlockSockets, &readableSockets, nullptr, nullptr, nullptr, nullptr, &tm) > 0)
         {
+            LOG_DEBUG("%d", m_readBlockSockets.size());
+
             for (const TCPSocketPtr &socket : readableSockets)
             {
                 if (socket == m_listenSocket)    // new client connection
@@ -58,6 +63,15 @@ void NetMod::Run()
                     m_readBlockSockets.push_back(newSocket);
                     LOG_INFO("Accept Connection[%s]", newSocket->GetEndPoint().c_str());
                     m_clientMap[newSocket] = TCPClientPtr(new TCPClient(newSocket));
+
+                    //为每个客户端单独创建一个线程
+                    auto ptr = MsgThreadPtr(new MsgThread);
+                    ptr->SetArgs(m_clientMap[newSocket]);
+                    if (ptr->Start())
+                    {
+                        ptr->Detach();
+                    }
+                    m_threads.push_back(ptr);
                 }
                 else    //receive data from an old client
                 {
@@ -66,23 +80,16 @@ void NetMod::Run()
                         try
                         {
                             auto count = socket->Receive(m_clientMap[socket]->m_msgHelper.GetBuffer() +
-                                                        m_clientMap[socket]->m_msgHelper.GetStartIndex(),
-                                                        m_clientMap[socket]->m_msgHelper.GetRemainBytes());
+                                                         m_clientMap[socket]->m_msgHelper.GetStartIndex(),
+                                                         m_clientMap[socket]->m_msgHelper.GetRemainBytes());
                             if (count > 0)
                             {
                                 m_clientMap[socket]->m_msgHelper.AddCount(count);
 
-                                //为每个客户端单独创建一个线程
-                                //RunThread(this, &m_clientMap[socket], true);
-                                /*auto ptr = MsgThreadPtr(new MsgThread);
-                                ptr->SetArgs(m_clientMap[socket]);
-                                if (ptr->Start())
-                                {
-                                    ptr->Detach();
-                                    m_threads.push_back(ptr);
-                                }*/
 
-                                m_clientMap[socket]->Dispatch();
+                                //RunThread(this, &m_clientMap[socket], true);
+
+                                //m_clientMap[socket]->Dispatch();
                             }
                             else if (count == 0)
                             {
@@ -117,16 +124,16 @@ void NetMod::removeUnavailableSockets()
         {
             m_clientMap.erase(*(m_readBlockSockets.begin() + i));
             m_readBlockSockets.erase(m_readBlockSockets.begin() + i);
+            LOG_DEBUG("%d", m_readBlockSockets.size());
         }
     }
-
-    /*for (long i = m_threads.size() - 1; i >= 0; --i)
+    for (long i = m_threads.size() - 1; i >= 0; --i)
     {
         if (m_threads.at(i)->GetState() == Thread::THREAD_STATUS_EXIT)
         {
-            m_threads.erase(m_threads.begin() + i); //溢出已经结束的线程
+            m_threads.erase(m_threads.begin() + i); //移除已经结束的线程
         }
-    }*/
+    }
 }
 
 void NetMod::Stop()
@@ -192,7 +199,7 @@ void TCPClient::Dispatch()
                 break;
         }
 
-        if(err != Err_DO_NOT_REPLY)
+        if (err != Err_DO_NOT_REPLY)
         {
             this->SendErrToClient(header.getTaskId(), err);
         }
@@ -222,15 +229,27 @@ void TCPClient::SendErrToClient(uint32_t taskID, Protocol::Err err, const string
     this->SendToClient(Opcode::ERROR_CODE, taskID, builder.GetBufferPointer(), builder.GetSize());
 }
 
-/*void MsgThread::SetArgs(const TCPClientPtr tcpClientPtr)
+
+bool TCPClient::IsAvaliable()
+{
+    return m_socket->IsAvailable();
+}
+
+void MsgThread::SetArgs(const TCPClientPtr& tcpClientPtr)
 {
     m_ptr = tcpClientPtr;
 }
 
 void MsgThread::Runnable()
 {
-    m_ptr->Dispatch();
-}*/
+    ///LOG_DEBUG("rr");
+    while (m_ptr && m_ptr->IsAvaliable())
+    {
+        m_ptr->Dispatch();
+        usleep(100 * 1000);
+    }
+    LOG_TRACE("Shut down");
+}
 
 /**
  * 1.拆包
@@ -390,8 +409,9 @@ Err TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
     }
     else
     {
-        auto count = m_tasks[taskID].m_pf->WriteBytes(pRebuildChunk->Data()->data(), pRebuildChunk->Length(), pRebuildChunk->Offset(),
-                                                       false);
+        auto count = m_tasks[taskID].m_pf
+                ->WriteBytes(pRebuildChunk->Data()->data(), pRebuildChunk->Length(), pRebuildChunk->Offset(),
+                             false);
         if (count != pRebuildChunk->Length())
         {
             LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
@@ -437,8 +457,10 @@ Err TCPClient::onRecvFileDigest(uint32_t taskID, BytesPtr data)
 
     if (m_tasks[taskID].m_taskID == taskID) //先行创建过的任务，需要校验
     {
-        LogCheckCondition(m_tasks[taskID].m_des == pFileDigest->DesPath()->str(), Err_TASK_CONFLICT, "Task[%lu] Conflict!", taskID);
-        LogCheckCondition(m_tasks[taskID].m_src == pFileDigest->SrcPath()->str(), Err_TASK_CONFLICT, "Task[%lu] Conflict!", taskID);
+        LogCheckCondition(m_tasks[taskID].m_des == pFileDigest->DesPath()->str(), Err_TASK_CONFLICT,
+                          "Task[%lu] Conflict!", taskID);
+        LogCheckCondition(m_tasks[taskID].m_src == pFileDigest->SrcPath()->str(), Err_TASK_CONFLICT,
+                          "Task[%lu] Conflict!", taskID);
     }
 
     m_tasks[taskID].m_taskID = taskID;
@@ -460,7 +482,7 @@ Err TCPClient::onRecvFileDigest(uint32_t taskID, BytesPtr data)
 
     if (pFileDigest->Splitsize() == 0) //对方不存在该文件，则直接传输整个文件
     {
-        auto pInspector = Inspector::NewInspector(taskID, fp, 1024);
+        auto pInspector = Inspector::NewInspector(taskID, fp);
         pInspector->BeginInspect(INSPECTOR_CALLBACK_FUNC(&TCPClient::onInspectCallBack, this));
     }
     else
@@ -511,7 +533,7 @@ void TCPClient::onRecvErrorCode(uint32_t taskID, BytesPtr data)
 
     auto err = Protocol::GetErrorCode(data->ToChars());
 
-    if(err->Code() == Err_SUCCESS)
+    if (err->Code() == Err_SUCCESS)
     {
         m_tasks[taskID].Finish();
     }

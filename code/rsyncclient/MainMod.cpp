@@ -10,6 +10,7 @@
 #include "NetMod.h"
 
 #include <getopt.h>
+#include <csignal>
 
 
 using namespace RsyncClient;
@@ -49,9 +50,10 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
 
 
     //加载配置文件
-    g_Configuration->LoadXml();
     g_LogHelper->Init(g_Configuration->m_log_lv, appName, g_Configuration->m_log_file);
     LOG_LEVEL logLevel = g_Configuration->m_log_lv;
+    g_Configuration->LoadXml();
+    g_LogHelper->Init(g_Configuration->m_log_lv, appName, g_Configuration->m_log_file);
 
     bool ret = true;
     while ((opt = getopt_long(argc, argv, "-hDL:p:P:f:v:", longopts, nullptr)) != -1)
@@ -133,6 +135,13 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
 int MainMod::Run()
 {
     LOG_INFO("Run"); //任务完成之前，不断阻塞等待接受消息
+    struct sigaction acct;
+
+    acct.sa_handler = MainMod::onRecvSignal;
+    sigemptyset(&acct.sa_mask);
+    acct.sa_flags = 0;
+
+    sigaction(SIGINT, &acct, nullptr);
     if (g_NetMod->Init())
     {
         g_NetMod->Run();
@@ -241,6 +250,16 @@ bool MainMod::cmd_v(string des) //des_dir(file)@des_ip:port
     return false;
 }
 
+void MainMod::onRecvSignal(int signal)
+{
+    if(signal == SIGINT)
+    {
+        LOG_FATAL("Receive Sig: SIGINT, Process will exit now...");
+        g_NetMod->Stop();
+        exit(0);
+    }
+}
+
 int Configuration::LoadXml(char const *xmlPath)
 {
     XMLDocument doc;
@@ -295,14 +314,21 @@ int Configuration::SaveAsXml(char const *xmlPath)
 
     fp = nullptr;
 
-    XMLDocument doc;
-    if (doc.LoadFile(xmlPath) != 0)
+    //XMLDocument doc;
+
+    /*if (doc.LoadFile(fp->GetPointer()) != 0)
     {
         RT_ERROR("Load xml file failed! Err: %s", doc.ErrorStr());
-    }
+    }*/
     //添加申明可以使用如下两行
-    XMLDeclaration *declaration = doc.NewDeclaration();
-    doc.InsertFirstChild(declaration);
+
+    //XMLDeclaration *declaration = doc.NewDeclaration();
+    //doc.InsertFirstChild(declaration);
+
+    const char* declaration ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>";
+    XMLDocument doc;
+    doc.Parse(declaration);//会覆盖xml所有内容
+
 
     XMLElement *root = doc.NewElement("Client");
 
