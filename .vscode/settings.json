@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "xiosbase": "cpp",
-        "string": "cpp",
-        "cstdint": "cpp"
-    }
-}

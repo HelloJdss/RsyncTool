@@ -320,11 +320,11 @@ long TCPSocket::Send(const void *inData, int inLen)
         {
             m_sendBytes += bytes;
             auto now = m_timer.get_curr_msec();
-            auto delta = now - m_sendLasttime;
+            auto delta = now - m_sendLastTime;
             if (delta > 500) //500ms更新一次
             {
                 m_sendSpeed = ((double) m_sendBytes - (double) m_sendLastBytes) / delta;
-                m_sendLasttime = now;
+                m_sendLastTime = now;
                 m_sendLastBytes = m_sendBytes;
                 //LOG_TRACE("Send speed: %lf Bytes/ms", m_sendSpeed);
             }
@@ -344,11 +344,11 @@ long TCPSocket::Receive(void *inBuffer, int inLen)
         {
             m_recvBytes += bytes;
             auto now = m_timer.get_curr_msec();
-            auto delta = now - m_recvLasttime;
+            auto delta = now - m_recvLastTime;
             if (delta > 500)
             {
                 m_recvSpeed = ((double) m_recvBytes - (double) m_recvLastBytes) / delta;
-                m_recvLasttime = now;
+                m_recvLastTime = now;
                 m_recvLastBytes = m_recvBytes;
                 // LOG_TRACE("Recv speed: %lf Bytes/ms", m_recvSpeed);
             }
@@ -408,7 +408,7 @@ int64_t TCPSocket::GetSendBytes()
     if (!m_statistics)
     {
         m_statistics = true;
-        m_sendLasttime = m_timer.get_curr_msec();
+        m_sendLastTime = m_timer.get_curr_msec();
     }
     return m_sendBytes;
 }
@@ -418,7 +418,7 @@ int64_t TCPSocket::GetRecvBytes()
     if (!m_statistics)
     {
         m_statistics = true;
-        m_recvLasttime = m_timer.get_curr_msec();
+        m_recvLastTime = m_timer.get_curr_msec();
     }
     return m_recvBytes;
 }
@@ -428,7 +428,7 @@ double TCPSocket::GetSendSpeed()
     if (!m_statistics)
     {
         m_statistics = true;
-        m_sendLasttime = m_timer.get_curr_msec();
+        m_sendLastTime = m_timer.get_curr_msec();
     }
     return m_sendSpeed;
 }
@@ -438,12 +438,12 @@ double TCPSocket::GetRecvSpeed()
     if (!m_statistics)
     {
         m_statistics = true;
-        m_recvLasttime = m_timer.get_curr_msec();
+        m_recvLastTime = m_timer.get_curr_msec();
     }
     return m_recvSpeed;
 }
 
 TCPSocket::TCPSocket(int inSocket) : m_socket(inSocket)
 {
-    m_BeginTime = m_recvLasttime = m_sendLasttime = m_timer.get_curr_msec();
+    m_BeginTime = m_recvLastTime = m_sendLastTime = m_timer.get_curr_msec();
 }

@@ -9,7 +9,7 @@
 #include <cstring> //memcpy
 #include <memory> //shared_ptr
 #include <vector>
-#include "LogModule/LogHelper.h"
+#include "LogHelper.h"
 
 #define NO_ERROR 0
 
@@ -126,12 +126,12 @@ private:
     bool        m_statistics = true;  //是否开始统计
     utc_timer   m_timer;
     int64_t     m_sendBytes = 0;  //已经发送的字节数
-    uint64_t    m_sendLasttime = 0; //上次成功发送的时间,单位，秒
+    uint64_t    m_sendLastTime = 0; //上次成功发送的时间,单位，秒
     int64_t     m_sendLastBytes = 0; //上次成功发送的字节总数
     double     m_sendSpeed = 0;
 
     int64_t     m_recvBytes = 0;  //已经接受的字节数
-    uint64_t    m_recvLasttime = 0; //上次成功接受的时间,单位，秒
+    uint64_t    m_recvLastTime = 0; //上次成功接受的时间,单位，秒
     int64_t     m_recvLastBytes = 0; //上次成功发送的字节总数
     double     m_recvSpeed = 0;
 

@@ -230,7 +230,7 @@ void TCPClient::SendErrToClient(uint32_t taskID, Protocol::Err err, const string
 }
 
 
-bool TCPClient::IsAvaliable()
+bool TCPClient::IsAvailable()
 {
     return m_socket->IsAvailable();
 }
@@ -243,7 +243,7 @@ void MsgThread::SetArgs(const TCPClientPtr& tcpClientPtr)
 void MsgThread::Runnable()
 {
     ///LOG_DEBUG("rr");
-    while (m_ptr && m_ptr->IsAvaliable())
+    while (m_ptr && m_ptr->IsAvailable())
     {
         m_ptr->Dispatch();
         usleep(100 * 1000);

@@ -36,7 +36,7 @@ namespace RsyncServer
 
         void SendErrToClient(uint32_t taskID, Protocol::Err err, string tip = "");
 
-        bool IsAvaliable();
+        bool IsAvailable();
 
     private:
         friend class NetMod;
@@ -69,7 +69,7 @@ namespace RsyncServer
 
         //std::shared_ptr<SocketThread> m_thread;
 
-        //volatile bool m_avaliable = true;
+        //volatile bool m_available = true;
     };
 
     typedef std::shared_ptr<TCPClient> TCPClientPtr;
