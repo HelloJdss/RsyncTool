@@ -19,7 +19,7 @@ ST_command MainMod::m_cmds[] = {
 
 string MainMod::m_log_path = LOG_FILE_PATH;
 uint16_t MainMod::m_port = 48888;
-LOG_LEVEL MainMod::m_log_lv = LOG_LEVEL_DEFALT;
+LOG_LEVEL MainMod::m_log_lv = LOG_LEVEL::INFO; //服务端默认只输出INFO
 
 void MainMod::Init(int argc, char *argv[], std::string appName)
 {

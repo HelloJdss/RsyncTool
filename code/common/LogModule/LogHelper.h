@@ -32,7 +32,7 @@ enum LOG_LEVEL
 #define LOG_LEN_LIMIT 1024
 #define LOG_LEVEL_DEFALT LOG_LEVEL::MAX
 #define LOG_FILE_PATH "./log"
-
+#define LOG_FILE_LIMIT (1024 * 1024 * 1024)
 
 class utc_timer
 {
@@ -87,6 +87,8 @@ private:
     string m_path;
     LOG_LEVEL m_lv = LOG_LEVEL::MAX;
     utc_timer m_tm;
+    int m_num = 0;
+    int m_size = 0; //当前的日志大小
     static pthread_mutex_t m_mutex;
 };
 

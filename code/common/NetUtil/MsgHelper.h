@@ -70,7 +70,7 @@ public:
      */
     static BytesPtr PackageData(ST_PackageHeader &header, BytesPtr inData);
 
-    bool ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata);
+    bool ReadMessage(ST_PackageHeader &outHeader, BytesPtr *outData);
 
 
     unsigned char *GetBuffer()
@@ -92,9 +92,9 @@ private:
     void disposal();
 
     unsigned char *m_buffer = nullptr;
-    int m_buffer_size = 0;
+    size_t m_buffer_size = 0;
 
-    uint32_t m_processPos, m_currentPos;
+    size_t m_processPos, m_currentPos;
     std::queue<BytesPtr> m_msgs;
 
     pthread_mutex_t m_mutex;

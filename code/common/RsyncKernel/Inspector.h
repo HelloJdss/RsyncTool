@@ -53,7 +53,7 @@ public:
     {
         m_buffer.clear();
         m_fp = nullptr;
-        LOG_TRACE("~Inspector");
+        //LOG_TRACE("~Inspector");
     }
 
     void AddDigestInfo(const ST_BlockInformation &info); //添加块信息，用于执行匹配

@@ -256,7 +256,6 @@ void MainMod::onRecvSignal(int signal)
     {
         LOG_FATAL("Receive Sig: SIGINT, Process will exit now...");
         g_NetMod->Stop();
-        exit(0);
     }
 }
 

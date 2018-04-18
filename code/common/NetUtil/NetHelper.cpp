@@ -235,9 +235,7 @@ inline void UDPSocket::Close()
 TCPSocket::~TCPSocket()
 {
     Close();
-#ifdef LOG_TRACE
-    LOG_TRACE("~TCPSocket");
-#endif
+    //LOG_TRACE("~TCPSocket");
 }
 
 void TCPSocket::Connect(const SocketAddress &inAddr)
@@ -311,7 +309,7 @@ long TCPSocket::Send(const void *inData, int inLen)
     auto bytes = send(m_socket, inData, inLen, 0);
     if (bytes < 0)
     {
-        throw errno; //throw exception
+        return -1;
     }
     else
     {
@@ -357,7 +355,7 @@ long TCPSocket::Receive(void *inBuffer, int inLen)
     }
     else
     {
-        throw errno; //throw exception
+        return -1;
     }
 }
 

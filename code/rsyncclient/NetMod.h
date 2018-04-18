@@ -55,6 +55,19 @@ namespace RsyncClient
         pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
     };
 
+    class MsgThread : public Thread
+    {
+    public:
+
+        void Runnable();
+
+        volatile bool m_running = false;
+    private:
+
+    };
+
+    typedef std::shared_ptr<MsgThread> MsgThreadPtr;
+
     class NetMod
     {
     DECLARE_SINGLETON_EX(NetMod)
@@ -123,25 +136,13 @@ namespace RsyncClient
 
         uint32_t m_taskIndex = 10000;
 
-        uint32_t m_taskRunningCount = 0;                       //正在执行的任务数目
+        MsgThreadPtr m_thread = nullptr;
 
         pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;   //确保多线程读写安全
     };
 
 #define g_NetMod NetMod::Instance()
 
-    class MsgThread : public Thread
-    {
-    public:
-
-        void Runnable();
-
-    private:
-
-    };
-
-    typedef std::shared_ptr<MsgThread> MsgThreadPtr;
 }
-
 
 #endif //RSYNCTOOL_NETMOD_H

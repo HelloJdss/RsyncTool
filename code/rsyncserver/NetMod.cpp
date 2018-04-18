@@ -47,19 +47,18 @@ void NetMod::Run()
         readableSockets.clear();
 
         timeval tm;
-        tm.tv_sec = 1;
+        tm.tv_sec = 30;
         tm.tv_usec = 0; //设定延时，及时清理内存
 
         if (NetHelper::Select(&m_readBlockSockets, &readableSockets, nullptr, nullptr, nullptr, nullptr, &tm) > 0)
         {
-            LOG_DEBUG("%d", m_readBlockSockets.size());
-
             for (const TCPSocketPtr &socket : readableSockets)
             {
                 if (socket == m_listenSocket)    // new client connection
                 {
                     SocketAddress socketAddress;
                     auto newSocket = m_listenSocket->Accept(socketAddress);
+
                     m_readBlockSockets.push_back(newSocket);
                     LOG_INFO("Accept Connection[%s]", newSocket->GetEndPoint().c_str());
                     m_clientMap[newSocket] = TCPClientPtr(new TCPClient(newSocket));
@@ -77,32 +76,30 @@ void NetMod::Run()
                 {
                     if (m_clientMap.find(socket) != m_clientMap.end())
                     {
-                        try
+
+                        auto pClient = m_clientMap[socket];
+                        auto count = socket->Receive(pClient->m_msgHelper.GetBuffer() +
+                                                     pClient->m_msgHelper.GetStartIndex(),
+                                                     pClient->m_msgHelper.GetRemainBytes());
+                        if (count > 0)
                         {
-                            auto count = socket->Receive(m_clientMap[socket]->m_msgHelper.GetBuffer() +
-                                                         m_clientMap[socket]->m_msgHelper.GetStartIndex(),
-                                                         m_clientMap[socket]->m_msgHelper.GetRemainBytes());
-                            if (count > 0)
-                            {
-                                m_clientMap[socket]->m_msgHelper.AddCount(count);
+                            pClient->m_msgHelper.AddCount(count);
 
 
-                                //RunThread(this, &m_clientMap[socket], true);
+                            //RunThread(this, &m_clientMap[socket], true);
 
-                                //m_clientMap[socket]->Dispatch();
-                            }
-                            else if (count == 0)
-                            {
-                                //client disconnect
-                                LOG_INFO("RemoteClient[%s] Disconnected!", socket->GetEndPoint().c_str());
-                                socket->Close();
-                            }
+                            //m_clientMap[socket]->Dispatch();
                         }
-                        catch (int err)
+                        else if (count == 0)
                         {
+                            //client disconnect
+                            LOG_INFO("RemoteClient[%s] Disconnected!", socket->GetEndPoint().c_str());
                             socket->Close();
-                            LOG_LastError();
-                            continue;
+                        }
+                        else
+                        {
+                            LOG_ERROR("Client[%s] err: %s", socket->GetEndPoint(), strerror(errno));
+                            socket->Close();
                         }
                     }
                     else
@@ -112,6 +109,10 @@ void NetMod::Run()
                     }
                 }
             }
+        }
+        else
+        {
+            LOG_DEBUG("select: %d", m_readBlockSockets.size());
         }
     }
 }
@@ -124,7 +125,6 @@ void NetMod::removeUnavailableSockets()
         {
             m_clientMap.erase(*(m_readBlockSockets.begin() + i));
             m_readBlockSockets.erase(m_readBlockSockets.begin() + i);
-            LOG_DEBUG("%d", m_readBlockSockets.size());
         }
     }
     for (long i = m_threads.size() - 1; i >= 0; --i)
@@ -162,8 +162,8 @@ void TCPClient::Dispatch()
     BytesPtr data;
     while (m_msgHelper.ReadMessage(header, &data))
     {
-        LOG_TRACE("Client[%s] has Message!", m_socket->GetEndPoint().c_str());
-        LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
+        //LOG_TRACE("Client[%s] has Message!", m_socket->GetEndPoint().c_str());
+        LOG_DEBUG("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
                  Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
 
         Protocol::Err err = Err_DO_NOT_REPLY;
@@ -209,11 +209,20 @@ void TCPClient::Dispatch()
 
 void TCPClient::SendToClient(Opcode op, uint32_t taskID, BytesPtr data)
 {
+    if (!m_socket->IsAvailable())
+    {
+        return;
+    }
 
     ST_PackageHeader header(op, taskID);
     auto bytes = MsgHelper::PackageData(header,
                                         MsgHelper::CreateBytes(data->ToChars(), data->Size()));
-    m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+
+    if (m_socket->Send(bytes->ToChars(), static_cast<int>(bytes->Size())) == -1)
+    {
+        LOG_ERROR("client[%s] send data failed! [%s]", m_socket->GetEndPoint().c_str(), strerror(errno));
+        m_socket->Close();
+    }
 }
 
 void TCPClient::SendToClient(Protocol::Opcode op, uint32_t taskID, uint8_t *buff, uint32_t size)
@@ -235,20 +244,18 @@ bool TCPClient::IsAvailable()
     return m_socket->IsAvailable();
 }
 
-void MsgThread::SetArgs(const TCPClientPtr& tcpClientPtr)
+void MsgThread::SetArgs(const TCPClientPtr &tcpClientPtr)
 {
     m_ptr = tcpClientPtr;
 }
 
 void MsgThread::Runnable()
 {
-    ///LOG_DEBUG("rr");
     while (m_ptr && m_ptr->IsAvailable())
     {
         m_ptr->Dispatch();
-        usleep(100 * 1000);
+        usleep(125 * 1000); //休眠0.125s
     }
-    LOG_TRACE("Shut down");
 }
 
 /**
@@ -266,6 +273,12 @@ Err TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
     flatbuffers::Verifier V(reinterpret_cast<uint8_t const *>(data->ToChars()), data->Size());
     auto ok = pViewDirReq->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
+
+    auto pTaskInfo = &m_tasks[taskID];
+    pTaskInfo->m_type = TaskType::ViewDir;
+    pTaskInfo->m_taskID = taskID;
+    pTaskInfo->m_des = pViewDirReq->DesDir()->str();
+    pTaskInfo->Launch();
 
     auto dp = FileHelper::OpenDir(pViewDirReq->DesDir()->str());
 
@@ -288,7 +301,7 @@ Err TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
 
     for (auto &name:List)
     {
-        if(name.back() == '/')
+        if (name.back() == '/')
         {
             //如果是目录
             vector1.push_back(Protocol::CreateFileInfo(builder,
@@ -328,37 +341,38 @@ Protocol::Err TCPClient::onRecvSyncFile(uint32_t taskID, BytesPtr data)
     auto ok = pSyncFile->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
-    m_tasks[taskID].m_type = TaskType::Push;
-    m_tasks[taskID].m_taskID = taskID;
-    m_tasks[taskID].m_src = pSyncFile->SrcPath()->str();
-    m_tasks[taskID].m_des = pSyncFile->DesPath()->str();
-    m_tasks[taskID].Launch();
+    auto pTaskInfo = &m_tasks[taskID];
+    pTaskInfo->m_type = TaskType::Push;
+    pTaskInfo->m_taskID = taskID;
+    pTaskInfo->m_src = pSyncFile->SrcPath()->str();
+    pTaskInfo->m_des = pSyncFile->DesPath()->str();
+    pTaskInfo->Launch();
 
-    if(pSyncFile->DesPath()->str().back() == '/')
+    if (pSyncFile->DesPath()->str().back() == '/')
     {
         //如果是目录则创建目录，并返回成功
         FileHelper::MakeDir(pSyncFile->DesPath()->str());
         return Err_SUCCESS;
     }
 
-    m_tasks[taskID].m_generatorPtr = Generator::NewGenerator(pSyncFile->DesPath()->str());
+    pTaskInfo->m_generatorPtr = Generator::NewGenerator(pSyncFile->DesPath()->str());
 
     flatbuffers::FlatBufferBuilder builder;
 
-    if (m_tasks[taskID].m_generatorPtr) //文件存在
+    if (pTaskInfo->m_generatorPtr) //文件存在
     {
         std::vector<flatbuffers::Offset<ChunkInfo> > vector1;
 
-        auto &DigestVec = m_tasks[taskID].m_generatorPtr->GetChunkDigestVec();
+        auto &DigestVec = pTaskInfo->m_generatorPtr->GetChunkDigestVec();
         for (const auto &item : DigestVec)
         {
             vector1.push_back(Protocol::CreateChunkInfo(builder, item.offset, item.length, item.checksum,
                                                         builder.CreateString(item.md5)));
         }
 
-        auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(m_tasks[taskID].m_src),
-                                              builder.CreateString(m_tasks[taskID].m_des),
-                                              m_tasks[taskID].m_generatorPtr->GetSplit(),
+        auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(pTaskInfo->m_src),
+                                              builder.CreateString(pTaskInfo->m_des),
+                                              pTaskInfo->m_generatorPtr->GetSplit(),
                                               builder.CreateVector(vector1));
         builder.Finish(fbb);
         this->SendToClient(Opcode::FILE_DIGEST, taskID, builder.GetBufferPointer(), builder.GetSize());
@@ -366,8 +380,8 @@ Protocol::Err TCPClient::onRecvSyncFile(uint32_t taskID, BytesPtr data)
     }
 
     //文件不存在,分块大小为0
-    auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(m_tasks[taskID].m_src),
-                                          builder.CreateString(m_tasks[taskID].m_des),
+    auto fbb = Protocol::CreateFileDigest(builder, builder.CreateString(pTaskInfo->m_src),
+                                          builder.CreateString(pTaskInfo->m_des),
                                           0);
     builder.Finish(fbb);
     this->SendToClient(Opcode::FILE_DIGEST, taskID, builder.GetBufferPointer(), builder.GetSize());
@@ -385,7 +399,8 @@ Err TCPClient::onRecvRebuildInfo(uint32_t taskID, BytesPtr data)
     auto ok = pRebuildInfo->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
-    m_tasks[taskID].m_rebuild_size = pRebuildInfo->Size();
+    auto pTaskInfo = &m_tasks[taskID];
+    pTaskInfo->m_rebuild_size = pRebuildInfo->Size();
 
     return Err_DO_NOT_REPLY;
 }
@@ -400,53 +415,54 @@ Err TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
     auto ok = pRebuildChunk->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
+    auto pTaskInfo = &m_tasks[taskID];
 
-    if (m_tasks[taskID].m_pf == nullptr)
+    if (pTaskInfo->m_pf == nullptr)
     {
-        m_tasks[taskID].m_pf = FileHelper::OpenFile(m_tasks[taskID].m_des + ".tmp", "w"); //读取服务端名称
-        LogCheckCondition(m_tasks[taskID].m_pf, Err_NO_SUCH_FILE, "file Ptr is <null>");
+        pTaskInfo->m_pf = FileHelper::OpenFile(pTaskInfo->m_des + ".tmp", "w"); //读取服务端名称
+        LogCheckCondition(pTaskInfo->m_pf, Err_NO_SUCH_FILE, "file Ptr is <null>");
     }
 
     if (pRebuildChunk->IsMd5())
     {
-        LogCheckCondition(m_tasks[taskID].m_generatorPtr, Err_TASK_INFO_INCOMPLETE, "generator Ptr is <null>");
-        auto pData = m_tasks[taskID].m_generatorPtr->GetChunkDataByMd5(pRebuildChunk->Data()->str());
+        LogCheckCondition(pTaskInfo->m_generatorPtr, Err_TASK_INFO_INCOMPLETE, "generator Ptr is <null>");
+        auto pData = pTaskInfo->m_generatorPtr->GetChunkDataByMd5(pRebuildChunk->Data()->str());
         LogCheckCondition(pData.length() == pRebuildChunk->Length(), Err_UNKNOWN, "Err!");
-        auto count = m_tasks[taskID].m_pf->WriteBytes(pData.data(), pData.length(), pRebuildChunk->Offset(), false);
+        auto count = pTaskInfo->m_pf->WriteBytes(pData.data(), pData.length(), pRebuildChunk->Offset(), false);
         if (count != pData.length())
         {
             LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
-                     m_tasks[taskID].m_des.c_str(), count, pData.length());
+                     pTaskInfo->m_des.c_str(), count, pData.length());
         }
-        m_tasks[taskID].m_processLen += pData.length();
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
-                 m_tasks[taskID].m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+        pTaskInfo->m_processLen += pData.length();
+        LOG_TRACE("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
+                 pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
     else
     {
-        auto count = m_tasks[taskID].m_pf
+        auto count = pTaskInfo->m_pf
                 ->WriteBytes(pRebuildChunk->Data()->data(), pRebuildChunk->Length(), pRebuildChunk->Offset(),
                              false);
         if (count != pRebuildChunk->Length())
         {
             LOG_WARN("Task[%lu] File[%s]: Write count[%llu] is not equal to data length[%llu]!", taskID,
-                     m_tasks[taskID].m_des.c_str(), count, pRebuildChunk->Length());
+                     pTaskInfo->m_des.c_str(), count, pRebuildChunk->Length());
         }
-        m_tasks[taskID].m_processLen += pRebuildChunk->Length();
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
-                 m_tasks[taskID].m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+        pTaskInfo->m_processLen += pRebuildChunk->Length();
+        LOG_TRACE("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
+                 pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
-    if (m_tasks[taskID].m_processLen == m_tasks[taskID].m_rebuild_size)
+    if (pTaskInfo->m_processLen == pTaskInfo->m_rebuild_size)
     {
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, m_tasks[taskID].m_des.c_str());
+        LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, pTaskInfo->m_des.c_str());
 
-        m_tasks[taskID].m_pf = nullptr; //关闭文件读写指针，使缓冲区写入到文件完成
+        pTaskInfo->m_pf = nullptr; //关闭文件读写指针，使缓冲区写入到文件完成
         //重建完成，重命名替换
 
-        FileHelper::Rename(m_tasks[taskID].m_des + ".tmp", m_tasks[taskID].m_des);
+        FileHelper::Rename(pTaskInfo->m_des + ".tmp", pTaskInfo->m_des);
 
-        m_tasks[taskID].Finish();
+        pTaskInfo->Finish();
 
         //发送成功的回包
         /*
@@ -470,21 +486,23 @@ Err TCPClient::onRecvFileDigest(uint32_t taskID, BytesPtr data)
     auto ok = pFileDigest->Verify(V);
     LogCheckCondition(ok, Err_VERIFY_FAILED, "Verify Failed!");
 
-    if (m_tasks[taskID].m_taskID == taskID) //先行创建过的任务，需要校验
+    auto pTaskInfo = &m_tasks[taskID];
+    if (pTaskInfo->m_taskID == taskID) //先行创建过的任务，需要校验
     {
-        LogCheckCondition(m_tasks[taskID].m_des == pFileDigest->DesPath()->str(), Err_TASK_CONFLICT,
+        LogCheckCondition(pTaskInfo->m_des == pFileDigest->DesPath()->str(), Err_TASK_CONFLICT,
                           "Task[%lu] Conflict!", taskID);
-        LogCheckCondition(m_tasks[taskID].m_src == pFileDigest->SrcPath()->str(), Err_TASK_CONFLICT,
+        LogCheckCondition(pTaskInfo->m_src == pFileDigest->SrcPath()->str(), Err_TASK_CONFLICT,
                           "Task[%lu] Conflict!", taskID);
     }
 
-    m_tasks[taskID].m_taskID = taskID;
-    m_tasks[taskID].m_type = Pull_File;
-    m_tasks[taskID].m_des = pFileDigest->DesPath()->str();
-    m_tasks[taskID].m_src = pFileDigest->SrcPath()->str();
-    m_tasks[taskID].Launch();
 
-    auto fp = FileHelper::OpenFile(m_tasks[taskID].m_des, "rb");
+    pTaskInfo->m_taskID = taskID;
+    pTaskInfo->m_type = Pull_File;
+    pTaskInfo->m_des = pFileDigest->DesPath()->str();
+    pTaskInfo->m_src = pFileDigest->SrcPath()->str();
+    pTaskInfo->Launch();
+
+    auto fp = FileHelper::OpenFile(pTaskInfo->m_des, "rb");
     LogCheckCondition(fp, Err_NO_SUCH_FILE, "fp is <null>");
 
     //先发送文件信息

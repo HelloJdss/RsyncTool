@@ -24,7 +24,7 @@ bool Inspector::checkMatched(ST_BlockInformation &ret)
             if (item == md5(string(m_buffer, m_start, m_end - m_start)))
             {
                 ret = m_md52infos[item];
-                LOG_DEBUG("Match! MD5[%s]", item.c_str());
+                //LOG_DEBUG("Match! Offset: [%llu] Length: [%llu] MD5: [%s]", ret.offset, ret.length, item.c_str());
                 return true;
             }
         }
@@ -40,6 +40,8 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
         m_fp = FileHelper::OpenFile(m_filename, "rb");
         LogCheckConditionVoid(m_fp != nullptr, "m_fp is null! filename:[%s]", m_filename.c_str());
     }
+
+    LOG_TRACE("Checking File[%s]...", m_fp->Path().c_str());
 
     char buff[m_split];
 

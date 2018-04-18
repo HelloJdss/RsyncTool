@@ -24,26 +24,17 @@ void NetMod::Run()
 
     m_running = true;
 
-    auto ptr = MsgThreadPtr(new MsgThread); //创建一个线程用于消息的接受和处理
-    if (ptr->Start())
+    if (m_thread->Start())
     {
-        ptr->Detach();
+        m_thread->Detach();
     }
 
-    int waitCount = 0;
+    utc_timer timer;
+    uint64_t LastUpdateTime = timer.get_curr_msec();
 
     while (m_running && !m_taskMgr.TaskEnd()) //主线程不断检查任务情况
     {
-        auto readyTasks = m_taskMgr.GetTasksByState(Ready, 100 - m_taskMgr.GetTaskCount(TaskState::Run));
-
-        if (readyTasks.size() == 0)
-        {
-            waitCount++;
-        }
-        else
-        {
-            waitCount = 0;
-        }
+        auto readyTasks = m_taskMgr.GetTasksByState(Ready, 200 - m_taskMgr.GetTaskCount(TaskState::Run));
 
         for (const auto &i : readyTasks)   //逐个启动任务
         {
@@ -71,12 +62,18 @@ void NetMod::Run()
                     break;
             }
         }
-        LOG_TRACE("Task Sum: [%d] UnInit: [%d] Ready: [%d] Running: [%d] Warn: [%d] Abort: [%d] Finished: [%d]",
-                  m_taskMgr.GetTaskCount(), m_taskMgr.GetTaskCount(UnInit),
-                  m_taskMgr.GetTaskCount(Ready), m_taskMgr.GetTaskCount(TaskState::Run),
-                  m_taskMgr.GetTaskCount(Warn), m_taskMgr.GetTaskCount(Abort),
-                  m_taskMgr.GetTaskCount(Finished));
 
+        if(timer.get_curr_msec() > LastUpdateTime + 5 * 1000)
+        {
+            LOG_TRACE("Task Sum: [%d] UnInit: [%d] Ready: [%d] Running: [%d] Warn: [%d] Abort: [%d] Finished: [%d]",
+                      m_taskMgr.GetTaskCount(), m_taskMgr.GetTaskCount(UnInit),
+                      m_taskMgr.GetTaskCount(Ready), m_taskMgr.GetTaskCount(TaskState::Run),
+                      m_taskMgr.GetTaskCount(Warn), m_taskMgr.GetTaskCount(Abort),
+                      m_taskMgr.GetTaskCount(Finished));
+            LastUpdateTime = timer.get_curr_msec();
+        }
+
+        usleep(125 * 1000);
         /*if(waitCount > 30)
         {
             auto vec = m_taskMgr.GetTasksByState(TaskState::Run);
@@ -86,8 +83,6 @@ void NetMod::Run()
             }
             return; //直接return会崩溃，因为另一个线程并未终止，应使用exit(0)
         }*/
-
-        usleep(250 * 1000);
     }
 
     auto vec = m_taskMgr.GetTasksByState(TaskState::Run);
@@ -103,9 +98,12 @@ void NetMod::Dispatch()
 
     ST_PackageHeader header;
     BytesPtr data;
+
+    bool processed = false;
+
     while (m_msgHelper.ReadMessage(header, &data))
     {
-        LOG_INFO("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serverSocket->GetEndPoint().c_str(),
+        LOG_DEBUG("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serverSocket->GetEndPoint().c_str(),
                  Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
         Protocol::Err err = Err_DO_NOT_REPLY;
         switch (header.getOpCode())
@@ -138,10 +136,16 @@ void NetMod::Dispatch()
         {
             this->SendErrToServer(header.getTaskId(), err);
         }
+
+        processed = true;
     }
 
-    LOG_TRACE("Send Speed: %lf KB/s, Recv Speed: %lf KB/s", m_serverSocket->GetSendSpeed() * 1000 / 1024,
-              m_serverSocket->GetRecvSpeed() * 1000 / 1024);
+    if (processed)
+    {
+        LOG_TRACE("Send Speed: %lf KB/s, Recv Speed: %lf KB/s", m_serverSocket->GetSendSpeed() * 1000 / 1024,
+                  m_serverSocket->GetRecvSpeed() * 1000 / 1024);
+    }
+
     pthread_mutex_unlock(&m_mutex);
 }
 
@@ -174,6 +178,7 @@ void NetMod::onRecvErrorCode(uint32_t taskID, BytesPtr data)
 
 bool NetMod::Init()
 {
+    m_thread = MsgThreadPtr(new MsgThread); //创建一个线程用于消息的接受和处理
     m_serverSocket = NetHelper::CreateTCPSocket(INET, false);
     try
     {
@@ -185,6 +190,7 @@ bool NetMod::Init()
         {
             m_serverSocket->Connect(SocketAddress(m_serverIp.c_str(), m_serverPort));
         }
+
         return true;
     }
     catch (int err)
@@ -229,7 +235,12 @@ void NetMod::SendToServer(Protocol::Opcode op, uint32_t taskID, uint8_t *buf, ui
     ST_PackageHeader header(op, taskID);
     auto bytes = MsgHelper::PackageData(header,
                                         MsgHelper::CreateBytes(buf, size));
-    m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size()));
+    if(m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size())) == -1)
+    {
+        m_running = false;
+        m_thread->m_running = false;
+        LOG_ERROR("Server err: %s", strerror(errno));
+    }
 }
 
 void NetMod::createViewDirTask(const string &desDir)
@@ -337,7 +348,7 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
             auto pPullDirTaskInfo = m_taskMgr.GetTask(PullDirTaskID);
             if (pPullDirTaskInfo)
             {
-                if(item->FilePath()->str().back() == '/')
+                if (item->FilePath()->str().back() == '/')
                 {
                     //如果是目录，则创建目录
                     FileHelper::MakeDir(pPullDirTaskInfo->m_src +
@@ -647,7 +658,7 @@ Err NetMod::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
                      pTaskInfo->m_src.c_str(), count, pData.length());
         }
         pTaskInfo->m_processLen += pData.length();
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
+        LOG_TRACE("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
                  pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
     else
@@ -661,7 +672,7 @@ Err NetMod::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
                      pTaskInfo->m_src.c_str(), count, pRebuildChunk->Length());
         }
         pTaskInfo->m_processLen += pRebuildChunk->Length();
-        LOG_INFO("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
+        LOG_TRACE("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
                  pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
@@ -698,33 +709,32 @@ void NetMod::SendErrToServer(uint32_t taskID, Protocol::Err err, string tip)
 void NetMod::Stop()
 {
     m_running = false;
+    m_thread->m_running = false;
 }
 
 void MsgThread::Runnable() //不断阻塞接受消息和处理消息
 {
-    bool m_running = true;
-    g_NetMod->m_serverSocket->SetRecvTimeOut(30, 0);  //30秒延迟，若30秒仍收不到服务器的消息则结束
+    m_running = true;
+    g_NetMod->m_serverSocket->SetRecvTimeOut(60, 0);  //60秒延迟，若60秒仍收不到服务器的消息则结束
     while (m_running)
     {
-        try
+
+        auto count = g_NetMod->m_serverSocket->Receive(
+                g_NetMod->m_msgHelper.GetBuffer() + g_NetMod->m_msgHelper.GetStartIndex(),
+                g_NetMod->m_msgHelper.GetRemainBytes());
+        if (count > 0)
         {
-            auto count = g_NetMod->m_serverSocket->Receive(
-                    g_NetMod->m_msgHelper.GetBuffer() + g_NetMod->m_msgHelper.GetStartIndex(),
-                    g_NetMod->m_msgHelper.GetRemainBytes());
-            if (count > 0)
-            {
-                g_NetMod->m_msgHelper.AddCount(count);
-                g_NetMod->Dispatch();
-            }
-            else if (count == 0)
-            {
-                LOG_WARN("Server Close Connection!");
-                m_running = false;
-            }
+            g_NetMod->m_msgHelper.AddCount(count);
+            g_NetMod->Dispatch();
         }
-        catch (int err)
+        else if (count == 0)
         {
-            LOG_FATAL("Catch Exception: [%s]", strerror(err));
+            LOG_WARN("Server Close Connection!");
+            m_running = false;
+        }
+        else
+        {
+            LOG_FATAL("Catch Exception: [%s]", strerror(errno));
             m_running = false;
             g_NetMod->Stop();
         }

@@ -85,22 +85,22 @@ std::string Bytes::ToString() const
     return std::string((char *) m_bytes);
 }
 
-BytesPtr MsgHelper::CreateBytes(char *indata, uint32_t size)
+BytesPtr MsgHelper::CreateBytes(char *inData, uint32_t size)
 {
-    return BytesPtr(new Bytes(reinterpret_cast<uint8_t *>(indata), size));
+    return BytesPtr(new Bytes(reinterpret_cast<uint8_t *>(inData), size));
 }
 
 BytesPtr MsgHelper::PackageData(ST_PackageHeader &header, BytesPtr inData)
 {
     auto t = new Bytes();
-    uint32_t datalength = sizeof(ST_PackageHeader) + inData->Size();
-    t->m_length = 4 + datalength;
+    uint32_t dataLength = sizeof(ST_PackageHeader) + inData->Size();
+    t->m_length = 4 + dataLength;
     t->m_bytes = new uint8_t[t->m_length];
     bzero(t->m_bytes, t->m_length);
 
-    auto datalength_n = htonl(datalength);
+    auto dataLength_n = htonl(dataLength);
 
-    memcpy(t->m_bytes, &datalength_n, sizeof(datalength_n));
+    memcpy(t->m_bytes, &dataLength_n, sizeof(dataLength_n));
     memcpy(t->m_bytes + 4, &header, sizeof(ST_PackageHeader));
     memcpy(t->m_bytes + 4 + sizeof(ST_PackageHeader), inData->ToChars(), inData->Size());
     return BytesPtr(t);
@@ -109,18 +109,16 @@ BytesPtr MsgHelper::PackageData(ST_PackageHeader &header, BytesPtr inData)
 MsgHelper::MsgHelper()
 {
     pthread_mutex_init(&m_mutex, nullptr);
-    resetBuffer();
+    m_buffer = new uint8_t[BUFFER_INIT_SIZE];
+    bzero(m_buffer, BUFFER_INIT_SIZE);
+    m_buffer_size = BUFFER_INIT_SIZE;
+    m_processPos = 0;
+    m_currentPos = 0;
 }
 
 inline void MsgHelper::resetBuffer()
 {
-    if (m_buffer != nullptr)
-    {
-        delete[] m_buffer;
-    }
-    m_buffer = new uint8_t[BUFFER_INIT_SIZE];
-    bzero(m_buffer, BUFFER_INIT_SIZE);
-    m_buffer_size = BUFFER_INIT_SIZE;
+    bzero(m_buffer, m_buffer_size);
     m_processPos = 0;
     m_currentPos = 0;
 }
@@ -135,16 +133,16 @@ void MsgHelper::AddCount(int count)
 
     if (GetRemainBytes() <= 0)
     {
-        int newsize = m_buffer_size * 2;
-        auto t = new uint8_t[newsize];
-        bzero(t, newsize);
+        size_t newBuffSize = m_buffer_size * 2;
+        auto t = new uint8_t[newBuffSize];
+        bzero(t, newBuffSize);
         memcpy(t, m_buffer + m_processPos, m_buffer_size - m_processPos);
         m_currentPos -= m_processPos;
         m_processPos = 0;
         delete[] m_buffer;
         m_buffer = t;
-        m_buffer_size = newsize;
-        LOG_TRACE("MsgHelper::buffer size reset to %d", m_buffer_size);
+        m_buffer_size = newBuffSize;
+        LOG_TRACE("MsgHelper::buffer size reset to %lld", m_buffer_size);
     }
 }
 
@@ -156,17 +154,17 @@ void MsgHelper::disposal()
         {
             return;
         }
-        uint32_t datacount = *(uint32_t *) (m_buffer + m_processPos);
+        uint32_t dataCount = *(uint32_t *) (m_buffer + m_processPos);
 
-        datacount = ntohl(datacount);
+        dataCount = ntohl(dataCount);
 
-        if ((m_currentPos - m_processPos) >= datacount + 4 && m_processPos + 4 + datacount < m_buffer_size)
+        if ((m_currentPos - m_processPos) >= dataCount + 4 && m_processPos + 4 + dataCount < m_buffer_size)
         {
             pthread_mutex_lock(&m_mutex);
-            m_msgs.push(CreateBytes(reinterpret_cast<char *>(m_buffer + m_processPos + 4), datacount));
+            m_msgs.push(CreateBytes(reinterpret_cast<char *>(m_buffer + m_processPos + 4), dataCount));
             pthread_mutex_unlock(&m_mutex);
 
-            m_processPos += datacount + 4;
+            m_processPos += dataCount + 4;
             if (m_processPos == m_currentPos)
             {
                 resetBuffer();
@@ -180,10 +178,10 @@ void MsgHelper::disposal()
     }
 }
 
-bool MsgHelper::ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata)
+bool MsgHelper::ReadMessage(ST_PackageHeader &outHeader, BytesPtr *outData)
 {
-    *outdata = nullptr;
-    outheader.reset();
+    *outData = nullptr;
+    outHeader.reset();
     BytesPtr bytesPtr;
     pthread_mutex_lock(&m_mutex);
     if (!m_msgs.empty())
@@ -192,8 +190,8 @@ bool MsgHelper::ReadMessage(ST_PackageHeader &outheader, BytesPtr *outdata)
         m_msgs.pop();
         pthread_mutex_unlock(&m_mutex);
 
-        outheader = *(ST_PackageHeader *) bytesPtr->m_bytes;
-        *outdata = CreateBytes(reinterpret_cast<char *>(bytesPtr->m_bytes + sizeof(ST_PackageHeader)),
+        outHeader = *(ST_PackageHeader *) bytesPtr->m_bytes;
+        *outData = CreateBytes(reinterpret_cast<char *>(bytesPtr->m_bytes + sizeof(ST_PackageHeader)),
                                bytesPtr->m_length - sizeof(ST_PackageHeader));
         return true;
     }

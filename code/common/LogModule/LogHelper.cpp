@@ -73,8 +73,15 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
     pthread_mutex_lock(&m_mutex);
     if (m_fp != nullptr)
     {
-        fwrite(log_line, sizeof(char), len, m_fp);
+        m_size += fwrite(log_line, sizeof(char), len, m_fp);
         fflush(m_fp);
+
+        if(m_size >= LOG_FILE_LIMIT)
+        {
+            fclose(m_fp);
+            m_fp = fopen((m_path + std::to_string(++m_num) + ".log").c_str(), "a");
+            m_size = 0;
+        }
     }
     pthread_mutex_unlock(&m_mutex);
 }
@@ -100,16 +107,17 @@ void LogHelper::Init(LOG_LEVEL Lv, const string &AppName, const string &Path)
 
     m_tm.get_curr_sec();
     char log_path[1024] = {};
-    sprintf(log_path, "%s/%s_%d_%02d_%02d_%02d_%02d_%02d.log", Path.c_str(), m_name.c_str(), m_tm.year, m_tm.mon,
+    sprintf(log_path, "%s/%s_%d_%02d_%02d_%02d_%02d_%02d_", Path.c_str(), m_name.c_str(), m_tm.year, m_tm.mon,
             m_tm.day, m_tm.hour, m_tm.min, m_tm.sec);
-    m_fp = fopen(log_path, "a");
+    m_path = string(log_path);
+    m_fp = fopen((m_path + std::to_string(m_num) + ".log").c_str(), "a");
     RT_ASSERT(m_fp != nullptr, "create log file failed!");
     this->m_inited = true;
 }
 
 LogHelper::~LogHelper()
 {
-    LOG_TRACE("~LogHelper");
+    //LOG_TRACE("~LogHelper");
     if (m_fp != nullptr)
     {
         fclose(m_fp);

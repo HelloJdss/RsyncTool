@@ -14,7 +14,7 @@ File::~File()
     {
         fclose(m_fp);
         m_fp = nullptr;
-        LOG_TRACE("Close File[%s]!", m_name.c_str());
+        //LOG_TRACE("Close File[%s]!", m_name.c_str());
     }
 }
 
@@ -51,7 +51,7 @@ bool File::Open(const string &filename, char const *mode)
     m_fp = fopen(filename.c_str(), mode);
     m_name = filename;
 
-    LOG_TRACE("Open File[%s]:[%s]!", m_name.c_str(), m_fp != nullptr ? "Success" : "Failed");
+    //LOG_TRACE("Open File[%s]:[%s]!", m_name.c_str(), m_fp != nullptr ? "Success" : "Failed");
     return m_fp != nullptr;
 }
 

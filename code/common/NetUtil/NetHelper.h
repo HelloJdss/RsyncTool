@@ -87,9 +87,9 @@ public:
 
     std::shared_ptr<TCPSocket> Accept(SocketAddress &inFromAddr);
 
-    long Send(const void *inData, int inLen);//Exception: errno
+    long Send(const void *inData, int inLen);
 
-    long Receive(void *inBuffer, int inLen);//Exception: errno
+    long Receive(void *inBuffer, int inLen);
 
     void SetRecvTimeOut(uint64_t sec, uint64_t usec);
 

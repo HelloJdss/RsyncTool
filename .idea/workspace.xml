@@ -2,14 +2,16 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
+      <config projectName="RsyncTool" targetName="rsyncgui" />
+      <config projectName="RsyncTool" targetName="FileModule" />
       <config projectName="RsyncTool" targetName="RsyncKernel" />
+      <config projectName="RsyncTool" targetName="ThreadModule" />
       <config projectName="RsyncTool" targetName="LogModule" />
       <config projectName="RsyncTool" targetName="rsyncserver" />
       <config projectName="RsyncTool" targetName="NetUtil" />
-      <config projectName="RsyncTool" targetName="TinyXml2" />
-      <config projectName="RsyncTool" targetName="ThreadModule" />
       <config projectName="RsyncTool" targetName="rsyncclient" />
-      <config projectName="RsyncTool" targetName="FileModule" />
+      <config projectName="RsyncTool" targetName="rsyncgui_autogen" />
+      <config projectName="RsyncTool" targetName="TinyXml2" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
@@ -19,57 +21,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb563f38-c513-40ec-bbfb-6160bfc73fb5" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/code/rsyncgui/main.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/rsyncgui/mainwindow.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/rsyncgui/mainwindow.ui" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/RsyncTool/v15/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/RsyncTool/v15/ipch/AutoPCH/26682a4c9e4b551c/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/VSWorkspaceState.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/launch.vs.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vscode/c_cpp_properties.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeSettings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DefaultCodeSytle.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/code/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/3rd/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/Cmd_generated.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/Synchronism_generated.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/ViewDir_generated.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/base.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/code_generators.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/flatbuffers.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/flatc.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/flexbuffers.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/grpc.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/hash.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/idl.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/minireflect.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/reflection.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/reflection_generated.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/registry.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/stl_emulation.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/3rd/flatbuffers/util.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/FileUtil/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/FileUtil/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/NetUtil/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/NetUtil/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/3rd/tinyxml2/tinyxml2.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/3rd/tinyxml2/tinyxml2.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/LogModule/LogHelper.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/LogModule/LogHelper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/common/NetUtil/NetHelper.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/NetUtil/NetHelper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/Protocol/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/Protocol/Cmd.fbs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/Protocol/Protocol_define.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/Protocol/Synchronism.fbs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/Protocol/ViewDir.fbs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/Protocol/generate_protocol.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/RsyncKernel/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/RsyncKernel/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/ThreadModule/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/ThreadModule/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/cm_define.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/common/cm_struct.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncclient/NetMod.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/NetMod.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncserver/MainMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncserver/MainMod.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/rsyncserver/NetMod.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncserver/NetMod.h" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -82,87 +59,95 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="NetMod.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="585">
+              <caret line="81" column="17" selection-start-line="81" selection-start-column="17" selection-end-line="81" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NetMod.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="357">
+              <caret line="256" column="35" selection-start-line="256" selection-start-column="35" selection-end-line="256" selection-end-column="35" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="MainMod.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.h">
+        <entry file="file://$PROJECT_DIR$/code/rsyncserver/MainMod.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="9" selection-start-line="9" selection-end-line="9" />
+            <state relative-caret-position="121">
+              <caret line="26" column="21" selection-start-line="26" selection-start-column="21" selection-end-line="26" selection-end-column="21" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <file leaf-file-name="NetMod.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="551">
-              <caret line="29" column="22" selection-start-line="29" selection-start-column="22" selection-end-line="29" selection-end-column="22" />
+            <state relative-caret-position="182">
+              <caret line="83" column="15" selection-start-line="83" selection-start-column="15" selection-end-line="83" selection-end-column="15" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="generate_protocol.sh" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/protocol/generate_protocol.sh">
+      <file leaf-file-name="NetMod.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="152">
-              <caret line="8" column="6" selection-start-line="8" selection-start-column="6" selection-end-line="8" selection-end-column="6" />
+            <state relative-caret-position="912">
+              <caret line="57" column="38" selection-start-line="57" selection-start-column="38" selection-end-line="57" selection-end-column="38" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
+      <file leaf-file-name="LogHelper.h" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/code/common/LogModule/LogHelper.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="403">
-              <caret line="23" column="5" lean-forward="true" selection-start-line="23" selection-start-column="5" selection-end-line="23" selection-end-column="5" />
+            <state relative-caret-position="585">
+              <caret line="39" column="16" lean-forward="true" selection-start-line="39" selection-start-column="16" selection-end-line="39" selection-end-column="16" />
+              <folding>
+                <element signature="e#114#132#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="171">
-                <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
-              </first_editor>
-              <second_editor />
+      <file leaf-file-name="FileHelper.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="548">
+              <caret line="56" column="15" selection-start-line="56" selection-start-column="15" selection-end-line="56" selection-end-column="15" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/common/3rd/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/common/3rd/tinyxml2/CMakeLists.txt">
+      <file leaf-file-name="FileHelper.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="19">
-              <caret line="1" column="22" selection-start-line="1" selection-start-column="22" selection-end-line="1" selection-end-column="22" />
+            <state relative-caret-position="247">
+              <caret line="119" selection-start-line="119" selection-end-line="122" selection-end-column="29" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt">
+      <file leaf-file-name="LogHelper.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="114">
-              <caret line="6" column="88" selection-start-line="6" selection-start-column="88" selection-end-line="6" selection-end-column="88" />
+            <state relative-caret-position="1691">
+              <caret line="95" column="25" selection-start-line="95" selection-start-column="25" selection-end-line="95" selection-end-column="25" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/common/FileUtil/CMakeLists.txt">
+      <file leaf-file-name="basic_string.h" pinned="false" current-in-tab="false">
+        <entry file="file:///usr/include/c++/6/bits/basic_string.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="19">
-              <caret line="1" column="17" selection-start-line="1" selection-start-column="17" selection-end-line="1" selection-end-column="17" />
+            <state relative-caret-position="269">
+              <caret line="5469" column="2" selection-start-line="5469" selection-start-column="2" selection-end-line="5469" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -193,11 +178,9 @@
       <list>
         <option value="$PROJECT_DIR$/code/common/LogModule/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/common/Protocol/generate_protocol.sh" />
-        <option value="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp" />
         <option value="$PROJECT_DIR$/code/common/Protocol/ReconstructList.fbs" />
         <option value="$PROJECT_DIR$/code/common/Protocol/BlockInfos.fbs" />
         <option value="$PROJECT_DIR$/code/common/Protocol/NewBlockInfo.fbs" />
-        <option value="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h" />
         <option value="$PROJECT_DIR$/code/common/Protocol/ViewFiles.fbs" />
         <option value="$PROJECT_DIR$/code/common/Protocol/ErrorCode.fbs" />
         <option value="$PROJECT_DIR$/code/common/cm_define.h" />
@@ -208,40 +191,42 @@
         <option value="$PROJECT_DIR$/code/common/Protocol/Protocol_define.h" />
         <option value="$PROJECT_DIR$/code/common/ThreadModule/ThreadBase.h" />
         <option value="$PROJECT_DIR$/code/common/Protocol/Cmd.fbs" />
-        <option value="$PROJECT_DIR$/code/common/LogModule/LogHelper.h" />
-        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" />
         <option value="$PROJECT_DIR$/code/common/ThreadModule/ThreadBase.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncclient/MainMod.h" />
-        <option value="$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp" />
         <option value="$PROJECT_DIR$/code/common/RsyncKernel/Generator.h" />
-        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.h" />
-        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" />
         <option value="$PROJECT_DIR$/code/common/cm_struct.h" />
-        <option value="$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncserver/main.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncserver/MainMod.h" />
-        <option value="$PROJECT_DIR$/code/rsyncserver/MainMod.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" />
         <option value="$PROJECT_DIR$/code/common/FileUtil/FileHelper.h" />
-        <option value="$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncserver/NetMod.h" />
         <option value="$PROJECT_DIR$/code/rsyncclientGUI/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/common/3rd/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/code/common/NetUtil/NetHelper.h" />
         <option value="$PROJECT_DIR$/code/common/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/common/ThreadModule/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/common/RsyncKernel/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/common/NetUtil/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/common/FileUtil/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/protocol/generate_protocol.sh" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h" />
+        <option value="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.h" />
+        <option value="$PROJECT_DIR$/code/common/NetUtil/NetHelper.h" />
+        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" />
+        <option value="$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp" />
+        <option value="$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp" />
+        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" />
+        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncserver/MainMod.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" />
+        <option value="$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp" />
+        <option value="$PROJECT_DIR$/code/common/LogModule/LogHelper.h" />
       </list>
     </option>
   </component>
@@ -251,13 +236,20 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
+  <component name="NodeModulesDirectoryManager">
+    <handled-path value="$PROJECT_DIR$/build/bin/test/plugins/JavaScriptLanguage/helpers/node_modules" />
+  </component>
   <component name="NodePackageJsonFileManager">
-    <packageJsonPaths />
+    <packageJsonPaths>
+      <path value="$PROJECT_DIR$/build/bin/test/plugins/JavaScriptLanguage/helpers/package.json" />
+    </packageJsonPaths>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="width" value="1280" />
-    <option name="height" value="1397" />
+    <option name="x" value="609" />
+    <option name="y" value="231" />
+    <option name="width" value="1270" />
+    <option name="height" value="755" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -270,6 +262,67 @@
             <path>
               <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
               <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+              <item name="FileUtil" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+              <item name="LogModule" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+              <item name="NetUtil" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+              <item name="RsyncKernel" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="rsyncclient" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="rsyncgui" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="rsyncserver" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
             </path>
           </expand>
           <select />
@@ -322,15 +375,17 @@
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/common/Protocol/generate_protocol.sh" />
       <option name="PARAMETERS" value="" />
     </configuration>
-    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-d" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncserver" EXPLICIT_BUILD_TARGET_NAME="all" />
+    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-D -P ./test/ $APPLICATION_HOME_DIR$/@127.0.0.1:48888" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncclient" EXPLICIT_BUILD_TARGET_NAME="all" />
     <configuration name="FileModule" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="FileModule" CONFIG_NAME="Debug" />
     <configuration name="LogModule" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="LogModule" CONFIG_NAME="Debug" />
     <configuration name="NetUtil" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="NetUtil" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncclient" />
     <configuration name="RsyncKernel" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="RsyncKernel" CONFIG_NAME="Debug" />
     <configuration name="ThreadModule" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="ThreadModule" CONFIG_NAME="Debug" />
     <configuration name="TinyXml2" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="TinyXml2" CONFIG_NAME="Debug" />
-    <configuration name="rsyncclient" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-D -P $PROJECT_DIR$/../../-v $PROJECT_DIR$/code/@127.0.0.1:48888 " PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="rsyncclient" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncclient" />
-    <configuration name="rsyncserver" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-d" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="rsyncserver" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncserver" />
+    <configuration name="rsyncclient" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-D -P ./test/ $PROJECT_DIR$/code/@127.0.0.1:48888 " PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="rsyncclient" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncclient" />
+    <configuration name="rsyncgui" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="rsyncgui" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncgui" />
+    <configuration name="rsyncgui_autogen" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="rsyncgui_autogen" CONFIG_NAME="Debug" />
+    <configuration name="rsyncserver" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-D" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RsyncTool" TARGET_NAME="rsyncserver" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RsyncTool" RUN_TARGET_NAME="rsyncserver" />
     <configuration default="true" type="lua.app" factoryName="Lua Application">
       <option name="program" value="lua" />
       <option name="file" value="" />
@@ -339,7 +394,6 @@
       <option name="params" value="" />
     </configuration>
     <list>
-      <item itemvalue="Bash.generate_protocol.sh" />
       <item itemvalue="Application.Build All" />
       <item itemvalue="Application.TinyXml2" />
       <item itemvalue="Application.FileModule" />
@@ -348,7 +402,10 @@
       <item itemvalue="Application.RsyncKernel" />
       <item itemvalue="Application.ThreadModule" />
       <item itemvalue="Application.rsyncclient" />
+      <item itemvalue="Application.rsyncgui" />
+      <item itemvalue="Application.rsyncgui_autogen" />
       <item itemvalue="Application.rsyncserver" />
+      <item itemvalue="Bash.generate_protocol.sh" />
       <item itemvalue="Bash.generate_protocol.sh (1)" />
     </list>
     <recent_temporary>
@@ -417,12 +474,15 @@
       <workItem from="1523907619366" duration="379000" />
       <workItem from="1523908015152" duration="67000" />
       <workItem from="1523908106502" duration="358000" />
-      <workItem from="1523908484893" duration="6408000" />
+      <workItem from="1523908484893" duration="6551000" />
+      <workItem from="1523955542113" duration="227000" />
+      <workItem from="1524070512518" duration="11440000" />
+      <workItem from="1524082425338" duration="4885000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="441966000" />
+    <option name="totallyTimeSpent" value="458661000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -435,20 +495,20 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="2560" height="1397" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13621922" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.48639053" weight="0.32690763" />
-      <window_info anchor="bottom" x="0" y="552" width="2560" height="388" id="Messages" order="7" sideWeight="0.3963463" side_tool="true" visible="true" weight="0.3058176" />
-      <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.5996823" weight="0.3624214" />
-      <window_info anchor="right" id="LuaJ" order="3" />
+      <window_info active="true" anchor="bottom" x="0" y="552" width="2560" height="388" id="Messages" order="7" sideWeight="0.5166799" side_tool="true" visible="true" weight="0.3451258" />
+      <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.63264495" weight="0.3624214" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.46761134" side_tool="true" weight="0.36448598" />
       <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.49102655" weight="0.3275218" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.60365367" visible="true" weight="0.3058176" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.60365367" weight="0.3058176" />
       <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.47070312" weight="0.30152366" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11795075" />
+      <window_info anchor="right" id="LuaJ" order="3" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4833201" visible="true" weight="0.3451258" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.65325445" weight="0.29799196" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.652502" weight="0.2971698" />
       <window_info anchor="bottom" id="LuaCheck" order="10" sideWeight="0.49418604" weight="0.32806325" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -456,27 +516,26 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.48402366" weight="0.34538153" />
     </layout>
     <layout-to-restore>
-      <window_info anchor="bottom" id="CMake" order="8" sideWeight="0.4902834" visible="true" weight="0.34579438" />
       <window_info anchor="bottom" id="LuaCheck" order="10" weight="0.32876712" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13036437" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32866043" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.48835567" weight="0.32876712" />
-      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4984375" weight="0.34710088" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49258998" weight="0.3985056" />
+      <window_info active="true" anchor="bottom" x="0" y="552" width="2560" height="388" id="Messages" order="7" sideWeight="0.5097166" side_tool="true" visible="true" weight="0.34579438" />
       <window_info anchor="bottom" id="Terminal" order="12" sideWeight="0.4932957" weight="0.30635118" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32866043" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4984375" weight="0.34710088" />
-      <window_info active="true" anchor="bottom" x="0" y="552" width="2560" height="388" id="Messages" order="7" sideWeight="0.5097166" side_tool="true" visible="true" weight="0.34579438" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="CMake" order="8" sideWeight="0.4902834" visible="true" weight="0.34579438" />
       <window_info id="Favorites" order="2" side_tool="true" />
     </layout-to-restore>
   </component>
@@ -496,7 +555,7 @@
           <properties />
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="123" />
+      <option name="time" value="126" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="CMakeRunConfiguration">
@@ -569,13 +628,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///usr/include/c++/6/bits/unordered_map.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="120" column="39" selection-start-line="120" selection-start-column="39" selection-end-line="120" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/common/ThreadModule/ThreadBase.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="426">
@@ -587,34 +639,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1154">
           <caret line="78" selection-start-line="78" selection-end-line="78" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="708">
-          <caret line="98" column="28" selection-start-line="98" selection-start-column="28" selection-end-line="98" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="385">
-          <caret line="34" column="5" selection-start-line="34" selection-start-column="5" selection-end-line="34" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="554">
-          <caret line="180" column="38" selection-start-line="180" selection-start-column="38" selection-end-line="180" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
-          <caret line="385" column="43" lean-forward="true" selection-start-line="385" selection-start-column="43" selection-end-line="385" selection-end-column="43" />
         </state>
       </provider>
     </entry>
@@ -632,184 +656,15 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/MainMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="836">
-          <caret line="44" column="24" selection-start-line="44" selection-start-column="24" selection-end-line="44" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="22" selection-start-line="22" selection-end-line="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5985">
-          <caret line="315" selection-start-line="315" selection-end-line="315" />
-          <folding>
-            <element signature="e#40#59#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/MainMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2413">
-          <caret line="127" column="5" selection-start-line="127" selection-start-column="5" selection-end-line="127" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6707">
-          <caret line="353" column="9" selection-start-line="353" selection-start-column="9" selection-end-line="353" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1786">
-          <caret line="94" column="23" selection-start-line="94" selection-start-column="23" selection-end-line="94" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="7" column="28" selection-start-line="7" selection-start-column="28" selection-end-line="7" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/Protocol/Synchronism.fbs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="760">
-          <caret line="40" column="31" selection-start-line="40" selection-start-column="31" selection-end-line="40" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="349" column="53" selection-start-line="349" selection-start-column="53" selection-end-line="349" selection-end-column="53" />
-          <folding>
-            <element signature="e#40#58#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1525">
-          <caret line="87" column="28" selection-start-line="87" selection-start-column="28" selection-end-line="87" selection-end-column="28" />
-          <folding>
-            <element signature="e#127#144#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/cm_define.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="608">
-          <caret line="37" column="8" selection-start-line="37" selection-start-column="8" selection-end-line="37" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/LogModule/LogHelper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="589">
-          <caret line="168" column="24" selection-start-line="168" selection-start-column="24" selection-end-line="168" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/cm_struct.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="162" column="88" selection-start-line="162" selection-start-column="88" selection-end-line="162" selection-end-column="88" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="665">
-          <caret line="44" selection-start-line="44" selection-end-line="44" />
-          <folding>
-            <element signature="e#108#132#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="328">
-          <caret line="27" column="25" selection-start-line="27" selection-start-column="25" selection-end-line="27" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="505">
-          <caret line="497" column="27" selection-start-line="497" selection-start-column="27" selection-end-line="497" selection-end-column="27" />
-          <folding>
-            <element signature="e#39#58#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclientGUI/MainWindow.ui">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclientGUI/mainwindow.cpp">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclientGUI/mainwindow.h">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclientGUI/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt.user">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/NetHelper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="15" column="18" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
-          <folding>
-            <element signature="e#101#124#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/protocol/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/Protocol/Synchronism.fbs" />
+    <entry file="file://$PROJECT_DIR$/code/common/cm_define.h" />
+    <entry file="file://$PROJECT_DIR$/code/common/cm_struct.h" />
     <entry file="file://$PROJECT_DIR$/code/include/cm_struct.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="228">
           <caret line="12" selection-start-line="12" selection-end-line="12" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="114">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/code/common/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
@@ -818,18 +673,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/ThreadModule/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/LogModule/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/common/FileUtil/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19">
@@ -837,37 +680,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/3rd/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/common/3rd/tinyxml2/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19">
           <caret line="1" column="22" selection-start-line="1" selection-start-column="22" selection-end-line="1" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="114">
-          <caret line="6" column="88" selection-start-line="6" selection-start-column="88" selection-end-line="6" selection-end-column="88" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="9" selection-start-line="9" selection-end-line="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="29" column="22" selection-start-line="29" selection-start-column="22" selection-end-line="29" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -880,8 +696,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="403">
-          <caret line="23" column="5" lean-forward="true" selection-start-line="23" selection-start-column="5" selection-end-line="23" selection-end-column="5" />
+        <state relative-caret-position="437">
+          <caret line="23" column="5" selection-start-line="23" selection-start-column="5" selection-end-line="23" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -889,9 +705,268 @@
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="171">
-            <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+            <caret line="9" selection-start-line="9" selection-end-line="9" />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Qt/5.10.1/gcc_64/include/QtWidgets/qapplication.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="416">
+          <caret line="71" column="23" selection-start-line="71" selection-start-column="23" selection-end-line="71" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt.user">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7011" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="247">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="76">
+          <caret line="4" column="1" selection-start-line="4" selection-start-column="1" selection-end-line="4" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="9" selection-start-line="9" selection-end-line="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="399">
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/gcc/x86_64-linux-gnu/6/include/stddef.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="215" column="8" selection-start-line="215" selection-start-column="8" selection-end-line="215" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/string.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="262">
+          <caret line="453" column="34" selection-start-line="453" selection-start-column="34" selection-end-line="453" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="5" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-694">
+          <caret line="122" column="21" selection-start-line="122" selection-start-column="21" selection-end-line="122" selection-end-column="21" />
+          <folding>
+            <element signature="e#42#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="807">
+          <caret line="88" column="8" selection-start-line="88" selection-start-column="8" selection-end-line="88" selection-end-column="8" />
+          <folding>
+            <element signature="e#103#120#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/6/bits/stl_vector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="743" column="6" selection-start-line="743" selection-start-column="6" selection-end-line="743" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="304">
+          <caret line="16" selection-start-line="16" selection-end-line="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="8" column="31" selection-start-line="8" selection-start-column="31" selection-end-line="8" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="9" column="6" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="563">
+          <caret line="149" selection-start-line="149" selection-end-line="149" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="749">
+          <caret line="237" column="30" selection-start-line="237" selection-start-column="30" selection-end-line="237" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/NetHelper.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="92">
+          <caret line="79" column="11" selection-start-line="79" selection-start-column="11" selection-end-line="79" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="376">
+          <caret line="36" column="10" selection-start-line="36" selection-start-column="10" selection-end-line="36" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/RollingChecksum.cpp">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/RollingChecksum.h">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/MD5.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-584" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="50" column="20" selection-start-line="50" selection-start-column="20" selection-end-line="50" selection-end-column="20" />
+          <folding>
+            <element signature="e#97#114#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="661">
+          <caret line="58" column="9" selection-start-line="58" selection-start-column="9" selection-end-line="58" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="589">
+          <caret line="43" column="14" selection-start-line="43" selection-start-column="14" selection-end-line="43" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="532">
+          <caret line="66" column="18" selection-start-line="66" selection-start-column="18" selection-end-line="66" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/MainMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="414">
+          <caret line="31" column="21" selection-start-line="31" selection-start-column="21" selection-end-line="31" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/MainMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="121">
+          <caret line="26" column="21" selection-start-line="26" selection-start-column="21" selection-end-line="26" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="585">
+          <caret line="81" column="17" selection-start-line="81" selection-start-column="17" selection-end-line="81" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="256" column="35" selection-start-line="256" selection-start-column="35" selection-end-line="256" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="182">
+          <caret line="83" column="15" selection-start-line="83" selection-start-column="15" selection-end-line="83" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="912">
+          <caret line="57" column="38" selection-start-line="57" selection-start-column="38" selection-end-line="57" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="247">
+          <caret line="119" selection-start-line="119" selection-end-line="122" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="548">
+          <caret line="56" column="15" selection-start-line="56" selection-start-column="15" selection-end-line="56" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/6/bits/basic_string.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="269">
+          <caret line="5469" column="2" selection-start-line="5469" selection-start-column="2" selection-end-line="5469" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/LogModule/LogHelper.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1691">
+          <caret line="95" column="25" selection-start-line="95" selection-start-column="25" selection-end-line="95" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/LogModule/LogHelper.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="585">
+          <caret line="39" column="16" lean-forward="true" selection-start-line="39" selection-start-column="16" selection-end-line="39" selection-end-column="16" />
+          <folding>
+            <element signature="e#114#132#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
