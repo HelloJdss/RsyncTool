@@ -184,7 +184,8 @@ bool NetMod::Init()
     {
         if (m_serverIp.empty())
         {
-            m_serverSocket->Connect(SocketAddress(INADDR_ANY, m_serverPort));
+            LOG_ERROR("No available server IP!");
+            return false;
         }
         else
         {

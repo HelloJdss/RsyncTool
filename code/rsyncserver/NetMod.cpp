@@ -98,7 +98,7 @@ void NetMod::Run()
                         }
                         else
                         {
-                            LOG_ERROR("Client[%s] err: %s", socket->GetEndPoint(), strerror(errno));
+                            LOG_ERROR("Client[%s] err: %s", socket->GetEndPoint().c_str(), strerror(errno));
                             socket->Close();
                         }
                     }
@@ -256,6 +256,7 @@ void MsgThread::Runnable()
         m_ptr->Dispatch();
         usleep(125 * 1000); //休眠0.125s
     }
+    LOG_WARN("Client[%s] Thread Terminal!", m_ptr->m_socket->GetEndPoint().c_str());
 }
 
 /**

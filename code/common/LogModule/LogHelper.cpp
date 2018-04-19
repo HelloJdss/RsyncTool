@@ -38,45 +38,47 @@ void LogHelper::TryAppend(LOG_LEVEL lv, const char *lvl, const char *format, ...
 
     if (this->m_isdebug)
     {
-        if(lv <= m_lv)
+        if (lv <= m_lv)
         {
             char *pre;
             switch (lv)
             {
                 case FATAL:
                     pre = const_cast<char *>("\33[1;35m");
-                    printf("%s%s\33[0m", pre, log_line);
+                    printf("%s%s\33[0m\n", pre, log_line);
                     break;
                 case ERROR:
                     pre = const_cast<char *>("\33[1;31m");
-                    printf("%s%s\33[0m", pre, log_line);
+                    printf("%s%s\33[0m\n", pre, log_line);
                     break;
                 case WARN:
                     pre = const_cast<char *>("\33[1;33m");
-                    printf("%s%s\33[0m", pre, log_line);
+                    printf("%s%s\33[0m\n", pre, log_line);
                     break;
                 case INFO:
-                    printf("%s", log_line);
+                    printf("%s\n", log_line);
                     break;
                 case DEBUG:
                     pre = const_cast<char *>("\33[1;34m");
-                    printf("%s%s\33[0m", pre, log_line);
+                    printf("%s%s\33[0m\n", pre, log_line);
                     break;
                 case TRACE:
                     pre = const_cast<char *>("\33[1;32m");
-                    printf("%s%s\33[0m", pre, log_line);
+                    printf("%s%s\33[0m\n", pre, log_line);
                     break;
             }
         }
     }
 
+
     pthread_mutex_lock(&m_mutex);
     if (m_fp != nullptr)
     {
         m_size += fwrite(log_line, sizeof(char), len, m_fp);
+        m_size += fwrite("\n", sizeof(char), 1, m_fp);
         fflush(m_fp);
 
-        if(m_size >= LOG_FILE_LIMIT)
+        if (m_size >= LOG_FILE_LIMIT)
         {
             fclose(m_fp);
             m_fp = fopen((m_path + std::to_string(++m_num) + ".log").c_str(), "a");

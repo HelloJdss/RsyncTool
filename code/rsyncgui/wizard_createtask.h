@@ -1,0 +1,39 @@
+#ifndef WIZARD_CREATETASK_H
+#define WIZARD_CREATETASK_H
+
+#include <QWizard>
+#include <QtWidgets/QFileSystemModel>
+#include "MainMod.h"
+
+namespace Ui
+{
+    class Wizard_CreateTask;
+}
+
+/**
+ * TODO: http://tcspecial.iteye.com/blog/1880711
+ * 实现浏览文件复选模型
+ */
+
+class Wizard_CreateTask : public QWizard
+{
+Q_OBJECT
+
+public:
+    explicit Wizard_CreateTask(QWidget *parent = 0);
+
+    ~Wizard_CreateTask() override;
+
+    Task GetTask(); //执行结束后调用此函数获取任务
+
+private slots:
+    void on_pushButton_clicked();
+
+    void on_Wizard_CreateTask_currentIdChanged(int id);
+
+private:
+    Ui::Wizard_CreateTask *ui;
+    QFileSystemModel *m_srcModel = nullptr;
+};
+
+#endif // WIZARD_CREATETASK_H
