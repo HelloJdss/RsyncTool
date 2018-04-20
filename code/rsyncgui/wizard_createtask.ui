@@ -10,6 +10,9 @@
     <height>480</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>创建任务</string>
   </property>
@@ -17,6 +20,9 @@
    <enum>QWizard::ModernStyle</enum>
   </property>
   <widget class="QWizardPage" name="wizardPage">
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
@@ -71,14 +77,14 @@
     <item>
      <widget class="QLabel" name="label_6">
       <property name="text">
-       <string>过滤文件类型：</string>
+       <string>同步文件类型：</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QLineEdit" name="lineEdit_4">
       <property name="text">
-       <string>.tmp;.log</string>
+       <string>*;*.*</string>
       </property>
      </widget>
     </item>
@@ -98,6 +104,9 @@
    </layout>
   </widget>
   <widget class="QWizardPage" name="wizardPage_2">
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
    <property name="title">
     <string>Step2</string>
    </property>
@@ -128,6 +137,9 @@
        <widget class="QPushButton" name="pushButton">
         <property name="text">
          <string>浏览文件夹</string>
+        </property>
+        <property name="default">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -173,6 +185,9 @@
    </layout>
   </widget>
   <widget class="QWizardPage" name="wizardPage_3">
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
    <property name="title">
     <string>Step3</string>
    </property>

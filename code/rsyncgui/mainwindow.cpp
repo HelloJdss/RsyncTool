@@ -150,11 +150,11 @@ void MainWindow::on_action_5_triggered()
     m_cmd = new QProcess(this);
     connect(m_cmd, SIGNAL(readyRead()), this, SLOT(onCmdReadOutput()));
     connect(m_cmd, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCmdFinished()));
-    QString cmd("./rsyncclient -D -p /home/carrot/clion-2018.1.1/ /home/carrot/test/@127.0.0.1:48888");
+    //QString cmd("./rsyncclient -D -p /home/carrot/clion-2018.1.1/ /home/carrot/test/@127.0.0.1:48888");
 
 
     m_cmd->setWorkingDirectory(QDir::currentPath());
-    m_cmd->start(cmd);
+    //m_cmd->start(cmd);
     //m_cmd->start("ping 127.0.0.1");
     ui->progressBar->show();
     ui->pushButton_3->show();

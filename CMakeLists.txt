@@ -12,6 +12,7 @@ include_directories(code/common/Protocol)
 include_directories(code/common/RsyncKernel)
 include_directories(code/common/ThreadModule)
 
+set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/code/include)
 
 set(CMAKE_CXX_STANDARD 11)
 

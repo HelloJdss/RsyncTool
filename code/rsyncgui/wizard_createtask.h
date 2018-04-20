@@ -2,8 +2,8 @@
 #define WIZARD_CREATETASK_H
 
 #include <QWizard>
-#include <QtWidgets/QFileSystemModel>
 #include "MainMod.h"
+#include "myModel.h"
 
 namespace Ui
 {
@@ -31,9 +31,16 @@ private slots:
 
     void on_Wizard_CreateTask_currentIdChanged(int id);
 
+    void on_lineEdit_4_editingFinished();
+
+    void on_lineEdit_editingFinished();
+
+    void on_lineEdit_returnPressed();
+
 private:
     Ui::Wizard_CreateTask *ui;
-    QFileSystemModel *m_srcModel = nullptr;
+    //QFileSystemModel_CheckBox *m_srcModel = nullptr;
+    myDirModel *m_srcModel = nullptr;
 };
 
 #endif // WIZARD_CREATETASK_H
