@@ -55,8 +55,6 @@ MainWindow::MainWindow(QWidget *parent) :
                 SLOT(onActive_systemTray(QSystemTrayIcon::ActivationReason)));
         m_systemTray->show();
     }
-
-
 }
 
 MainWindow::~MainWindow()

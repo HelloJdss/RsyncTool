@@ -30,6 +30,7 @@ ST_command MainMod::m_cmds[] = {
         {'P', "--pull(-P)",  "执行从服务器（远程）目录或文件到客户机（本地）目录的同步任务（下载），命令格式： --pull local_dir des_dir(file)@des_ip:port; 例: --pull ./ /home/user/a.txt@127.0.0.1:48888"},
         {'f', "--file(-f)",  "执行文件中的同步任务"},
         {'v', "--view(-v)",  "获取文件名列表，命令格式： -v des_dir@des_ip:port; 例： -v /home/user/@127.0.0.1"},
+        {'o', "--out(-v", "重定向view输出, 命令格式： -o path; 例： -o ./f1.xml"},
 };
 
 bool MainMod::Init(int argc, char *argv[], std::string appName)
@@ -56,7 +57,7 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
     g_LogHelper->Init(g_Configuration->m_log_lv, appName, g_Configuration->m_log_file);
 
     bool ret = true;
-    while ((opt = getopt_long(argc, argv, "-hDL:p:P:f:v:", longopts, nullptr)) != -1)
+    while ((opt = getopt_long(argc, argv, "-hDL:p:P:f:v:o:", longopts, nullptr)) != -1)
     {
         switch (opt)
         {
@@ -111,6 +112,9 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
             case 'v':
                 //TODO: 实现获取远程目录下的文件列表
                 ret = cmd_v(string(optarg));
+                break;
+            case 'o':
+                g_Configuration->m_view_output = string(optarg);
                 break;
             case '?':
                 //printf("Run \"%s -h\" for more information!\n", argv[0]);

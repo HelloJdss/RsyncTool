@@ -63,7 +63,7 @@ void NetMod::Run()
             }
         }
 
-        if(timer.get_curr_msec() > LastUpdateTime + 5 * 1000)
+        if (timer.get_curr_msec() > LastUpdateTime + 5 * 1000)
         {
             LOG_TRACE("Task Sum: [%d] UnInit: [%d] Ready: [%d] Running: [%d] Warn: [%d] Abort: [%d] Finished: [%d]",
                       m_taskMgr.GetTaskCount(), m_taskMgr.GetTaskCount(UnInit),
@@ -104,7 +104,7 @@ void NetMod::Dispatch()
     while (m_msgHelper.ReadMessage(header, &data))
     {
         LOG_DEBUG("Recv Meg from[%s]: op[%s], taskID[%lu], dataLength:[%lu]", m_serverSocket->GetEndPoint().c_str(),
-                 Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
+                  Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
         Protocol::Err err = Err_DO_NOT_REPLY;
         switch (header.getOpCode())
         {
@@ -236,7 +236,7 @@ void NetMod::SendToServer(Protocol::Opcode op, uint32_t taskID, uint8_t *buf, ui
     ST_PackageHeader header(op, taskID);
     auto bytes = MsgHelper::PackageData(header,
                                         MsgHelper::CreateBytes(buf, size));
-    if(m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size())) == -1)
+    if (m_serverSocket->Send(bytes->ToChars(), static_cast<int>(bytes->Size())) == -1)
     {
         m_running = false;
         m_thread->m_running = false;
@@ -295,12 +295,18 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
     {
         if (document.LoadFile(fp->GetPointer()) != 0)
         {
-            m_taskMgr.Abort(taskID, document.ErrorStr());
+            //m_taskMgr.Abort(taskID, document.ErrorStr());
             //--m_taskRunningCount;
-
-            return Err_SUCCESS; //告知服务器任务已完成
+            //return Err_SUCCESS; //告知服务器任务已完成
+            fp = FileHelper::OpenFile(g_Configuration->m_view_output, "w+");
+            document.InsertFirstChild(document.NewDeclaration()); //添加声明
+            root = document.NewElement("View");
+            document.InsertEndChild(root);
         }
-        root = document.RootElement();
+        else
+        {
+            root = document.RootElement();
+        }
     }
     else
     {
@@ -336,12 +342,14 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
     int i = 1;
     for (auto item : *pViewDirAck->FileList())
     {
-        LOG_INFO("%d: Path: [%s] Size: [%lld]", i++, item->FilePath()->c_str(), item->FileSize());
+        LOG_INFO("ViewDir[%d]: Path: [%s] Size: [%lld] Modify: [%llu]", i++, item->FilePath()->c_str(), item->FileSize(),
+                 item->FileModify());
 
         //save as xml:
         XMLElement *pInfo = document.NewElement("File");
         pInfo->SetAttribute("Path", item->FilePath()->c_str());
         pInfo->SetAttribute("Size", item->FileSize());
+        pInfo->SetAttribute("Modify", item->FileModify());
         des->InsertEndChild(pInfo);
 
         if (PullDirTaskID != -1)
@@ -660,7 +668,7 @@ Err NetMod::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
         }
         pTaskInfo->m_processLen += pData.length();
         LOG_TRACE("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
-                 pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+                  pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
     else
     {
@@ -674,7 +682,7 @@ Err NetMod::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
         }
         pTaskInfo->m_processLen += pRebuildChunk->Length();
         LOG_TRACE("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
-                 pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+                  pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
     if (pTaskInfo->m_processLen == pTaskInfo->m_rebuild_size)
@@ -716,7 +724,7 @@ void NetMod::Stop()
 void MsgThread::Runnable() //不断阻塞接受消息和处理消息
 {
     m_running = true;
-    g_NetMod->m_serverSocket->SetRecvTimeOut(60, 0);  //60秒延迟，若60秒仍收不到服务器的消息则结束
+    //g_NetMod->m_serverSocket->SetRecvTimeOut(60, 0);  //60秒延迟，若60秒仍收不到服务器的消息则结束
     while (m_running)
     {
 

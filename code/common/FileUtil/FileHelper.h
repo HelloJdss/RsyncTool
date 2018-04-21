@@ -85,6 +85,8 @@ public:
 
     string Path();
 
+    struct stat Stat();
+
     std::vector<string> AllFiles(); //获取目录下的所有文件名
 
 private:
@@ -95,7 +97,10 @@ private:
     void traverse(char *dir, string prefix, std::vector<string>& list);
 
     string m_path;
+
     DIR *m_dp = nullptr;
+
+    struct stat m_stat;
 };
 
 typedef std::shared_ptr<Dir> DirPtr;

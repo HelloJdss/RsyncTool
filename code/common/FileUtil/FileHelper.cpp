@@ -117,12 +117,14 @@ int64_t File::Size()
     {
         return -1;
     }
-    int64_t n = ftell(m_fp);
+    /*int64_t n = ftell(m_fp);
     fseek(m_fp, 0, SEEK_END);
     int64_t ret = ftell(m_fp);
-    fseek(m_fp, n, SEEK_SET);
+    fseek(m_fp, n, SEEK_SET);*/ //容易发生阻塞
 
-    return ret;
+
+
+    return Stat().st_size;
 }
 
 bool File::SetSize(size_t size)
@@ -298,7 +300,7 @@ void FileHelper::MakeDir(const string &dir)
 
 Dir::~Dir()
 {
-    if(!m_dp)
+    if(m_dp)
     {
         closedir(m_dp);
     }
@@ -338,7 +340,7 @@ void Dir::traverse(char *dir, string prefix, std::vector<string>& list)
 
     while ((entry = readdir(dp)) != nullptr)
     {
-        lstat(entry->d_name, &stat1); //使用lstat来处理符号链接指向的本身文件
+        lstat(entry->d_name, &stat1); //使用stat来处理非符号链接指向的本身文件
         if(S_ISDIR(stat1.st_mode))
         {
             if(strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0)
@@ -352,7 +354,7 @@ void Dir::traverse(char *dir, string prefix, std::vector<string>& list)
             LOG_TRACE("Add Dir[%s]", str.c_str());
             traverse(entry->d_name, prefix, list);
         }
-        else
+        else if(S_ISREG(stat1.st_mode) || S_ISLNK(stat1.st_mode))
         {
             LOG_TRACE("Add File[%s]", (prefix + entry->d_name).c_str());
 
@@ -378,4 +380,10 @@ std::vector<string> Dir::AllFiles()
         traverse(const_cast<char *>(m_path.c_str()), "", list);
     }
     return list;
+}
+
+struct stat Dir::Stat()
+{
+    stat(m_path.c_str(), &m_stat); //返回文件本身的信息
+    return m_stat;
 }

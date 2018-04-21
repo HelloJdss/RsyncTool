@@ -4,6 +4,8 @@
 #include <QWizard>
 #include "MainMod.h"
 #include "myModel.h"
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressDialog>
 
 namespace Ui
 {
@@ -11,7 +13,7 @@ namespace Ui
 }
 
 /**
- * TODO: http://tcspecial.iteye.com/blog/1880711
+ * http://tcspecial.iteye.com/blog/1880711
  * 实现浏览文件复选模型
  */
 
@@ -27,6 +29,7 @@ public:
     Task GetTask(); //执行结束后调用此函数获取任务
 
 private slots:
+
     void on_pushButton_clicked();
 
     void on_Wizard_CreateTask_currentIdChanged(int id);
@@ -37,10 +40,21 @@ private slots:
 
     void on_lineEdit_returnPressed();
 
+    void on_pushButton_2_clicked();
+
 private:
+
+    void onViewDirFinished();
+
     Ui::Wizard_CreateTask *ui;
     //QFileSystemModel_CheckBox *m_srcModel = nullptr;
     myDirModel *m_srcModel = nullptr;
+    myRemoteDirModel *m_desModel = nullptr;
+    LogInterpreter *m_logInterpreter = nullptr;
+    QProcess *m_cmd = nullptr;
+    QString m_tmpName;
+    //QProgressDialog *m_progress = nullptr;
+    volatile bool  m_progress_run = false;
 };
 
 #endif // WIZARD_CREATETASK_H

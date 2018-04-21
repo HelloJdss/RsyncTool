@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.3.1, 2018-04-20T21:56:19. -->
+<!-- Written by QtCreator 4.3.1, 2018-04-21T22:01:02. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -342,7 +342,7 @@
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.Arguments">-D</value>
     <value type="bool" key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal">true</value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory"></value>
-    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/tmp/QtCreator-72zpv4/qtc-cmake-XX8tBeOd/code/rsyncserver</value>
+    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/tmp/QtCreator-rpL5Ub/qtc-cmake-XXNHc6aF/code/rsyncserver</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">rsyncserver</value>
@@ -399,7 +399,7 @@
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.Arguments">-D</value>
     <value type="bool" key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal">true</value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory"></value>
-    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/tmp/QtCreator-72zpv4/qtc-cmake-XX8tBeOd/code/rsyncclient</value>
+    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/tmp/QtCreator-rpL5Ub/qtc-cmake-XXNHc6aF/code/rsyncclient</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">rsyncclient</value>
@@ -455,7 +455,7 @@
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguation.Title">rsyncgui</value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.Arguments"></value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory"></value>
-    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/tmp/QtCreator-72zpv4/qtc-cmake-XX8tBeOd/code/rsyncgui</value>
+    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/tmp/QtCreator-rpL5Ub/qtc-cmake-XXNHc6aF/code/rsyncgui</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">rsyncgui</value>

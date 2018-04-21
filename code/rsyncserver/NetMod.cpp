@@ -164,7 +164,7 @@ void TCPClient::Dispatch()
     {
         //LOG_TRACE("Client[%s] has Message!", m_socket->GetEndPoint().c_str());
         LOG_DEBUG("Recv Meg from[%s]: op[%s], taskID[%u], dataLength:[%u]", m_socket->GetEndPoint().c_str(),
-                 Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
+                  Reflection::GetEnumKeyName(header.getOpCode()).c_str(), header.getTaskId(), data->Size());
 
         Protocol::Err err = Err_DO_NOT_REPLY;
         switch (header.getOpCode())
@@ -305,9 +305,17 @@ Err TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
         if (name.back() == '/')
         {
             //如果是目录
-            vector1.push_back(Protocol::CreateFileInfo(builder,
-                                                       builder.CreateString(FileHelper::GetRealPath(name) + "/"),
-                                                       0));
+            //auto dp1 = FileHelper::OpenDir(name);
+
+            //if(dp1)
+            //{
+                vector1.push_back(Protocol::CreateFileInfo(builder,
+                                                           builder.CreateString(FileHelper::GetRealPath(name) + "/"),
+                                                           0, 0));
+                                                           /*dp1->Stat().st_size, dp1->Stat().st_mtim.tv_sec * 1000 +
+                                                                                dp1->Stat().st_mtim.tv_nsec / 1000));*/
+           // }
+            //modify: 频繁打开目录过于缓慢，取消读取目录信息
             continue;
         }
 
@@ -316,7 +324,8 @@ Err TCPClient::onRecvViewDirReq(uint32_t taskID, BytesPtr data)
         {
             vector1.push_back(Protocol::CreateFileInfo(builder,
                                                        builder.CreateString(FileHelper::GetRealPath(fp->Path())),
-                                                       fp->Size()));
+                                                       fp->Size(), fp->Stat().st_mtim.tv_sec * 1000 +
+                                                                   fp->Stat().st_mtim.tv_nsec / 1000));
         }
     }
     auto fbb = Protocol::CreateViewDirAck(builder, builder.CreateVector(vector1));
@@ -437,7 +446,7 @@ Err TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
         }
         pTaskInfo->m_processLen += pData.length();
         LOG_TRACE("Task[%lu] File[%s]: Reconstruct(md5) block[%lld +=> %ld] success!", taskID,
-                 pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+                  pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
     else
     {
@@ -451,7 +460,7 @@ Err TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
         }
         pTaskInfo->m_processLen += pRebuildChunk->Length();
         LOG_TRACE("Task[%lu] File[%s]: Reconstruct(data) block[%lld +=> %ld] success!", taskID,
-                 pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
+                  pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
     if (pTaskInfo->m_processLen == pTaskInfo->m_rebuild_size)

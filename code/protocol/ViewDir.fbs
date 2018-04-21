@@ -16,7 +16,8 @@ table ViewDirReq
 table FileInfo
 {
     FilePath:string;    //文件名及其绝对路径
-    FileSize:long;     //文件总大小
+    FileSize:long;      //文件总大小
+    FileModify:long;    //最后修改日期
 }
 
 table ViewDirAck

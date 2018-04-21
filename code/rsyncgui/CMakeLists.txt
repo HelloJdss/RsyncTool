@@ -1,6 +1,6 @@
 # Find the QtWidgets library
 find_package(Qt5Widgets)
-find_package(Qt5Network)
+find_package(Qt5Xml)
 
 #查找当前文件夹中的所有源代码文件，也可以通过Set命令将所有文件设置为一个变量
 FILE(GLOB SRC_FILES "./*.cpp")
@@ -20,4 +20,4 @@ qt5_add_resources(QRC_FILES ${QRC_SOURCE_FILES})
 add_executable(rsyncgui ${SRC_FILES} ${HEAD_FILES} ${WRAP_FILES} ${QRC_FILES} ${INCLUDE_DIR})
 
 # Use the Widgets module from Qt 5.
-target_link_libraries(rsyncgui Qt5::Widgets)
+target_link_libraries(rsyncgui Qt5::Widgets Qt5::Xml)

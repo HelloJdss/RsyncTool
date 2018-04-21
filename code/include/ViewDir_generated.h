@@ -66,7 +66,8 @@ inline flatbuffers::Offset<ViewDirReq> CreateViewDirReqDirect(
 struct FileInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_FILEPATH = 4,
-    VT_FILESIZE = 6
+    VT_FILESIZE = 6,
+    VT_FILEMODIFY = 8
   };
   const flatbuffers::String *FilePath() const {
     return GetPointer<const flatbuffers::String *>(VT_FILEPATH);
@@ -74,11 +75,15 @@ struct FileInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int64_t FileSize() const {
     return GetField<int64_t>(VT_FILESIZE, 0);
   }
+  int64_t FileModify() const {
+    return GetField<int64_t>(VT_FILEMODIFY, 0);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_FILEPATH) &&
            verifier.Verify(FilePath()) &&
            VerifyField<int64_t>(verifier, VT_FILESIZE) &&
+           VerifyField<int64_t>(verifier, VT_FILEMODIFY) &&
            verifier.EndTable();
   }
 };
@@ -91,6 +96,9 @@ struct FileInfoBuilder {
   }
   void add_FileSize(int64_t FileSize) {
     fbb_.AddElement<int64_t>(FileInfo::VT_FILESIZE, FileSize, 0);
+  }
+  void add_FileModify(int64_t FileModify) {
+    fbb_.AddElement<int64_t>(FileInfo::VT_FILEMODIFY, FileModify, 0);
   }
   explicit FileInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -107,8 +115,10 @@ struct FileInfoBuilder {
 inline flatbuffers::Offset<FileInfo> CreateFileInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<flatbuffers::String> FilePath = 0,
-    int64_t FileSize = 0) {
+    int64_t FileSize = 0,
+    int64_t FileModify = 0) {
   FileInfoBuilder builder_(_fbb);
+  builder_.add_FileModify(FileModify);
   builder_.add_FileSize(FileSize);
   builder_.add_FilePath(FilePath);
   return builder_.Finish();
@@ -117,11 +127,13 @@ inline flatbuffers::Offset<FileInfo> CreateFileInfo(
 inline flatbuffers::Offset<FileInfo> CreateFileInfoDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *FilePath = nullptr,
-    int64_t FileSize = 0) {
+    int64_t FileSize = 0,
+    int64_t FileModify = 0) {
   return Protocol::CreateFileInfo(
       _fbb,
       FilePath ? _fbb.CreateString(FilePath) : 0,
-      FileSize);
+      FileSize,
+      FileModify);
 }
 
 struct ViewDirAck FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
