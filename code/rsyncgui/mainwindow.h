@@ -23,6 +23,8 @@ public:
 
     void closeEvent(QCloseEvent *event) override;
 
+    void showStatusBarTip(const QString& tip);
+
 private slots:
 
     void onActive_systemTray(QSystemTrayIcon::ActivationReason reason);

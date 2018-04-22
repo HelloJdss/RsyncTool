@@ -48,11 +48,13 @@ class myRemoteDirModel : public QObject
     Q_OBJECT
 
 public:
-    myRemoteDirModel(QObject *parent = Q_NULLPTR);
+    explicit myRemoteDirModel(QObject *parent = Q_NULLPTR);
 
-    ~myRemoteDirModel();
+    ~myRemoteDirModel() override;
 
-    void setRootDir(QString root);
+    void setRootDir(QString root, const QStringList &filter = QStringList());
+
+    void setFilter(const QStringList &filter);
 
     void appendInfo(QString path, int64_t size, int64_t modify);
 
@@ -68,9 +70,13 @@ private:
 
     void checkAllChild(QStandardItem *item, bool check);
 
-    void CheckChildChanged(QStandardItem *item);
+    void checkChildChanged(QStandardItem *item);
 
     Qt::CheckState checkSibling(QStandardItem *item);
+
+    bool matchFilter(const QString &name);
+
+    void filterAllItem(QStandardItem *item);
 
     QMap<QString, QStandardItem*> m_prefix;
 
@@ -81,6 +87,7 @@ private:
     QStandardItemModel *m_model = nullptr;
 
     QString m_root;
+    QStringList m_filter;
 };
 
 #endif //RSYNCTOOL_MYMODEL_H

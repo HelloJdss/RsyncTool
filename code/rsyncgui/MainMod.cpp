@@ -7,6 +7,7 @@
 #include <QtCore/QRegularExpression>
 #include <cm_logger.h>
 #include "MainMod.h"
+#include "mainwindow.h"
 
 Task::Task(Task::TaskType type, const QStringList &src, const QStringList &des, const QString &ip, uint16_t port)
 {
@@ -60,6 +61,19 @@ bool MainMod::addTask(Task const &task)
     return true;
 }
 
+void MainMod::showStatusTip(const QString &tip)
+{
+    if(m_mainWindow)
+    {
+        m_mainWindow->showStatusBarTip(tip);
+    }
+}
+
+void MainMod::setMainWindow(MainWindow *mainWindow)
+{
+    m_mainWindow = mainWindow;
+}
+
 
 QIcon QFileInfoEx::getFileIcon(const QString &filename)
 {
@@ -70,13 +84,13 @@ QIcon QFileInfoEx::getFileIcon(const QString &filename)
     QString strTemplateName = QDir::tempPath() + QDir::separator() + QCoreApplication::applicationName() +
                               "_XXXXXX" + extension;
     QTemporaryFile tmpFile(strTemplateName);
-    tmpFile.setAutoRemove(false);
+    //tmpFile.setAutoRemove(false);
 
     if (tmpFile.open())
     {
         tmpFile.close();
         icon = provider.icon(QFileInfo(tmpFile.fileName()));
-        // tmpFile.remove();
+        //tmpFile.remove();
     }
     else
     {
@@ -95,13 +109,13 @@ QString QFileInfoEx::getFileType(const QString &filename)
     QString strFileName = QDir::tempPath() + QDir::separator() + QCoreApplication::applicationName() +
                           "_XXXXXX" + extension;
     QTemporaryFile tmpFile(strFileName);
-    tmpFile.setAutoRemove(false);
+    //tmpFile.setAutoRemove(false);
 
     if (tmpFile.open())
     {
         tmpFile.close();
         strType = provider.type(QFileInfo(tmpFile.fileName()));
-        // tmpFile.remove();
+        //tmpFile.remove();
     }
     else
     {

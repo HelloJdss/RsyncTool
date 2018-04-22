@@ -55,6 +55,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 SLOT(onActive_systemTray(QSystemTrayIcon::ActivationReason)));
         m_systemTray->show();
     }
+
+    g_MainMod->setMainWindow(this);
 }
 
 MainWindow::~MainWindow()
@@ -213,4 +215,9 @@ void MainWindow::onCmdFinished()
     ui->pushButton_4->hide();
     m_cmdoutput.clear();
     m_cmd = nullptr;
+}
+
+void MainWindow::showStatusBarTip(const QString &tip)
+{
+    ui->statusbar->showMessage(tip, 3);
 }

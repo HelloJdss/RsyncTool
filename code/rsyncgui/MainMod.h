@@ -17,6 +17,8 @@
 #include "cm_define.h"
 #include "cm_logger.h"
 
+class MainWindow;
+
 class Task  //定义一个任务详细信息
 {
 public:
@@ -48,9 +50,14 @@ public:
 
     bool addTask(const Task &task);
 
+    void setMainWindow(MainWindow* mainWindow);
+
+    void showStatusTip(const QString& tip);
 private:
     QString m_lastErr;   //最后一次的错误
     QVector<Task> m_tasks;     //任务列表
+
+    MainWindow* m_mainWindow = nullptr;
 };
 
 #define g_MainMod MainMod::Instance()

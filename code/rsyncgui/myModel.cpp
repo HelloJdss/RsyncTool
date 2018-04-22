@@ -192,8 +192,16 @@ void myRemoteDirModel::appendInfo(QString path, int64_t size, int64_t modify)
         auto item = new QStandardItem(QFileInfoEx::getFileIcon(name), name);
         item->setCheckable(true);
         item->setEditable(false);
-        item->setData(Qt::Checked, Qt::CheckStateRole);
-        m_checkedItem.insert(item);
+
+        if(matchFilter(name))
+        {
+            item->setData(Qt::Checked, Qt::CheckStateRole);
+            m_checkedItem.insert(item);
+        }
+        else
+        {
+            item->setEnabled(false);
+        }
 
         parent->appendRow(item);
         parent->setChild(item->index().row(), 1, new QStandardItem(QString::number(size)));
@@ -241,7 +249,7 @@ void myRemoteDirModel::onItemChanged(QStandardItem *item)
         {
             //说明是两态的，两态会对父级的三态有影响
             //判断兄弟节点的情况
-            CheckChildChanged(item);
+            checkChildChanged(item);
         }
     }
 
@@ -275,7 +283,7 @@ void myRemoteDirModel::checkAllChild(QStandardItem *item, bool check)
     }
 }
 
-void myRemoteDirModel::CheckChildChanged(QStandardItem *item)
+void myRemoteDirModel::checkChildChanged(QStandardItem *item)
 {
     if (nullptr == item)
     {
@@ -308,7 +316,7 @@ void myRemoteDirModel::CheckChildChanged(QStandardItem *item)
             parentItem->setCheckState(Qt::Unchecked);
         }
     }
-    CheckChildChanged(parentItem);
+    checkChildChanged(parentItem);
 }
 
 Qt::CheckState myRemoteDirModel::checkSibling(QStandardItem *item)
@@ -366,11 +374,11 @@ QStringList myRemoteDirModel::getCheckedInfo()
     return ret;
 }
 
-void myRemoteDirModel::setRootDir(QString root)
+void myRemoteDirModel::setRootDir(QString root, const QStringList &filter)
 {
     reset();
     m_root = root.left(root.lastIndexOf(QDir::separator()));
-    //TODO: 实现filter
+    m_filter = filter;
 }
 
 void myRemoteDirModel::reset()
@@ -383,4 +391,53 @@ void myRemoteDirModel::reset()
     m_model->setHorizontalHeaderLabels(
             QStringList() << QStringLiteral("名称") << QStringLiteral("大小") << QStringLiteral("类型")
                           << QStringLiteral("修改日期"));
+}
+
+bool myRemoteDirModel::matchFilter(const QString &name)
+{
+    QRegExp rx;
+    rx.setPatternSyntax(QRegExp::Wildcard);
+    for(const auto& item : m_filter)
+    {
+        rx.setPattern(item);
+        if(rx.exactMatch(name))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void myRemoteDirModel::filterAllItem(QStandardItem *item)
+{
+    if (item == nullptr)
+    {
+        return;
+    }
+    int rowCount = item->rowCount();
+    for (int i = 0; i < rowCount; ++i)
+    {
+        QStandardItem *childItems = item->child(i);
+        filterAllItem(childItems);
+    }
+
+
+    if(matchFilter(item->text()))
+    {
+        item->setData(Qt::Checked, Qt::CheckStateRole);
+        m_checkedItem.insert(item);
+        item->setEnabled(true);
+    }
+    else
+    {
+        item->setData(Qt::Unchecked, Qt::CheckStateRole);
+        m_checkedItem.remove(item);
+        item->setEnabled(false);
+    }
+}
+
+void myRemoteDirModel::setFilter(const QStringList &filter)
+{
+    m_filter = filter;
+    filterAllItem(m_model->invisibleRootItem());
 }

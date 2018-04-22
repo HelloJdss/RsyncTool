@@ -53,7 +53,7 @@ private:
     LogInterpreter *m_logInterpreter = nullptr;
     QProcess *m_cmd = nullptr;
     QString m_tmpName;
-    //QProgressDialog *m_progress = nullptr;
+    QProgressDialog *m_progress = nullptr;
     volatile bool  m_progress_run = false;
 };
 
