@@ -65,6 +65,8 @@ public:
 private:
     bool checkMatched(ST_BlockInformation& ret);   //检查是否有匹配块
 
+    bool shouldStop();
+
     RTSet<uint32_t> m_checksums;    //[checksum]
     RTMap<string, ST_BlockInformation> m_md52infos; //md5  ==> BlockInfo
     RTMap<uint32_t, RTVector<string> > m_checksum2md5; //checksum ==> md5
@@ -77,6 +79,9 @@ private:
     string m_buffer;
     int32_t m_start = 0, m_end = 0;
     int64_t m_offset = 0;
+
+    int64_t m_limit = 0;    //限制
+    int64_t m_processedSize = 0; //已经处理的大小
 };
 
 typedef std::shared_ptr<Inspector> InspectorPtr;

@@ -26,17 +26,30 @@ public:
     {
         PUSH, PULL
     };
+
+    enum TaskStatus
+    {
+        Ready, Waiting, Running, Abort, Finished,
+    };
     Task();
 
     Task(TaskType type, const QStringList& src, const QStringList& des, const QString& ip, uint16_t port);
 
+    bool saveAsXml() const;
+
+    QString getXmlPath() const;
+
 public:
-    QString m_createTime;
+    qint64 m_id;
+    //QString m_createTime;
     TaskType m_type;
+    TaskStatus m_status;
     QStringList m_src;
     QStringList m_des;
     QString m_desIP;
     uint16_t m_desPort;
+
+    mutable QString m_path;
 };
 
 class MainMod
@@ -44,7 +57,9 @@ class MainMod
 DECLARE_SINGLETON_EX(MainMod)
 
 public:
-    bool LoadConfig(QSplashScreen *screen = nullptr); //预加载配置，如果有启动画面，则输出信息
+    bool LoadDataOnStart(QSplashScreen *screen = nullptr); //预加载数据，如果有启动画面，则输出信息
+
+    bool SaveDataOnClose(); //离开时做保存和清理工作
 
     QString GetLastErr();
 
@@ -55,7 +70,7 @@ public:
     void showStatusTip(const QString& tip);
 private:
     QString m_lastErr;   //最后一次的错误
-    QVector<Task> m_tasks;     //任务列表
+    QMap<qint64 ,Task> m_tasks;     //任务列表
 
     MainWindow* m_mainWindow = nullptr;
 };
@@ -90,6 +105,8 @@ public:
     void addLine(QString logger);
 
     static QString praseLoggerForTextBrower(QString logger);
+
+    static QString praseLoggerForStatusTip(QString logger);
 
     static LoggerType getLoggerType(QString logger);
 

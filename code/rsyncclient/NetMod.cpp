@@ -342,7 +342,8 @@ Err NetMod::onRecvViewDirAck(uint32_t taskID, BytesPtr data)
     int i = 1;
     for (auto item : *pViewDirAck->FileList())
     {
-        LOG_INFO("ViewDir[%d]: Path: [%s] Size: [%lld] Modify: [%llu]", i++, item->FilePath()->c_str(), item->FileSize(),
+        LOG_INFO("ViewDir[%d]: Path: [%s] Size: [%lld] Modify: [%llu]", i++, item->FilePath()->c_str(),
+                 item->FileSize(),
                  item->FileModify());
 
         //save as xml:
@@ -685,7 +686,7 @@ Err NetMod::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
                   pTaskInfo->m_src.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
-    if (pTaskInfo->m_processLen == pTaskInfo->m_rebuild_size)
+    if (pTaskInfo->m_processLen >= pTaskInfo->m_rebuild_size)
     {
         LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, pTaskInfo->m_src.c_str());
 
@@ -724,7 +725,7 @@ void NetMod::Stop()
 void MsgThread::Runnable() //不断阻塞接受消息和处理消息
 {
     m_running = true;
-    //g_NetMod->m_serverSocket->SetRecvTimeOut(60, 0);  //60秒延迟，若60秒仍收不到服务器的消息则结束
+    g_NetMod->m_serverSocket->SetRecvTimeOut(3 * 60, 0);  //3 * 60秒延迟，若3 * 60秒仍收不到服务器的消息则结束
     while (m_running)
     {
 
@@ -752,6 +753,16 @@ void MsgThread::Runnable() //不断阻塞接受消息和处理消息
 
 void TaskMgr::AddTask(TaskInfo &task)
 {
+    for (const auto &item : m_tasks)
+    {
+        if (item.second.m_type == task.m_type && item.second.m_stat >= task.m_stat &&
+            item.second.m_src == task.m_src && item.second.m_des == task.m_des)
+        {
+            LOG_WARN("Repeat Task[%lu] Info with[%lu]!", task.m_taskID, item.second.m_taskID); //去除重复的任务
+            return;
+        }
+    }
+
     m_tasks[task.m_taskID] = task;
     m_tasks[task.m_taskID].Ready();
 }

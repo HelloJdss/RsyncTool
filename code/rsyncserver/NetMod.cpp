@@ -463,7 +463,7 @@ Err TCPClient::onRecvRebuildChunk(uint32_t taskID, BytesPtr data)
                   pTaskInfo->m_des.c_str(), pRebuildChunk->Offset(), pRebuildChunk->Length());
     }
 
-    if (pTaskInfo->m_processLen == pTaskInfo->m_rebuild_size)
+    if (pTaskInfo->m_processLen >= pTaskInfo->m_rebuild_size)
     {
         LOG_INFO("Task[%lu] File[%s]: Reconstruct Finished!", taskID, pTaskInfo->m_des.c_str());
 

@@ -120,6 +120,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
                 m_cmd->kill();
                 m_cmd->waitForFinished();
             }
+            g_MainMod->SaveDataOnClose();
             QApplication::quit();
             break;
         case 1:
@@ -145,6 +146,7 @@ void MainWindow::on_action_5_triggered()
     auto task = wizard.GetTask();
     g_MainMod->addTask(task);
 
+    /*
     ui->textBrowser->clear();
     //test
     m_cmd = new QProcess(this);
@@ -158,7 +160,7 @@ void MainWindow::on_action_5_triggered()
     //m_cmd->start("ping 127.0.0.1");
     ui->progressBar->show();
     ui->pushButton_3->show();
-    ui->pushButton_4->show();
+    ui->pushButton_4->show();*/
 }
 
 void MainWindow::onUpdateTime()
@@ -171,25 +173,7 @@ void MainWindow::onCmdReadOutput()
     while (m_cmd->canReadLine())
     {
         auto str = m_cmd->readLine();
-        str.replace("&", "&amp;");
-        str.replace(">", "&gt;");
-        str.replace("<", "&lt;");
-        str.replace("\"", "&quot;");
-        str.replace("\'", "&#39;");
-        str.replace(" ", "&nbsp;");
-        str.replace("\n", "<br>");
-        str.replace("\r", "<br>");
-
-        str.replace("\33[1;35m", "<span style=\" color:#8B008B;\">"); //FATAL
-        str.replace("\33[1;31m", "<span style=\" color:#FF0000;\">"); //ERROR
-        str.replace("\33[1;33m", "<span style=\" color:#FFD700;\">"); //WARN
-        str.replace("\33[1;34m", "<span style=\" color:#4169E1;\">"); //DEBUG
-        str.replace("\33[1;32m", "<span style=\" color:#00FF00;\">"); //TRACE
-        str.replace("\33[0m", "</span>");
-
-        //m_cmdoutput.append(str);
-        //qDebug() << str;
-        ui->textBrowser->append(str);
+        ui->textBrowser->append(LogInterpreter::praseLoggerForTextBrower(str));
     }
     //ui->textBrowser->setText(m_cmdoutput); //频繁更新会很卡
 
@@ -219,5 +203,6 @@ void MainWindow::onCmdFinished()
 
 void MainWindow::showStatusBarTip(const QString &tip)
 {
-    ui->statusbar->showMessage(tip, 3);
+    ui->statusbar->showMessage(tip);
+    QApplication::processEvents();
 }

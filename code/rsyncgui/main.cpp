@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     timer.start();
 
     //TODO: 加载配置文件
-    if(!g_MainMod->LoadConfig(&screen))
+    if(!g_MainMod->LoadDataOnStart(&screen))
     {
         //screen.showMessage(g_MainMod->GetLastErr(), Qt::AlignLeft | Qt::AlignBottom);
         QMessageBox::critical(nullptr, QStringLiteral("错误！"), g_MainMod->GetLastErr());

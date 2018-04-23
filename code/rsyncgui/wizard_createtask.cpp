@@ -20,7 +20,8 @@ Wizard_CreateTask::Wizard_CreateTask(QWidget *parent) :
     ui->treeView->setModel(m_srcModel);
     ui->treeView->setColumnWidth(0, 275);
 
-    //ui->lineEdit->setText(QDir::currentPath() + QDir::separator());
+    //ui->lineEdit->setText(QDir::rootPath());
+    ui->lineEdit_3->setText(QDir::rootPath());
 
     m_desModel = new myRemoteDirModel(this);
     ui->treeView_2->setModel(m_desModel->getModelPtr());
@@ -36,7 +37,8 @@ Wizard_CreateTask::Wizard_CreateTask(QWidget *parent) :
     {
         while (m_cmd->canReadLine())
         {
-            g_MainMod->showStatusTip(QStringLiteral("执行：") + m_cmd->readLine());
+            g_MainMod->showStatusTip(QStringLiteral("执行：") +
+                                     LogInterpreter::praseLoggerForStatusTip(m_cmd->readLine()));
         }
     });
 
@@ -54,7 +56,7 @@ Wizard_CreateTask::~Wizard_CreateTask()
 void Wizard_CreateTask::on_pushButton_clicked()
 {
     //只允许选择文件夹
-    QString dirName = QFileDialog::getExistingDirectory(this, QStringLiteral("目录选择"), ".");
+    QString dirName = QFileDialog::getExistingDirectory(this, QStringLiteral("目录选择"), QDir::currentPath());
 
     if (dirName.isEmpty())
     {
@@ -62,7 +64,15 @@ void Wizard_CreateTask::on_pushButton_clicked()
     }
 
     ui->lineEdit->setText(dirName + QDir::separator());
-    on_lineEdit_editingFinished();
+
+    m_srcModel->clearCheckedIndexes();
+
+    if (ui->radioButton->isChecked())
+    {
+        auto index = m_srcModel->index(ui->lineEdit->text());
+        ui->treeView->setCurrentIndex(index);
+        //ui->treeView->setRootIndex();
+    }
 }
 
 void Wizard_CreateTask::on_Wizard_CreateTask_currentIdChanged(int id)
@@ -81,10 +91,6 @@ void Wizard_CreateTask::on_Wizard_CreateTask_currentIdChanged(int id)
 
         ui->label_14->setText(ui->radioButton->text());
 
-        if (!ui->lineEdit_3->text().endsWith(QDir::separator()))
-        {
-            ui->lineEdit_3->setText(ui->lineEdit_3->text().append(QDir::separator()));
-        }
     }
     else
     {
@@ -99,10 +105,6 @@ void Wizard_CreateTask::on_Wizard_CreateTask_currentIdChanged(int id)
 
         ui->label_14->setText(ui->radioButton_2->text());
 
-        if (!ui->lineEdit->text().endsWith(QDir::separator()))
-        {
-            ui->lineEdit->setText(ui->lineEdit->text().append(QDir::separator()));
-        }
     }
 
     if (id == pageIds().last())
@@ -114,27 +116,47 @@ void Wizard_CreateTask::on_Wizard_CreateTask_currentIdChanged(int id)
         ui->textBrowser->clear();
         ui->textBrowser_2->clear();
 
+        if (m_progress)
+        {
+            delete m_progress;
+        }
+        m_progress = new QProgressDialog(this);
+        m_progress->setLabelText(QStringLiteral("正在生成任务信息"));
+        m_progress->setWindowTitle(QStringLiteral("执行任务中"));
+        m_progress->setRange(0, 0);
+        m_progress->setWindowModality(Qt::WindowModal);
+        m_progress->setCancelButton(nullptr);
+        m_progress->show();
 
         if (ui->radioButton->isChecked())
         {
             auto src = m_srcModel->getCheckedInfo();
+
             for (const auto &item : src)
             {
+                g_MainMod->showStatusTip("src:" + item);
                 ui->textBrowser->append(item);
             }
 
-            ui->textBrowser_2->append(ui->lineEdit_3->text());
+            ui->textBrowser_2->append(ui->lineEdit_3->text().endsWith(QDir::separator())
+                                      ? ui->lineEdit_3->text() : ui->lineEdit_3->text() + QDir::separator());
         }
         else
         {
-            ui->textBrowser->append(ui->lineEdit->text());
+
 
             auto des = m_desModel->getCheckedInfo();
             for (const auto &item : des)
             {
+                g_MainMod->showStatusTip("des:" + item);
                 ui->textBrowser_2->append(item);
             }
+
+            ui->textBrowser->append(ui->lineEdit->text().endsWith(QDir::separator())
+                                    ? ui->lineEdit->text() : ui->lineEdit->text() + QDir::separator());
         }
+
+        m_progress->close();
     }
 }
 
@@ -146,16 +168,14 @@ Task Wizard_CreateTask::GetTask()
 
     if (ui->radioButton->isChecked())
     {
-        return Task(Task::PUSH, m_srcModel->getCheckedInfo(), QStringList() << ui->lineEdit_3->text(),
-                    ui->lineEdit_2->text(),
-                    static_cast<uint16_t>(ui->spinBox->value()));
+        return Task(Task::PUSH, m_srcModel->getCheckedInfo(), QStringList() << ui->textBrowser_2->toPlainText(),
+                    ui->lineEdit_2->text(), static_cast<uint16_t>(ui->spinBox->value()));
     }
 
     if (ui->radioButton_2->isChecked())
     {
         return Task(Task::PULL, QStringList() << ui->lineEdit->text(), m_desModel->getCheckedInfo(),
-                    ui->lineEdit_2->text(),
-                    static_cast<uint16_t>(ui->spinBox->value()));
+                    ui->textBrowser->toPlainText(), static_cast<uint16_t>(ui->spinBox->value()));
     }
 
 }
@@ -172,23 +192,6 @@ void Wizard_CreateTask::on_lineEdit_4_editingFinished() //文件过滤信息
     m_desModel->setFilter(ui->lineEdit_4->text().split(";"));
 
     ui->treeView_2->update();
-}
-
-void Wizard_CreateTask::on_lineEdit_editingFinished() //src编辑完毕
-{
-    m_srcModel->clearCheckedIndexes();
-
-    if (ui->radioButton->isChecked())
-    {
-        auto index = m_srcModel->index(ui->lineEdit->text());
-        m_srcModel->setData(index, Qt::Checked, Qt::CheckStateRole);
-        ui->treeView->setRootIndex(index);
-    }
-}
-
-void Wizard_CreateTask::on_lineEdit_returnPressed()
-{
-    on_lineEdit_editingFinished();
 }
 
 void Wizard_CreateTask::on_pushButton_2_clicked() //des编辑完毕
@@ -291,12 +294,11 @@ void Wizard_CreateTask::onViewDirFinished()
         }
 
 
-
         QApplication::processEvents();
     }
 
     file.close();
-    //file.remove();
+    file.remove();
 
     m_progress_run = false;
     m_progress->close();
@@ -335,4 +337,5 @@ void Wizard_CreateTask::onViewDirFinished()
 
     ui->treeView_2->update();
 }
+
 

@@ -2,16 +2,16 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
-      <config projectName="RsyncTool" targetName="RsyncKernel" />
-      <config projectName="RsyncTool" targetName="LogModule" />
       <config projectName="RsyncTool" targetName="rsyncgui" />
-      <config projectName="RsyncTool" targetName="rsyncserver" />
-      <config projectName="RsyncTool" targetName="rsyncgui_autogen" />
-      <config projectName="RsyncTool" targetName="NetUtil" />
-      <config projectName="RsyncTool" targetName="TinyXml2" />
       <config projectName="RsyncTool" targetName="FileModule" />
+      <config projectName="RsyncTool" targetName="rsyncgui_autogen" />
+      <config projectName="RsyncTool" targetName="RsyncKernel" />
       <config projectName="RsyncTool" targetName="ThreadModule" />
+      <config projectName="RsyncTool" targetName="rsyncserver" />
+      <config projectName="RsyncTool" targetName="NetUtil" />
       <config projectName="RsyncTool" targetName="rsyncclient" />
+      <config projectName="RsyncTool" targetName="LogModule" />
+      <config projectName="RsyncTool" targetName="TinyXml2" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
@@ -22,15 +22,19 @@
   <component name="ChangeListManager">
     <list default="true" id="eb563f38-c513-40ec-bbfb-6160bfc73fb5" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncclient/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncclient/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncgui/MainMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/MainMod.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncgui/MainMod.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/MainMod.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncgui/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/rsyncgui/mainwindow.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/mainwindow.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/rsyncgui/myModel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/myModel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/rsyncgui/myModel.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/myModel.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.h" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.ui" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -43,116 +47,90 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="wizard_createtask.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/wizard_createtask.h">
+      <file leaf-file-name="NetMod.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="575">
-              <caret line="46" column="21" selection-start-line="46" selection-start-column="21" selection-end-line="46" selection-end-column="21" />
-              <folding>
-                <element signature="e#57#75#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="528">
+              <caret line="696" lean-forward="true" selection-start-line="696" selection-end-line="696" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwindow.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.h">
+      <file leaf-file-name="NetMod.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="247">
-              <caret line="13" lean-forward="true" selection-start-line="13" selection-end-line="13" />
-              <folding>
-                <element signature="e#43#65#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="608">
+              <caret line="53" column="37" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwindow.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp">
+      <file leaf-file-name="Inspector.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="334">
-              <caret line="58" column="22" lean-forward="true" selection-start-line="58" selection-start-column="22" selection-end-line="58" selection-end-column="22" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="456">
+              <caret line="67" column="21" lean-forward="true" selection-start-line="67" selection-start-column="21" selection-end-line="67" selection-end-column="21" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="qstatusbar.h" pinned="false" current-in-tab="false">
-        <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstatusbar.h">
+      <file leaf-file-name="Inspector.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
-              <caret line="67" column="9" selection-start-line="67" selection-start-column="9" selection-end-line="67" selection-end-column="9" />
+            <state relative-caret-position="433">
+              <caret line="54" column="33" lean-forward="true" selection-start-line="54" selection-start-column="33" selection-end-line="54" selection-end-column="33" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="myModel.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/myModel.h">
+      <file leaf-file-name="Generator.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="314">
-              <caret line="66" column="9" selection-start-line="66" selection-start-column="9" selection-end-line="66" selection-end-column="9" />
-              <folding>
-                <element signature="e#97#112#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-285" />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Generator.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="323">
+              <caret line="50" column="32" lean-forward="true" selection-start-line="50" selection-start-column="32" selection-end-line="50" selection-end-column="32" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="wizard_createtask.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/wizard_createtask.cpp">
+      <file leaf-file-name="NetMod.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="584">
-              <caret line="38" column="55" selection-start-line="38" selection-start-column="55" selection-end-line="38" selection-end-column="55" />
-              <folding>
-                <element signature="e#0#22#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="262">
+              <caret line="465" column="33" selection-start-line="465" selection-start-column="33" selection-end-line="465" selection-end-column="33" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MainMod.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/MainMod.h">
+      <file leaf-file-name="ThreadBase.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/common/ThreadModule/ThreadBase.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="334">
-              <caret line="52" column="36" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
-              <folding>
-                <element signature="e#97#121#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="282">
+              <caret line="78" selection-start-line="78" selection-end-line="78" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MainMod.cpp" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/MainMod.cpp">
+      <file leaf-file-name="NetMod.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1387">
-              <caret line="73" column="30" selection-start-line="73" selection-start-column="30" selection-end-line="73" selection-end-column="30" />
-              <folding>
-                <element signature="e#40#56#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="622">
+              <caret line="122" column="37" selection-start-line="122" selection-start-column="37" selection-end-line="122" selection-end-column="37" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="qtemporaryfile.h" pinned="false" current-in-tab="false">
-        <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporaryfile.h">
+      <file leaf-file-name="MainMod.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
-              <caret line="51" column="20" selection-start-line="51" selection-start-column="20" selection-end-line="51" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="myModel.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/rsyncgui/myModel.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-574">
-              <caret line="143" column="23" selection-start-line="143" selection-start-column="23" selection-end-line="143" selection-end-column="23" />
-              <folding>
-                <element signature="e#40#60#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-174">
+              <caret line="153" selection-start-line="153" selection-end-line="153" />
             </state>
           </provider>
         </entry>
@@ -181,7 +159,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/code/common/cm_struct.h" />
         <option value="$PROJECT_DIR$/code/rsyncserver/main.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncserver/MainMod.h" />
         <option value="$PROJECT_DIR$/code/rsyncclientGUI/CMakeLists.txt" />
@@ -196,11 +173,8 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.h" />
         <option value="$PROJECT_DIR$/code/common/NetUtil/MsgHelper.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.h" />
         <option value="$PROJECT_DIR$/code/common/NetUtil/NetHelper.h" />
-        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" />
         <option value="$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp" />
-        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" />
         <option value="$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncserver/MainMod.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncserver/CMakeLists.txt" />
@@ -219,19 +193,23 @@
         <option value="$PROJECT_DIR$/code/protocol/ViewDir.fbs" />
         <option value="$PROJECT_DIR$/code/common/FileUtil/FileHelper.h" />
         <option value="$PROJECT_DIR$/code/include/cm_logger.h" />
-        <option value="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" />
         <option value="$PROJECT_DIR$/code/common/FileUtil/FileHelper.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncgui/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/code/rsyncgui/myModel.h" />
         <option value="$PROJECT_DIR$/code/rsyncgui/myModel.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.h" />
         <option value="$PROJECT_DIR$/code/rsyncgui/mainwindow.h" />
         <option value="$PROJECT_DIR$/code/rsyncgui/wizard_createtask.cpp" />
-        <option value="$PROJECT_DIR$/code/rsyncgui/MainMod.h" />
         <option value="$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/main.cpp" />
         <option value="$PROJECT_DIR$/code/rsyncgui/MainMod.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncgui/MainMod.h" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.h" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/MainMod.cpp" />
+        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h" />
+        <option value="$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncclient/NetMod.cpp" />
+        <option value="$PROJECT_DIR$/code/rsyncserver/NetMod.cpp" />
       </list>
     </option>
   </component>
@@ -250,7 +228,7 @@
     </packageJsonPaths>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="4">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="width" value="1280" />
     <option name="height" value="1397" />
   </component>
@@ -284,6 +262,13 @@
               <item name="code" type="462c0819:PsiDirectoryNode" />
               <item name="common" type="462c0819:PsiDirectoryNode" />
               <item name="FileUtil" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RsyncTool" type="462c0819:PsiDirectoryNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+              <item name="RsyncKernel" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="RsyncTool" type="b2602c69:ProjectViewProjectNode" />
@@ -478,11 +463,13 @@
       <workItem from="1524383634522" duration="8110000" />
       <workItem from="1524393928717" duration="780000" />
       <workItem from="1524395468544" duration="4775000" />
+      <workItem from="1524471501372" duration="2054000" />
+      <workItem from="1524473739885" duration="9770000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="572504000" />
+    <option name="totallyTimeSpent" value="584328000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -494,20 +481,22 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1280" height="1397" extended-state="4" />
+    <frame x="0" y="0" width="2560" height="1397" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.28756058" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.48639053" weight="0.32690763" />
-      <window_info anchor="bottom" x="0" y="552" width="2560" height="388" id="Messages" order="7" sideWeight="0.42084005" side_tool="true" visible="true" weight="0.17531447" />
-      <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.56785136" weight="0.17531447" />
-      <window_info anchor="right" id="LuaJ" order="3" />
+      <window_info anchor="bottom" x="0" y="552" width="2560" height="388" id="Messages" order="7" sideWeight="0.46544877" side_tool="true" visible="true" weight="0.3451258" />
+      <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.57386816" weight="0.17531447" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.46761134" side_tool="true" weight="0.36448598" />
       <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.49102655" weight="0.3275218" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.5791599" weight="0.3018868" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.57783955" weight="0.3018868" />
       <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.47070312" weight="0.30152366" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14495632" />
+      <window_info anchor="right" id="LuaJ" order="3" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.5345512" visible="true" weight="0.3451258" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.6505163" weight="0.2971698" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.649722" weight="0.2971698" />
       <window_info anchor="bottom" id="LuaCheck" order="10" sideWeight="0.49418604" weight="0.32806325" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -515,7 +504,6 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.53494835" weight="0.3451258" />
     </layout>
     <layout-to-restore>
       <window_info anchor="bottom" id="LuaCheck" order="10" weight="0.32876712" />
@@ -562,9 +550,14 @@
           <properties />
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="136" />
+      <option name="time" value="138" />
     </breakpoint-manager>
     <watches-manager>
+      <configuration name="rsyncclient">
+        <watch expression="m_taskMgr" language="ObjectiveC" />
+        <watch expression="m_taskMgr.GetTaskCount(TaskState::Run)" language="ObjectiveC" />
+        <watch expression="m_taskMgr.GetTasksByState(TaskState::Run);" />
+      </configuration>
       <configuration name="CMakeRunConfiguration">
         <watch expression="m_buffer" />
         <watch expression="m_buffer.size()" language="ObjectiveC" />
@@ -576,6 +569,16 @@
   <component name="debuggerHistoryManager">
     <expressions id="watch">
       <expression>
+        <expression-string>m_taskMgr.GetTaskCount(TaskState::Run)</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>m_taskMgr</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
         <expression-string>m_ptr</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
@@ -586,7 +589,7 @@
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>mkdir(dir.c_str(), 0777); //一次只能创建一级目录           //  LOG_WARN(&quot;mkdir: %s&quot;, dir.c_str());</expression-string>
+        <expression-string />
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -635,66 +638,10 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/QCoreApplication">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="18" selection-start-column="18" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/glob.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="79" column="7" selection-start-line="79" selection-start-column="7" selection-end-line="79" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="608">
-          <caret line="47" column="33" selection-start-line="47" selection-start-column="33" selection-end-line="47" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/bits/typesizes.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="33" column="36" selection-start-line="33" selection-start-column="36" selection-end-line="33" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/bits/types.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="92" column="8" selection-start-line="92" selection-start-column="8" selection-end-line="92" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/time.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="121" column="10" lean-forward="true" selection-start-line="121" selection-start-column="10" selection-end-line="121" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/bits/stat.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="334">
-          <caret line="91" column="16" selection-start-line="91" selection-start-column="16" selection-end-line="91" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/protocol/ViewDir.fbs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="361">
           <caret line="19" column="24" selection-start-line="19" selection-start-column="24" selection-end-line="19" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/qstring.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="363" column="12" selection-start-line="363" selection-start-column="12" selection-end-line="363" selection-end-column="12" />
         </state>
       </provider>
     </entry>
@@ -709,13 +656,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="553">
           <caret line="306" column="6" selection-start-line="306" selection-start-column="6" selection-end-line="306" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/qdir.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="187" column="17" selection-start-line="187" selection-start-column="17" selection-end-line="187" selection-end-column="17" />
         </state>
       </provider>
     </entry>
@@ -754,11 +694,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/include/cm_struct.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-855" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cmake-build-debug/code/rsyncgui/rsyncgui_autogen/include/ui_wizard_createtask.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
@@ -794,20 +729,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/ThreadModule/ThreadBase.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="78" selection-start-line="78" selection-end-line="78" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="149" selection-start-line="149" selection-end-line="149" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/common/FileUtil/FileHelper.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="337">
@@ -829,13 +750,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6232">
-          <caret line="328" column="9" selection-start-line="328" selection-start-column="9" selection-end-line="328" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtWidgets/qprogressdialog.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1330">
@@ -847,20 +761,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1596">
           <caret line="84" column="16" selection-start-line="84" selection-start-column="16" selection-end-line="84" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="413">
-          <caret line="50" column="21" selection-start-line="50" selection-start-column="21" selection-end-line="50" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="518">
-          <caret line="104" column="31" selection-start-line="104" selection-start-column="31" selection-end-line="104" selection-end-column="31" />
         </state>
       </provider>
     </entry>
@@ -882,10 +782,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="893">
           <caret line="47" selection-start-line="47" selection-end-line="47" />
-          <folding>
-            <element signature="e#1724#1762#0" expanded="true" />
-            <element signature="e#1825#1847#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -893,13 +789,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19">
           <caret line="1" column="24" selection-start-line="1" selection-start-column="24" selection-end-line="1" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6840">
-          <caret line="360" column="17" selection-start-line="360" selection-start-column="17" selection-end-line="360" selection-end-column="17" />
         </state>
       </provider>
     </entry>
@@ -917,104 +806,214 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="965">
-          <caret line="117" column="22" selection-start-line="117" selection-start-column="22" selection-end-line="117" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncgui/myModel.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-574">
-          <caret line="143" column="23" selection-start-line="143" selection-start-column="23" selection-end-line="143" selection-end-column="23" />
-          <folding>
-            <element signature="e#40#60#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporaryfile.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
+        <state relative-caret-position="969">
           <caret line="51" column="20" selection-start-line="51" selection-start-column="20" selection-end-line="51" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstatusbar.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1273">
+          <caret line="67" column="9" selection-start-line="67" selection-start-column="9" selection-end-line="67" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlineedit.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3743">
+          <caret line="197" column="9" selection-start-line="197" selection-start-column="9" selection-end-line="197" selection-end-column="9" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/code/rsyncgui/myModel.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="66" column="9" selection-start-line="66" selection-start-column="9" selection-end-line="66" selection-end-column="9" />
+        <state relative-caret-position="665">
+          <caret line="35" column="20" selection-start-line="35" selection-start-column="20" selection-end-line="35" selection-end-column="20" />
           <folding>
             <element signature="e#97#112#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/myModel.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1292">
+          <caret line="68" column="26" selection-start-line="68" selection-start-column="26" selection-end-line="68" selection-end-column="26" />
+          <folding>
+            <element signature="e#40#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code/rsyncgui/wizard_createtask.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="575">
-          <caret line="46" column="21" selection-start-line="46" selection-start-column="21" selection-end-line="46" selection-end-column="21" />
+        <state relative-caret-position="399">
+          <caret line="28" column="22" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
           <folding>
             <element signature="e#57#75#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstatusbar.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="67" column="9" selection-start-line="67" selection-start-column="9" selection-end-line="67" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncgui/wizard_createtask.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="584">
-          <caret line="38" column="55" selection-start-line="38" selection-start-column="55" selection-end-line="38" selection-end-column="55" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="13" lean-forward="true" selection-start-line="13" selection-end-line="13" />
+        <state relative-caret-position="584">
+          <caret line="47" column="23" lean-forward="true" selection-start-line="47" selection-start-column="23" selection-end-line="47" selection-end-column="23" />
           <folding>
             <element signature="e#43#65#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp">
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/wizard_createtask.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="334">
-          <caret line="58" column="22" lean-forward="true" selection-start-line="58" selection-start-column="22" selection-end-line="58" selection-end-column="22" />
+        <state relative-caret-position="280">
+          <caret line="162" column="24" selection-start-line="162" selection-start-column="24" selection-end-line="162" selection-end-column="24" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#0#22#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/qdir.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="565">
+          <caret line="152" column="9" selection-start-line="152" selection-start-column="9" selection-end-line="152" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="613">
+          <caret line="61" column="21" lean-forward="true" selection-start-line="61" selection-start-column="21" selection-end-line="61" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/x86_64-linux-gnu/qt5/QtCore/qstring.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="226" selection-start-line="226" selection-end-line="226" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/MainMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="622">
+          <caret line="72" column="7" selection-start-line="72" selection-start-column="7" selection-end-line="72" selection-end-column="7" />
+          <folding>
+            <element signature="e#40#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/code/rsyncgui/MainMod.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="334">
-          <caret line="52" column="36" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
+        <state relative-caret-position="603">
+          <caret line="50" lean-forward="true" selection-start-line="50" selection-end-line="50" />
           <folding>
             <element signature="e#97#121#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/rsyncgui/MainMod.cpp">
+    <entry file="file://$PROJECT_DIR$/code/rsyncgui/mainwindow.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1387">
-          <caret line="73" column="30" selection-start-line="73" selection-start-column="30" selection-end-line="73" selection-end-column="30" />
+        <state relative-caret-position="-128">
+          <caret line="145" column="9" selection-start-line="145" selection-start-column="9" selection-end-line="145" selection-end-column="9" />
           <folding>
-            <element signature="e#40#56#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/include/cm_struct.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="280">
+          <caret line="71" column="5" selection-start-line="71" selection-start-column="5" selection-end-line="71" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/NetUtil/NetHelper.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="282">
+          <caret line="149" selection-start-line="149" selection-end-line="149" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/ThreadModule/ThreadBase.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="282">
+          <caret line="78" selection-start-line="78" selection-end-line="78" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/MainMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-174">
+          <caret line="153" selection-start-line="153" selection-end-line="153" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="456">
+          <caret line="67" column="21" lean-forward="true" selection-start-line="67" selection-start-column="21" selection-end-line="67" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Inspector.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="433">
+          <caret line="54" column="33" lean-forward="true" selection-start-line="54" selection-start-column="33" selection-end-line="54" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="50" column="32" lean-forward="true" selection-start-line="50" selection-start-column="32" selection-end-line="50" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/common/RsyncKernel/Generator.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-285" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="622">
+          <caret line="122" column="37" selection-start-line="122" selection-start-column="37" selection-end-line="122" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncclient/NetMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="528">
+          <caret line="696" lean-forward="true" selection-start-line="696" selection-end-line="696" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="608">
+          <caret line="53" column="37" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/rsyncserver/NetMod.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="262">
+          <caret line="465" column="33" selection-start-line="465" selection-start-column="33" selection-end-line="465" selection-end-column="33" />
         </state>
       </provider>
     </entry>

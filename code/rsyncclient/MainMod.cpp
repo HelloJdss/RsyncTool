@@ -116,6 +116,9 @@ bool MainMod::Init(int argc, char *argv[], std::string appName)
             case 'o':
                 g_Configuration->m_view_output = string(optarg);
                 break;
+            case 'f':
+                ret = cmd_f(string(optarg));
+                break;
             case '?':
                 //printf("Run \"%s -h\" for more information!\n", argv[0]);
                 printf("执行 \"%s -h或--help\" 以获取更多详细信息！\n", argv[0]);
@@ -261,6 +264,68 @@ void MainMod::onRecvSignal(int signal)
         LOG_FATAL("Receive Sig: SIGINT, Process will exit now...");
         g_NetMod->Stop();
     }
+}
+
+bool MainMod::cmd_f(string xmlPath)
+{
+    //解析输入的xml文件
+    XMLDocument doc;
+    if (doc.LoadFile(xmlPath.c_str()) != 0)
+    {
+        RT_ERROR("Load xml file[%s] failed! Err: %s", xmlPath.c_str(), doc.ErrorStr());
+        return false;
+    }
+
+    XMLElement *root = doc.RootElement();
+    auto type = std::stoi(root->Attribute("type"));
+
+    XMLElement *src = root->FirstChildElement("Src");
+    XMLElement *srcPath = src->FirstChildElement("Path");
+    RTVector<string> srcList;
+    while (srcPath)
+    {
+        srcList.emplace_back(srcPath->GetText());
+        srcPath = srcPath->NextSiblingElement("Path");
+    }
+
+    RTVector<string> desList;
+    XMLElement *des = root->FirstChildElement("Des");
+
+    auto ip = des->Attribute("ip");
+    auto port = std::stoi(des->Attribute("port"));
+
+
+    XMLElement *desPath = des->FirstChildElement("Path");
+    while (desPath)
+    {
+        desList.emplace_back(desPath->GetText());
+        desPath = desPath->NextSiblingElement("Path");
+    }
+
+    if(type == 0)
+    {
+        for(const auto& pDes : desList)
+        {
+            for(const auto& pSrc : srcList)
+            {
+                //printf("src %s des %s ip %s port %d\n", pSrc.c_str(), pDes.c_str(), ip, port);
+                g_NetMod->AddTask(TaskType::Push, &pSrc, &pDes, ip, port);
+            }
+        }
+    }
+    else if(type == 1)
+    {
+        for(const auto& pSrc : srcList)
+        {
+            for(const auto& pDes : desList)
+            {
+                //printf("src %s des %s ip %s port %d\n", pSrc.c_str(), pDes.c_str(), ip, port);
+                g_NetMod->AddTask(TaskType::Pull_File, &pSrc, &pDes, ip, port);
+            }
+        }
+    }
+
+    return true;
 }
 
 int Configuration::LoadXml(char const *xmlPath)

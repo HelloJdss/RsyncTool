@@ -36,10 +36,6 @@ private slots:
 
     void on_lineEdit_4_editingFinished();
 
-    void on_lineEdit_editingFinished();
-
-    void on_lineEdit_returnPressed();
-
     void on_pushButton_2_clicked();
 
 private:

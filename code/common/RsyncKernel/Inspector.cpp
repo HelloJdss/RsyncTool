@@ -43,9 +43,13 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
 
     LOG_TRACE("Checking File[%s]...", m_fp->Path().c_str());
 
+    m_limit = m_fp->Size();  //读取此刻的大小
+
     char buff[m_split];
 
-    auto count = m_fp->ReadBytes(buff, m_split); //首次读取一整块的数据
+    auto count = m_fp->ReadBytes(buff, shouldStop() ? 0 : m_split); //首次读取一整块的数据
+    m_processedSize += count;
+
     if (count == 0)
     { //空文件
         ST_BlockInformation info;
@@ -109,7 +113,9 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
             m_buffer.erase(m_start, m_end - m_start);
             m_end = m_start;
 
-            count = m_fp->ReadBytes(buff, m_split); //读取一整块的数据
+            count = m_fp->ReadBytes(buff, shouldStop() ? 0 : m_split); //读取一整块的数据
+            m_processedSize += count;
+
             if (count == 0)
             {
                 return;
@@ -128,7 +134,9 @@ void Inspector::BeginInspect(INSPECTOR_CALLBACK callback)
         }
         else //未发现匹配项
         {
-            count = m_fp->ReadBytes(buff, 1);
+            count = m_fp->ReadBytes(buff, shouldStop() ? 0 : 1);
+            m_processedSize += count;
+
             if (count == 0)
             {
                 //文件读取结束
@@ -183,5 +191,10 @@ std::shared_ptr<Inspector> Inspector::NewInspector(uint32_t cb_taskID, const str
 std::shared_ptr<Inspector> Inspector::NewInspector(uint32_t cb_taskID, FilePtr fp, uint32_t split)
 {
     return std::make_shared<Inspector>(cb_taskID, fp, split);
+}
+
+inline bool Inspector::shouldStop()
+{
+    return m_processedSize >= m_limit;
 }
 

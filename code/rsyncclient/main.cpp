@@ -13,5 +13,5 @@ int main(int argc, char *argv[])
     {
         return MainMod::Run();
     }
-    return 0;
+    return -1;
 }
