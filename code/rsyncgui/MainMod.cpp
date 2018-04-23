@@ -20,6 +20,7 @@ Task::Task(Task::TaskType type, const QStringList &src, const QStringList &des, 
     m_des = des;
     m_desIP = ip;
     m_desPort = port;
+    m_status = Ready;
 }
 
 Task::Task()
@@ -27,6 +28,7 @@ Task::Task()
     m_id = QDateTime::currentMSecsSinceEpoch();
     m_des.clear();
     m_src.clear();
+    m_status = Ready;
 }
 
 bool Task::saveAsXml() const
@@ -84,6 +86,61 @@ QString Task::getXmlPath() const
     return m_path;
 }
 
+Task Task::loadFromXml(QString path)
+{
+    Task task;
+    task.m_id = -1;
+
+    QFile file(path);
+    if(!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        return task;
+    }
+
+    QXmlStreamReader reader;
+    reader.setDevice(&file);
+
+    QStringList parent;
+
+    while (!reader.atEnd())
+    {
+        auto type = reader.readNext();
+        if(type == QXmlStreamReader::StartElement)
+        {
+            //qDebug() << reader.name();
+            parent << reader.name().toString();
+            if(reader.name() == "Task")
+            {
+                task.m_id = reader.attributes().value("id").toLong();
+                task.m_type = static_cast<TaskType>(reader.attributes().value("type").toInt());
+                task.m_status = static_cast<TaskStatus>(reader.attributes().value("status").toInt());
+            }
+            else if(reader.name() == "Des")
+            {
+                task.m_desIP = reader.attributes().value("ip").toString();
+                task.m_desPort = static_cast<uint16_t>(reader.attributes().value("port").toInt());
+            }
+            else if(reader.name() == "Path")
+            {
+                if(parent.contains("Des"))
+                {
+                    task.m_des << reader.readElementText();
+                }
+                else if (parent.contains("Src"))
+                {
+                    task.m_src << reader.readElementText();
+                }
+            }
+        }
+        else if(type == QXmlStreamReader::EndElement)
+        {
+            parent.removeOne(reader.name().toString());
+        }
+    }
+
+    return task;
+}
+
 QString MainMod::GetLastErr()
 {
     return m_lastErr;
@@ -104,6 +161,27 @@ bool MainMod::LoadDataOnStart(QSplashScreen *screen)
         return false;
     }
 
+    QString tasksDirName = QDir::currentPath() + QDir::separator() + "tasks";
+
+    QDir tasksDir(tasksDirName);
+    if(tasksDir.exists())
+    {
+        tasksDir.setNameFilters(QStringList() << "*.xml");
+        QStringList list = tasksDir.entryList();
+        for (const auto& item : list)
+        {
+            if (screen)
+            {
+                screen->showMessage(QStringLiteral("Add task: ") + item , Qt::AlignLeft | Qt::AlignBottom);
+            }
+
+            Task task = Task::loadFromXml(tasksDir.path() + QDir::separator() + item);
+            if(task.m_id != -1)
+            {
+                g_MainMod->addTask(task);
+            }
+        }
+    }
 
     if (screen)
     {
@@ -112,11 +190,18 @@ bool MainMod::LoadDataOnStart(QSplashScreen *screen)
     return true;
 }
 
-bool MainMod::addTask(Task const &task)
+Task const & MainMod::addTask(Task const &task)
 {
     //TODO: 程序是否需要考虑添加的各个任务直接执行是否会发生死锁？（例如一边推送，一边从同一个目录接收，或者同步了日志目录，导致当天的日志不断地产生，不断的生成签名信息）
-    m_tasks[task.m_id] = task;
-    return true;
+
+    if(m_mainWindow)
+    {
+        m_mainWindow->addTask(task);
+    }
+
+    qDebug() << "Add Task :" << task.m_id;
+
+    return m_tasks[task.m_id] = task;
 }
 
 void MainMod::showStatusTip(const QString &tip)
@@ -139,6 +224,23 @@ bool MainMod::SaveDataOnClose()
         item.saveAsXml();
     }
     return true;
+}
+
+Task const *MainMod::getTask(qint64 id)
+{
+    if(m_tasks.contains(id))
+    {
+        return &m_tasks[id];
+    }
+    return nullptr;
+}
+
+void MainMod::setTaskStatus(qint64 id, Task::TaskStatus status)
+{
+    if(m_tasks.contains(id))
+    {
+        m_tasks[id].m_status = status;
+    }
 }
 
 

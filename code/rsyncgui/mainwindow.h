@@ -6,6 +6,8 @@
 #include <QCloseEvent>
 #include <QLabel>
 #include <QProcess>
+#include <QStandardItemModel>
+#include "MainMod.h"
 
 namespace Ui
 {
@@ -24,6 +26,8 @@ public:
     void closeEvent(QCloseEvent *event) override;
 
     void showStatusBarTip(const QString& tip);
+
+    void addTask(const Task&);
 
 private slots:
 
@@ -49,7 +53,14 @@ private slots:
 
     void on_pushButton_3_clicked();   //终止当前执行的任务
 
+    void on_treeView_doubleClicked(const QModelIndex &index);
+
+    void on_treeView_2_doubleClicked(const QModelIndex &index);
+
+    void on_pushButton_2_clicked();
+
 private:
+
     Ui::MainWindow *ui;
 
     QSystemTrayIcon *m_systemTray = nullptr;
@@ -57,6 +68,11 @@ private:
     QLabel *m_currentTimeLabel = nullptr;
     QProcess *m_cmd = nullptr;
     QString m_cmdoutput;
+
+    QStandardItemModel *m_taskDateModel;
+    QMap<QString, QStandardItemModel*> m_taskList;
+
+    QSet<qint64> m_runningTask; //执行任务的队列
 };
 
 #endif // MAINWINDOW_H

@@ -14,18 +14,18 @@
    <string>远程同步工具</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QSplitter" name="splitter_2">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QWidget" name="">
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>准备执行：</string>
+           <string>日期：</string>
           </property>
          </widget>
         </item>
@@ -37,56 +37,17 @@
          </widget>
         </item>
         <item>
-         <widget class="QTableView" name="tableView"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="pushButton">
-            <property name="minimumSize">
-             <size>
-              <width>85</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="statusTip">
-             <string>执行执行列表中全部任务</string>
-            </property>
-            <property name="text">
-             <string>执行全部</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_2">
-            <property name="minimumSize">
-             <size>
-              <width>85</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="statusTip">
-             <string>执行待执行列表中选中的任务</string>
-            </property>
-            <property name="text">
-             <string>执行选中</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QTreeView" name="treeView">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="animated">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -95,11 +56,11 @@
         <enum>Qt::Vertical</enum>
        </property>
        <widget class="QWidget" name="">
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>正在执行：</string>
+            <string>任务列表：</string>
            </property>
           </widget>
          </item>
@@ -111,12 +72,65 @@
           </widget>
          </item>
          <item>
-          <widget class="QTableView" name="tableView_2"/>
+          <widget class="QTreeView" name="treeView_2">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="minimumSize">
+              <size>
+               <width>85</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="statusTip">
+              <string>执行执行列表中全部任务</string>
+             </property>
+             <property name="text">
+              <string>执行全部</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="minimumSize">
+              <size>
+               <width>85</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="statusTip">
+              <string>执行待执行列表中选中的任务</string>
+             </property>
+             <property name="text">
+              <string>执行选中</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="">
-        <layout class="QVBoxLayout" name="verticalLayout">
+       <widget class="QWidget" name="layoutWidget">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
@@ -197,7 +211,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

@@ -174,8 +174,8 @@ Task Wizard_CreateTask::GetTask()
 
     if (ui->radioButton_2->isChecked())
     {
-        return Task(Task::PULL, QStringList() << ui->lineEdit->text(), m_desModel->getCheckedInfo(),
-                    ui->textBrowser->toPlainText(), static_cast<uint16_t>(ui->spinBox->value()));
+        return Task(Task::PULL, QStringList() << ui->textBrowser->toPlainText(), m_desModel->getCheckedInfo(),
+                    ui->lineEdit_2->text(), static_cast<uint16_t>(ui->spinBox->value()));
     }
 
 }

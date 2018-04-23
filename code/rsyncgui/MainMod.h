@@ -37,6 +37,8 @@ public:
 
     bool saveAsXml() const;
 
+    static Task loadFromXml(QString path);
+
     QString getXmlPath() const;
 
 public:
@@ -49,6 +51,7 @@ public:
     QString m_desIP;
     uint16_t m_desPort;
 
+private:
     mutable QString m_path;
 };
 
@@ -63,7 +66,11 @@ public:
 
     QString GetLastErr();
 
-    bool addTask(const Task &task);
+    Task const & addTask(const Task &task);
+
+    Task const * getTask(qint64 id);
+
+    void setTaskStatus(qint64 id, Task::TaskStatus status);
 
     void setMainWindow(MainWindow* mainWindow);
 

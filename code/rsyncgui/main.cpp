@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
 
     QTime timer;
     timer.start();
+    MainWindow w;
+
 
     //TODO: 加载配置文件
     if(!g_MainMod->LoadDataOnStart(&screen))
@@ -34,8 +36,6 @@ int main(int argc, char *argv[])
 
     }while (timer.elapsed() < 1000);//1为需要延时的秒数
 
-
-    MainWindow w;
     w.show();
 
     screen.finish(&w);
